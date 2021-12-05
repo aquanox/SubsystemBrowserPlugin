@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Subsystem Browser",
+	"Description": "Subsystem Browser Window for Editor",
+	"Category": "Other",
+	"CreatedBy": "Aquanox",
+	"CreatedByURL": "https://github.com/aquanox/SubsystemBrowserPlugin",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/aquanox/SubsystemBrowserPlugin/issues",
+	"EnabledByDefault": true,
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "SubsystemBrowser",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
