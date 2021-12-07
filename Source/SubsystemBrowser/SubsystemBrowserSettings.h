@@ -8,9 +8,9 @@ struct FSubsystemBrowserConfigItem
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Item)
 	FName Name;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Item)
 	bool bValue = true;
 
 	FSubsystemBrowserConfigItem() = default;
@@ -65,25 +65,25 @@ public:
 
 protected:
 
-	UPROPERTY(config, EditAnywhere, meta=(ConfigAffectsView, EditFixedSize, EditFixedOrder, TitleProperty="Name"))
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView, EditFixedSize, EditFixedOrder, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> CategoryVisibilityState;
 
-	UPROPERTY(config, /*EditAnywhere,*/ meta=(ConfigAffectsView, TitleProperty="Name"))
+	UPROPERTY(config, /*EditAnywhere, Category=General,*/ meta=(ConfigAffectsView, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> TreeExpansionState;
 
-	UPROPERTY(config, EditAnywhere, meta=(ConfigAffectsColumns, EditFixedSize, EditFixedOrder, TitleProperty="Name"))
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsColumns, EditFixedSize, EditFixedOrder, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> TableColumnVisibilityState;
 
-	UPROPERTY(config, EditAnywhere)
+	UPROPERTY(config, EditAnywhere, Category=General)
 	float HorizontalSeparatorLocation = 0.33f;
 
-	UPROPERTY(config, EditAnywhere, meta=(ConfigAffectsView))
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
 	bool bEnableColoring = false;
 
-	UPROPERTY(config, EditAnywhere, meta=(ConfigAffectsDetails))
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
 	bool bShowHiddenProperties = true;
 
-	UPROPERTY(config, EditAnywhere, meta=(ConfigAffectsView))
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
 	bool bShowOnlyGameModules = false;
 
 private:
