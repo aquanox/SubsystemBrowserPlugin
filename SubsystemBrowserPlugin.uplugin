@@ -3,22 +3,25 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "Subsystem Browser",
-	"Description": "Subsystem Browser Window for Editor",
-	"Category": "Other",
+	"Description": "Plugin that adds Subsystem Browser panel to Editor",
+	"Category": "Editor",
 	"CreatedBy": "Aquanox",
 	"CreatedByURL": "https://github.com/aquanox/SubsystemBrowserPlugin",
 	"DocsURL": "",
-	"MarketplaceURL": "",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/f1ba87b348774d338e75d25ddbc46b98",
 	"SupportURL": "https://github.com/aquanox/SubsystemBrowserPlugin/issues",
 	"EnabledByDefault": true,
 	"CanContainContent": false,
 	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
 	"Installed": false,
+	"EngineVersion": "4.27.0",
 	"Modules": [
 		{
 			"Name": "SubsystemBrowser",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win32", "Win64", "Mac", "Linux" ]
 		}
 	]
 }

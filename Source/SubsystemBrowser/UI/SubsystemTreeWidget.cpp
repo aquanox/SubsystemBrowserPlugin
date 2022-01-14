@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #include "UI/SubsystemTreeWidget.h"
 #include "Model/SubsystemBrowserModel.h"
 #include "UI/SubsystemBrowserPanel.h"

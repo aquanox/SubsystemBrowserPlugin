@@ -1,7 +1,10 @@
+// Copyright 2022, Aquanox.
+
 #pragma once
 
 #include "SKismetInspector.h"
 #include "SlateCore.h"
+#include "SlateBasics.h"
 #include "UI/SubsystemTreeWidget.h"
 #include "UI/SubsystemTableItem.h"
 #include "Model/SubsystemBrowserModel.h"
@@ -157,7 +160,7 @@ private:
 	bool bNeedRefreshDetails = false;
 	bool bUpdatingSelection = false;
 	bool bLoadedExpansionSettings = false;
-	bool bNeedListRebuild = true; // needs initial header update to upply config 
+	bool bNeedListRebuild = true; // needs initial header update to upply config
 };
 
 

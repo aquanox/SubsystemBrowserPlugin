@@ -25,7 +25,7 @@ The Subsystem Browser Plugin comes to rescue with a dedicated panel to display w
 
 ## Unreal Engine Versions
 
-Tested with 4.25-4.27, UE5EA and can be easily modified to work with older engine versions.
+Tested with 4.25-4.27, UE5EA, UE5-main and can be easily modified to work with older engine versions.
 
 ## Contributing
 

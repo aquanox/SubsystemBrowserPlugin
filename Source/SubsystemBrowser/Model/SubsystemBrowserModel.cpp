@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #include "Model/SubsystemBrowserModel.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"

@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserModule.h"
 #include "Model/SubsystemBrowserModel.h"
@@ -113,7 +115,7 @@ void USubsystemBrowserSettings::SetShouldShowOnlyGame(bool bNewValue)
 bool USubsystemBrowserSettings::GetTableColumnState(FName Column) const
 {
 	const FSubsystemBrowserConfigItem* bFoundState = TableColumnVisibilityState.FindByKey(Column);
-	return bFoundState ? bFoundState->bValue : true; 
+	return bFoundState ? bFoundState->bValue : true;
 }
 
 void USubsystemBrowserSettings::SetTableColumnState(FName Column, bool State)

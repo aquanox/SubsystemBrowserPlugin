@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 using UnrealBuildTool;
 
 public class SubsystemBrowser : ModuleRules
@@ -22,7 +24,7 @@ public class SubsystemBrowser : ModuleRules
 			"UnrealEd",
 			"EditorStyle",
 			"EditorSubsystem",
-			"WorkspaceMenuStructure", 
+			"WorkspaceMenuStructure",
 			"WorldBrowser",
 			"LevelEditor",
 			"ToolMenus",

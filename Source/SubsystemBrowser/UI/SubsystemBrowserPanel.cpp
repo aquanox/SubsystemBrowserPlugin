@@ -1,11 +1,12 @@
+// Copyright 2022, Aquanox.
+
 #include "UI/SubsystemBrowserPanel.h"
 
-#include "AssetViewUtils.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
-#include "Algo/Count.h"
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
+#include "Widgets/Images/SImage.h"
 #include "SlateOptMacros.h"
 #include "SourceCodeNavigation.h"
 #include "ToolMenus.h"
@@ -48,7 +49,7 @@ SSubsystemBrowserPanel::~SSubsystemBrowserPanel()
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 {
-	// Automatically switch to pie world and back 
+	// Automatically switch to pie world and back
 	FEditorDelegates::PostPIEStarted.AddSP(this, &SSubsystemBrowserPanel::HandlePIEStart);
 	FEditorDelegates::PrePIEEnded.AddSP(this, &SSubsystemBrowserPanel::HandlePIEEnd);
 
@@ -75,7 +76,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 	SubsystemModel->CategoryFilter = CategoryFilter;
 	SubsystemModel->SubsystemTextFilter = SearchBoxSubsystemFilter;
 
-	// Generate tree view header. 
+	// Generate tree view header.
 	HeaderRowWidget =
 		SNew( SHeaderRow )
 
@@ -165,7 +166,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 			.BorderImage(FEditorStyle::GetBrush(TEXT("ToolPanel.GroupBorder")))
 			[
 				SNew(SHorizontalBox)
-				
+
 				// Toolbar Button
 				+SHorizontalBox::Slot()
 				.AutoWidth()
@@ -214,7 +215,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 			.BorderImage(FEditorStyle::GetBrush(TEXT("ToolPanel.GroupBorder")))
 			[
 				SNew(SHorizontalBox)
-				
+
 				// Filter box
 				+ SHorizontalBox::Slot()
 				.FillWidth(1.0f)
@@ -269,7 +270,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 						SNew(SSeparator)
 						.Visibility(EVisibility::Visible)
 					]
-					
+
 					// View options
 					+SVerticalBox::Slot()
 					.Padding(0, 0, 0, 2)
@@ -361,7 +362,7 @@ void SSubsystemBrowserPanel::Tick(const FGeometry& AllotedGeometry, const double
 void SSubsystemBrowserPanel::Populate()
 {
 	TGuardValue<bool> ReentrantGuard(bIsReentrant, true);
-	
+
 	TMap<FSubsystemTreeItemID, bool> ExpansionStateInfo = GetParentsExpansionState();
 	if (!bLoadedExpansionSettings)
 	{// load settings only on first populate
@@ -403,12 +404,15 @@ void SSubsystemBrowserPanel::Populate()
 
 	if (bNeedListRebuild)
 	{
+#if !(ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION < 26)
 		for (const SHeaderRow::FColumn& Column : TreeWidget->GetHeaderRow()->GetColumns())
 		{
 			const_cast<SHeaderRow::FColumn&>(Column).bIsVisible = IsColumnVisible(Column.ColumnId);
 		}
 
 		TreeWidget->GetHeaderRow()->RefreshColumns();
+#endif
+
 		TreeWidget->RebuildList();
 
 		bNeedListRebuild = false;
@@ -475,7 +479,7 @@ FText SSubsystemBrowserPanel::GetFilterStatusText() const
 	else
 	{
 		if ( FilteredSubsystemsCount == 0)
-		{   // all subsystems were filtered out 
+		{   // all subsystems were filtered out
 			return FText::Format( LOCTEXT("ShowSubsystemsCounterFmt", "No matching subsystems out of {0} total"), FText::AsNumber( SubsystemTotalCount ) );
 		}
 		else
@@ -522,6 +526,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 {
 	FMenuBuilder MenuBuilder(true, nullptr);
 
+#if !(ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION < 26)
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewColumns", "Columns"));
 	{
 		for (const FSubsystemModel::FSubsystemColumn& Column : SubsystemModel->GetOptionalColumns())
@@ -541,6 +546,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 		}
 	}
 	MenuBuilder.EndSection();
+#endif
 
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewCategoryGroup", "Categories"));
 	{
@@ -696,7 +702,7 @@ void SSubsystemBrowserPanel::ToggleDisplayColumn(FName ColumnName)
 
 	bool OldState = Settings->GetTableColumnState(ColumnName);
 	Settings->SetTableColumnState(ColumnName, !OldState);
-	
+
 	bNeedListRebuild = true;
 	bNeedsRefresh = true;
 }
@@ -769,7 +775,7 @@ void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item,
 	const TArray<SubsystemTreeItemPtr>& SelectedItems = TreeWidget->GetSelectedItems();
 
 	SetSelectedObject(SelectedItems.Num() ? SelectedItems[0] : nullptr);
-	
+
 	bUpdatingSelection = false;
 }
 
@@ -829,7 +835,7 @@ FText SSubsystemBrowserPanel::GetWorldDescription(UWorld* World) const
 			PostFix = LOCTEXT("EditorPostfix", "(Editor)");
 		}
 
-		Description = FText::Format(LOCTEXT("WorldFormat", "{0} {1}"), FText::FromString(World->GetFName().GetPlainNameString()), PostFix);	
+		Description = FText::Format(LOCTEXT("WorldFormat", "{0} {1}"), FText::FromString(World->GetFName().GetPlainNameString()), PostFix);
 	}
 
 	return Description;
@@ -1028,10 +1034,10 @@ TSharedPtr<SWidget> SSubsystemBrowserPanel::ConstructSubsystemContextMenu()
 
 	{
 		FToolMenuSection& Section = Menu->AddSection("SubsystemContextActions", LOCTEXT("SubsystemContextActions", "Common"));
-		Section.AddMenuEntry("OpenSourceFile", 
+		Section.AddMenuEntry("OpenSourceFile",
 			LOCTEXT("OpenSourceFile", "Open Source File"),
 			FText::GetEmpty(),
-			FSlateIcon(FEditorStyle::GetStyleSetName(), "SystemWideCommands.FindInContentBrowser"), 
+			FSlateIcon(FEditorStyle::GetStyleSetName(), "SystemWideCommands.FindInContentBrowser"),
 			FUIAction(
 				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ContextMenu_OpenSourceFile),
 				FCanExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::HasSelectedSubsystem)
@@ -1291,16 +1297,16 @@ void SSubsystemBrowserPanel::OnSettingsChanged(FName InPropertyName)
 
 	if (FProperty* Property = USubsystemBrowserSettings::StaticClass()->FindPropertyByName(InPropertyName))
 	{
-		if (Property->FindMetaData(MD_ConfigAffecsView))
+		if (Property->HasMetaData(MD_ConfigAffecsView))
 		{
 			bFullRefresh = true;
 			RefreshView();
 		}
-		if (Property->FindMetaData(MD_ConfigAffecsColumns))
+		if (Property->HasMetaData(MD_ConfigAffecsColumns))
 		{
 			RefreshColumns();
 		}
-		if (Property->FindMetaData(MD_ConfigAffecsDetails))
+		if (Property->HasMetaData(MD_ConfigAffecsDetails))
 		{
 			RefreshDetails();
 		}

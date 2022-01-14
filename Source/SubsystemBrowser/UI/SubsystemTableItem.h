@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #pragma once
 
 #include "SlateCore.h"
@@ -14,7 +16,7 @@ public:
 	{}
 		/** Data for the world */
 		SLATE_ARGUMENT(TSharedPtr<FSubsystemModel>, InModel)
-	
+
 		/** Item model this widget represents */
 		SLATE_ARGUMENT(SubsystemTreeItemPtr, InItemModel)
 

@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #pragma once
 
 #include "Misc/TextFilter.h"
@@ -13,7 +15,7 @@ using FSubsystemTreeItemID = FName;
 using SubsystemTreeItemPtr = TSharedPtr<struct ISubsystemTreeItem>;
 
 /*
- * Abstract subsystem tree item node 
+ * Abstract subsystem tree item node
  */
 struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 {
@@ -41,7 +43,7 @@ struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 	virtual FString GetPackageString() const = 0;
 	virtual FString GetConfigClassNameString() const = 0;
 	virtual FString GetOwnerNameString() const = 0;
-	
+
 	virtual FSubsystemTreeSubsystemItem* GetAsSubsystemDescriptor() const { return nullptr; }
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const { return nullptr; }
 
@@ -57,7 +59,7 @@ struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 };
 
 /**
- * Category node 
+ * Category node
  */
 struct FSubsystemTreeCategoryItem  : public ISubsystemTreeItem
 {
@@ -77,7 +79,7 @@ struct FSubsystemTreeCategoryItem  : public ISubsystemTreeItem
 	virtual FString GetPackageString() const override { return FString(); }
 	virtual FString GetConfigClassNameString() const override  { return FString(); }
 	virtual FString GetOwnerNameString() const override  { return FString(); }
-	
+
 	virtual bool CanHaveChildren() const override { return true; }
 
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const override { return const_cast<FSubsystemTreeCategoryItem*>(this); }
@@ -98,7 +100,7 @@ struct FSubsystemTreeSubsystemItem  : public ISubsystemTreeItem
 	FString							ShortPackage;
 	FString							ConfigClass;
 
-	FName							LocalPlayerName; 
+	FName							LocalPlayerName;
 
 	FString                         ModuleName;
 	FString							ModulePath;

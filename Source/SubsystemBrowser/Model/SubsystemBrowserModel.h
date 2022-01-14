@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #pragma once
 
 #include "Model/SubsystemDescriptor.h"
@@ -102,5 +104,5 @@ namespace SubsystemCategories
 	static const FName CategoryGameInstance("GameInstanceCategory");
 	static const FName CategoryWorld("WorldSubsystemCategory");
 	static const FName CategoryPlayer("PlayerCategory");
-	
+
 }

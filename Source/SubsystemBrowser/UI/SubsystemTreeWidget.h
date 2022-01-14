@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #pragma once
 
 #include "SlateCore.h"

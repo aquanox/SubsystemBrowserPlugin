@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #include "UI/SubsystemTableItem.h"
 #include "Model/SubsystemBrowserModel.h"
 #include "UI/SubsystemBrowserPanel.h"
@@ -53,7 +55,7 @@ TSharedRef<SWidget> SSubsystemTableItem::GenerateWidgetForColumn(const FName& Co
 					.Image(this, &SSubsystemTableItem::GetItemIconBrush)
 				]
 			]
-			
+
 			+SHorizontalBox::Slot()
 			.VAlign(VAlign_Center)
 		    .Padding(4, 3, 0, 3)
@@ -112,7 +114,7 @@ const FSlateBrush* SSubsystemTableItem::GetItemIconBrush() const
 #else
 	static const FName FolderOpenName(TEXT("Icons.FolderOpen"));
 	static const FName FolderClosedName(TEXT("Icons.FolderClosed"));
-#endif 
+#endif
 
 	if (Item.IsValid() && Item->CanHaveChildren())
 	{

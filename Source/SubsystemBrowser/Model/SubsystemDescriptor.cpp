@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #include "Model/SubsystemDescriptor.h"
 
 #include "SourceCodeNavigation.h"

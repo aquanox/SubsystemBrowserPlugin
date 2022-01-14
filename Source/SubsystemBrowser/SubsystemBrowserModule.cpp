@@ -1,3 +1,5 @@
+// Copyright 2022, Aquanox.
+
 #include "SubsystemBrowserModule.h"
 
 #include "ISettingsModule.h"
@@ -83,8 +85,11 @@ void FSubsystemBrowserModule::SummonSubsystemTab()
 {
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 	auto LevelEditorInstance = LevelEditorModule.GetLevelEditorInstance().Pin();
-
+#if ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION < 26
+	FGlobalTabmanager::Get()->InvokeTab(SubsystemBrowserTabName);
+#else
 	FGlobalTabmanager::Get()->TryInvokeTab(SubsystemBrowserTabName);
+#endif
 }
 
 #undef LOCTEXT_NAMESPACE
