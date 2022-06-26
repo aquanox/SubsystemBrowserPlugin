@@ -510,7 +510,11 @@ FSlateColor SSubsystemBrowserPanel::GetFilterStatusTextColor() const
 
 void SSubsystemBrowserPanel::BrowserSplitterFinishedResizing()
 {
+#if ENGINE_MAJOR_VERSION < 5
 	float NewValue = BrowserSplitter->SlotAt(0).SizeValue.Get();
+#else
+	float NewValue = BrowserSplitter->SlotAt(0).GetSizeValue();
+#endif
 	USubsystemBrowserSettings::Get()->SetSeparatorLocation(NewValue);
 }
 
@@ -529,16 +533,16 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 #if !(ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION < 26)
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewColumns", "Columns"));
 	{
-		for (const FSubsystemModel::FSubsystemColumn& Column : SubsystemModel->GetOptionalColumns())
+		for (auto& Column : SubsystemModel->GetOptionalColumns())
 		{
 			MenuBuilder.AddMenuEntry(
-				Column.Label,
+				Column->Label,
 				LOCTEXT("ToggleDisplayColumn_Tooltip", "Toggles display of subsystem browser columns."),
 				FSlateIcon(),
 				FUIAction(
-					FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayColumn, Column.Id),
+					FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayColumn, Column->Id),
 					FCanExecuteAction(),
-					FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetColumnDisplayStatus, Column.Id)
+					FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetColumnDisplayStatus, Column->Id)
 				),
 				NAME_None,
 				EUserInterfaceActionType::ToggleButton
@@ -827,6 +831,8 @@ FText SSubsystemBrowserPanel::GetWorldDescription(UWorld* World) const
 					break;
 				case NM_Standalone:
 					PostFix = LOCTEXT("PlayInEditorPostfix", "(Play In Editor)");
+					break;
+				default:
 					break;
 			}
 		}

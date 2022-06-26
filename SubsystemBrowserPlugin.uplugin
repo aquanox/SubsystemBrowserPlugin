@@ -15,13 +15,13 @@
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
-	"EngineVersion": "4.27.0",
+	"EngineVersion": "",
 	"Modules": [
 		{
 			"Name": "SubsystemBrowser",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win32", "Win64", "Mac", "Linux" ]
+			"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ]
 		}
 	]
 }

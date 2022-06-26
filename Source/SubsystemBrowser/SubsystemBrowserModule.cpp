@@ -63,7 +63,9 @@ void FSubsystemBrowserModule::ShutdownModule()
 TSharedRef<SDockTab> FSubsystemBrowserModule::HandleTabManagerSpawnTab(const FSpawnTabArgs& Args)
 {
 	return SNew(SDockTab)
+#if ENGINE_MAJOR_VERSION < 5
 		.Icon(FEditorStyle::GetBrush(SSubsystemBrowserPanel::PanelIconName))
+#endif
 		.Label(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 	[
 		SNew(SBorder)

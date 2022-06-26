@@ -43,8 +43,6 @@ bool SubsystemCategoryFilter::IsCategoryVisible(FSubsystemTreeItemID InCategory)
 
 FSubsystemModel::FSubsystemModel()
 {
-	OptionalColumns.Add({ SubsystemColumns::ColumnID_Package, LOCTEXT("SubsystemBrowser_Column_Package", "Module") });
-	OptionalColumns.Add({ SubsystemColumns::ColumnID_ConfigClass, LOCTEXT("SubsystemBrowser_Column_ConfigClass", "Config") });
 }
 
 TWeakObjectPtr<UWorld> FSubsystemModel::GetCurrentWorld() const
@@ -58,6 +56,7 @@ void FSubsystemModel::SetCurrentWorld(TWeakObjectPtr<UWorld> InWorld)
 
 	EmptyModel();
 
+	PopulateColumns();
 	PopulateCategories();
 	PopulateSubsystems();
 }
@@ -150,7 +149,20 @@ int32 FSubsystemModel::GetNumSubsystemsFromVisibleCategories() const
 	return Count;
 }
 
-const TArray<FSubsystemModel::FSubsystemColumn>& FSubsystemModel::GetOptionalColumns() const
+void FSubsystemModel::PopulateColumns()
+{
+	RegisterColumn(
+		SubsystemColumns::ColumnID_Package,
+		LOCTEXT("SubsystemBrowser_Column_Package", "Module")
+	);
+
+	RegisterColumn(
+		SubsystemColumns::ColumnID_ConfigClass,
+		LOCTEXT("SubsystemBrowser_Column_ConfigClass", "Config")
+	);
+}
+
+const TArray<TSharedRef<FSubsystemColumn>>& FSubsystemModel::GetOptionalColumns() const
 {
 	return OptionalColumns;
 }
@@ -165,54 +177,41 @@ void FSubsystemModel::EmptyModel()
 
 	AllSubsystems.Empty();
 	AllSubsystemsByCategory.Empty();
+
+	OptionalColumns.Empty();
 }
 
 void FSubsystemModel::PopulateCategories()
 {
-	auto CategoryEngine = MakeShared<FSubsystemTreeCategoryItem>(
+	RegisterCategory<UEngineSubsystem>(
 		SubsystemCategories::CategoryEngine,
 		LOCTEXT("SubsystemBrowser_Engine", "Engine Subsystems"),
-		UEngineSubsystem::StaticClass(),
-		FEnumSubsystemsDelegate::CreateSP(AsShared(),&FSubsystemModel::SelectEngineSubsystems)
+		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectEngineSubsystems)
 	);
-	CategoryEngine->Model = AsShared();
-	AllCategories.Emplace(MoveTemp(CategoryEngine));
 
-	auto CategoryEditor = MakeShared<FSubsystemTreeCategoryItem>(
+	RegisterCategory<UEditorSubsystem>(
 		SubsystemCategories::CategoryEditor,
 		LOCTEXT("SubsystemBrowser_Editor", "Editor Subsystems"),
-		UEditorSubsystem::StaticClass(),
-		FEnumSubsystemsDelegate::CreateSP(AsShared(),&FSubsystemModel::SelectEditorSubsystems)
+		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectEditorSubsystems)
 	);
-	CategoryEditor->Model = AsShared();
-	AllCategories.Emplace(MoveTemp(CategoryEditor));
 
-	auto CategoryInstance = MakeShared<FSubsystemTreeCategoryItem>(
+	RegisterCategory<UGameInstanceSubsystem>(
 		SubsystemCategories::CategoryGameInstance,
 		LOCTEXT("SubsystemBrowser_GameInstance", "Game Instance Subsystems"),
-		UGameInstanceSubsystem::StaticClass(),
-		FEnumSubsystemsDelegate::CreateSP(AsShared(),&FSubsystemModel::SelectGameInstanceSubsystems)
+		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectGameInstanceSubsystems)
 	);
-	CategoryInstance->Model = AsShared();
-	AllCategories.Emplace(MoveTemp(CategoryInstance));
 
-	auto CategoryWorld = MakeShared<FSubsystemTreeCategoryItem>(
+	RegisterCategory<UWorldSubsystem>(
 		SubsystemCategories::CategoryWorld,
 		LOCTEXT("SubsystemBrowser_World", "World Subsystems"),
-		UWorldSubsystem::StaticClass(),
-		FEnumSubsystemsDelegate::CreateSP(AsShared(), &FSubsystemModel::SelectWorldSubsystems)
+		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectWorldSubsystems)
 	);
-	CategoryWorld->Model = AsShared();
-	AllCategories.Emplace(MoveTemp(CategoryWorld));
 
-	auto CategoryPlayer = MakeShared<FSubsystemTreeCategoryItem>(
+	RegisterCategory<ULocalPlayerSubsystem>(
 		SubsystemCategories::CategoryPlayer,
 		LOCTEXT("SubsystemBrowser_Player", "Player Subsystems"),
-		ULocalPlayerSubsystem::StaticClass(),
-		FEnumSubsystemsDelegate::CreateSP(AsShared(), &FSubsystemModel::SelectPlayerSubsystems)
+		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectPlayerSubsystems)
 	);
-	CategoryPlayer->Model = AsShared();
-	AllCategories.Emplace(MoveTemp(CategoryPlayer));
 }
 
 void FSubsystemModel::PopulateSubsystems()

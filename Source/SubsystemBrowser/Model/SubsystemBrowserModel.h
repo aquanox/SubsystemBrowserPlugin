@@ -33,6 +33,19 @@ private:
 	FChangedEvent						OnChangedInternal;
 };
 
+/* Represents a configurable column */
+struct FSubsystemColumn
+{
+public:
+	TSharedPtr<class FSubsystemModel> Model;
+	FName Id;
+	FText Label;
+
+	//virtual ~FSubsystemColumn() = default;
+	//virtual FText GetColumnText(SubsystemTreeItemPtr InItem) const { return FText::GetEmpty(); }
+	//virtual FColor GetColumnColor(SubsystemTreeItemPtr InItem) const { return FColor::Black; }
+};
+
 /* Subsystem list data model */
 class FSubsystemModel : public TSharedFromThis<FSubsystemModel>
 {
@@ -54,17 +67,20 @@ public:
 
 	int32 GetNumSubsystemsFromVisibleCategories() const;
 
-	struct FSubsystemColumn
-	{
-		FName Id;
-		FText Label;
-	};
-
-	const TArray<struct FSubsystemColumn>& GetOptionalColumns() const;
+	const TArray<TSharedRef<FSubsystemColumn>>& GetOptionalColumns() const;
 
 private:
 	void EmptyModel();
 	void PopulateCategories();
+
+	template<typename T>
+	void RegisterCategory(FName Id, FText Label, FEnumSubsystemsDelegate InDelegate)
+	{
+		auto Category = MakeShared<FSubsystemTreeCategoryItem>(Id, Label, T::StaticClass(), InDelegate);
+		Category->Model = AsShared();
+		AllCategories.Emplace(MoveTemp(Category));
+	}
+
 	void PopulateSubsystems();
 
 	TArray<UObject*> SelectEngineSubsystems() const;
@@ -73,8 +89,20 @@ private:
 	TArray<UObject*> SelectWorldSubsystems() const;
 	TArray<UObject*> SelectPlayerSubsystems() const;
 
+	void PopulateColumns();
+
+	template<typename T = FSubsystemColumn>
+	void RegisterColumn(FName Id, FText Label)
+	{
+		auto Column = MakeShared<T>();
+		Column->Id = Id;
+		Column->Label = Label;
+		Column->Model = AsShared();
+		OptionalColumns.Emplace(MoveTemp(Column));
+	}
+
 	/*  */
-	TArray<FSubsystemColumn> OptionalColumns;
+	TArray<TSharedRef<FSubsystemColumn>> OptionalColumns;
 
 	/* Global list of all categories */
 	TArray<SubsystemTreeItemPtr> AllCategories;
@@ -83,6 +111,7 @@ private:
 	/* Global list of all subsystems by category */
 	TMap<FName, TArray<SubsystemTreeItemPtr>> AllSubsystemsByCategory;
 
+	/* Pointer to currently browsing world */
 	TWeakObjectPtr<UWorld> CurrentWorld;
 public:
 	TSharedPtr<SubsystemCategoryFilter>  CategoryFilter;
