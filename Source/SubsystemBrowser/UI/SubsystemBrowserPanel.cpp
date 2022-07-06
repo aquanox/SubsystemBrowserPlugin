@@ -230,7 +230,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 
 		// Subsystems Content
 		+SVerticalBox::Slot()
-		.FillHeight(200)
+		.FillHeight(1.f)
 		.Padding(0,4,0,0)
 		[
 			SNew(SBorder)
@@ -246,7 +246,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SVerticalBox)
 					+ SVerticalBox::Slot()
-					.FillHeight(100)
+					.FillHeight(1.f)
 					[
 						SAssignNew(TreeWidget, SSubsystemsTreeWidget, SubsystemModel, SharedThis(this))
 						.TreeItemsSource(&RootTreeItems)
@@ -325,7 +325,6 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 				[
 					SNew( SVerticalBox )
 					+SVerticalBox::Slot()
-					.FillHeight(100)
 					.Padding(0, 4, 0, 0)
 					[
 						DetailsView.ToSharedRef()
