@@ -51,7 +51,6 @@ void FSubsystemModel::SetCurrentWorld(TWeakObjectPtr<UWorld> InWorld)
 
 	EmptyModel();
 
-	PopulateColumns();
 	PopulateCategories();
 	PopulateSubsystems();
 }
@@ -144,23 +143,35 @@ int32 FSubsystemModel::GetNumSubsystemsFromVisibleCategories() const
 	return Count;
 }
 
-void FSubsystemModel::PopulateColumns()
+TArray<SubsystemColumnPtr> FSubsystemModel::GetDynamicColumns(bool bActiveOnly) const
 {
-	DynamicColumns.Add(MakeShared<FSubsystemDynamicColumn_Module>());
-	DynamicColumns.Add(MakeShared<FSubsystemDynamicColumn_Config>());
+	TArray<SubsystemColumnPtr> Result;
 
-#if ENABLE_SUBSYSTEM_BROWSER_CUSTOM_COLUMNS
-	FSubsystemBrowserModule& BrowserModule = FSubsystemBrowserModule::Get();
-	DynamicColumns.Append(BrowserModule.GetCustomDynamicColumns());
-#endif
+	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+	for (const auto& Column : FSubsystemBrowserModule::Get().GetDynamicColumns())
+	{
+		if (!bActiveOnly || Settings->GetTableColumnState(Column->Name))
+		{
+			Result.Add(Column);
+		}
+	}
 
-	// Sort columns by order
-	DynamicColumns.StableSort(SubsystemColumnSorter());
+	Result.StableSort(SubsystemColumnSorter());
+
+	return Result;
 }
 
-const TArray<SubsystemColumnPtr>& FSubsystemModel::GetDynamicColumns() const
+SubsystemColumnPtr FSubsystemModel::FindDynamicColumn(const FName& ColumnName, bool bActiveOnly) const
 {
-	return DynamicColumns;
+	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+	for (const auto& Column : FSubsystemBrowserModule::Get().GetDynamicColumns())
+	{
+		if (Column->Name == ColumnName && (!bActiveOnly || Settings->GetTableColumnState(Column->Name)))
+		{
+			return Column;
+		}
+	}
+	return nullptr;
 }
 
 void FSubsystemModel::EmptyModel()

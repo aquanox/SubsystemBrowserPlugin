@@ -54,6 +54,7 @@ public:
 	void SetCategoryStates(const TMap<FName, bool>& States);
 	void SetCategoryState(FName Category, bool State);
 
+	void SyncColumnSettings();
 	bool GetTableColumnState(FName Column) const;
 	void SetTableColumnState(FName Column, bool State);
 

@@ -62,44 +62,16 @@ TSharedRef<SWidget> SSubsystemTableItem::GenerateWidgetForColumn(const FName& Co
 			.AutoWidth()
 			[
 				SNew(STextBlock)
-					.Font(this, &SSubsystemTableItem::GetDisplayNameFont)
+					.Font(this, &SSubsystemTableItem::GetDefaultFont)
 					.Text(this, &SSubsystemTableItem::GetDisplayNameText)
-					.ToolTipText(this, &SSubsystemTableItem::GetDisplayNameTooltipText)
-					.ColorAndOpacity(this, &SSubsystemTableItem::GetDisplayNameColorAndOpacity)
+					.ToolTipText(this, &SSubsystemTableItem::GetDisplayNameText)
+					.ColorAndOpacity(this, &SSubsystemTableItem::GetDefaultColorAndOpacity)
 					.HighlightText(HighlightText)
 			];
 	}
-	else if (ColumnID == SubsystemColumns::ColumnID_Module)
+	else if (SubsystemColumnPtr Column = Model->FindDynamicColumn(ColumnID, false))
 	{
-		TableRowContent = SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.VAlign(VAlign_Center)
-		    .Padding(1, 0, 0, 0)
-			.AutoWidth()
-			[
-				SNew(STextBlock)
-				.Font(this, &SSubsystemTableItem::GetDisplayNameFont)
-				.Text(this, &SSubsystemTableItem::GetPackageText)
-				.ToolTipText(this, &SSubsystemTableItem::GetPackageTooltipText)
-				.ColorAndOpacity(this, &SSubsystemTableItem::GetDisplayNameColorAndOpacity)
-				.HighlightText(HighlightText)
-			];
-	}
-	else if (ColumnID == SubsystemColumns::ColumnID_Config)
-	{
-		TableRowContent = SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.VAlign(VAlign_Center)
-			.Padding(1, 0, 0, 0)
-			.AutoWidth()
-			[
-				SNew(STextBlock)
-				.Font(this, &SSubsystemTableItem::GetDisplayNameFont)
-				.Text(this, &SSubsystemTableItem::GetConfigClassText)
-				.ToolTipText(this, &SSubsystemTableItem::GetConfigClassText)
-				.ColorAndOpacity(this, &SSubsystemTableItem::GetDisplayNameColorAndOpacity)
-				.HighlightText(HighlightText)
-			];
+		TableRowContent = Column->GenerateColumnWidget(SharedThis(this));
 	}
 
 	return TableRowContent.ToSharedRef();
@@ -129,7 +101,7 @@ const FSlateBrush* SSubsystemTableItem::GetItemIconBrush() const
 	return nullptr;
 }
 
-FSlateColor SSubsystemTableItem::GetDisplayNameColorAndOpacity() const
+FSlateColor SSubsystemTableItem::GetDefaultColorAndOpacity() const
 {
 	if (USubsystemBrowserSettings::Get()->IsColoringEnabled() && !Browser->IsItemSelected(Item))
 	{
@@ -142,7 +114,12 @@ FSlateColor SSubsystemTableItem::GetDisplayNameColorAndOpacity() const
 	return FSlateColor::UseForeground();
 }
 
-FSlateFontInfo SSubsystemTableItem::GetDisplayNameFont() const
+bool SSubsystemTableItem::IsSelectedInternal() const
+{
+	return Browser->IsItemSelected(Item);
+}
+
+FSlateFontInfo SSubsystemTableItem::GetDefaultFont() const
 {
 	// if (Item->GetAsSubsystemDescriptor() && Browser->IsItemSelected(Item))
 	// {
@@ -169,32 +146,6 @@ FText SSubsystemTableItem::GetDisplayNameText() const
 		Args.Add(TEXT("OwnedBy"), FText::FromString(Item->GetOwnerNameString()));
 		return FText::Format(LOCTEXT("SubsystemItem_NameOwned", "{DisplayText} ({OwnedBy}){Stale}"), Args);
 	}
-}
-
-FText SSubsystemTableItem::GetDisplayNameTooltipText() const
-{
-	return GetDisplayNameText();
-}
-
-FText SSubsystemTableItem::GetPackageText() const
-{
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Package"), FText::FromString(Item->GetShortPackageString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_Package", "{Package}"), Args);
-}
-
-FText SSubsystemTableItem::GetPackageTooltipText() const
-{
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Package"), FText::FromString(Item->GetPackageString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_Package_Tooltip", "{Package}"), Args);
-}
-
-FText SSubsystemTableItem::GetConfigClassText() const
-{
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("ConfigClass"), FText::FromString(Item->GetConfigNameString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_ConfigClass", "{ConfigClass}"), Args);
 }
 
 #undef LOCTEXT_NAMESPACE

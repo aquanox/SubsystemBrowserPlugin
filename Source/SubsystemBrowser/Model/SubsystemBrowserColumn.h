@@ -5,7 +5,7 @@
 struct ISubsystemTreeItem;
 
 /* Represents a configurable column */
-struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn
+struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSubsystemDynamicColumn>
 {
 	/* Column identifier */
 	FName Name;
@@ -15,9 +15,10 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn
 	int32 SortOrder = 0;
 
 	virtual ~FSubsystemDynamicColumn() = default;
-	virtual FText GetColumnText(ISubsystemTreeItem& InItem) const = 0;
-	virtual FSlateColor GetColumnColor(ISubsystemTreeItem& InItem, bool bSelected) const;
-	virtual TSharedPtr< SWidget > GetColumnWidget(ISubsystemTreeItem& InItem) const;
+	virtual FText GetColumnHeaderText() const { return Label; }
+	virtual float GetPreferredWidth() const { return 0.1f; }
+
+	virtual TSharedPtr< SWidget > GenerateColumnWidget(TSharedRef<class SSubsystemTableItem> TableRow) const;
 };
 
 using SubsystemColumnPtr = TSharedPtr<FSubsystemDynamicColumn>;
@@ -33,14 +34,21 @@ struct SubsystemColumnSorter
 struct FSubsystemDynamicColumn_Module : public FSubsystemDynamicColumn
 {
 	FSubsystemDynamicColumn_Module();
-	virtual FText GetColumnText(ISubsystemTreeItem& InItem) const override;
-	virtual FSlateColor GetColumnColor(ISubsystemTreeItem& InItem, bool bSelected) const override;
+	virtual float GetPreferredWidth() const override { return 0.25f; }
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<class SSubsystemTableItem> TableRow) const override;
+
+private:
+	FText ExtractModuleText(TSharedPtr<ISubsystemTreeItem> Item) const;
+	FText ExtractModuleTooltipText(TSharedPtr<ISubsystemTreeItem> Item) const;
 };
 
 struct FSubsystemDynamicColumn_Config : public FSubsystemDynamicColumn
 {
 	FSubsystemDynamicColumn_Config();
-	virtual FText GetColumnText(ISubsystemTreeItem& InItem) const override;
+	virtual float GetPreferredWidth() const override { return 0.15f; }
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<SSubsystemTableItem> TableRow) const override;
+private:
+	FText ExtractConfigText(TSharedPtr<ISubsystemTreeItem> Item) const;
 };
 
 namespace SubsystemColumns
@@ -49,27 +57,4 @@ namespace SubsystemColumns
 	static const FName ColumnID_Name("Name");
 	static const FName ColumnID_Module("Module");
 	static const FName ColumnID_Config("Config");
-
-	static const FName ColumnID_DynamicSlot0("Dynamic0");
-	static const FName ColumnID_DynamicSlot1("Dynamic1");
-	static const FName ColumnID_DynamicSlot2("Dynamic2");
-	static const FName ColumnID_DynamicSlot3("Dynamic3");
-	static const FName ColumnID_DynamicSlot4("Dynamic4");
-
-	bool IsDefaultColumn(FName InName);
-	bool IsDynamicColumn(FName InName);
-
-	inline std::initializer_list<FName> GetDynamicColumns()
-	{
-		return {
-			ColumnID_DynamicSlot0,
-			ColumnID_DynamicSlot1,
-			ColumnID_DynamicSlot2,
-			ColumnID_DynamicSlot3,
-			ColumnID_DynamicSlot4
-		};
-	}
-
-	int32 GetDynamicColumnIndex(FName InName);
-
 }

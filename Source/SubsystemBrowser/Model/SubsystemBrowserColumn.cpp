@@ -1,62 +1,32 @@
 // Copyright 2022, Aquanox.
 
-#include "SubsystemBrowserModule.h"
 #include "Model/SubsystemBrowserColumn.h"
-
+#include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserDescriptor.h"
+#include "UI/SubsystemTableItem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
-#if ENABLE_SUBSYSTEM_BROWSER_CUSTOM_COLUMNS
-
-const TArray<SubsystemColumnPtr>& FSubsystemBrowserModule::GetCustomDynamicColumns() const
+const TArray<SubsystemColumnPtr>& FSubsystemBrowserModule::GetDynamicColumns() const
 {
-	return CustomDynamicColumns;
+	return DynamicColumns;
+}
+
+void FSubsystemBrowserModule::RegisterDefaultDynamicColumns()
+{
+	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Module>());
+	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Config>());
 }
 
 void FSubsystemBrowserModule::RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn)
 {
-	CustomDynamicColumns.Add(InColumn);
+	DynamicColumns.Add(InColumn);
+
+	// Sort columns by order
+	DynamicColumns.StableSort(SubsystemColumnSorter());
 }
 
-#endif
-
-bool SubsystemColumns::IsDefaultColumn(FName InName)
-{
-	return InName == SubsystemColumns::ColumnID_Marker
-		|| InName == SubsystemColumns::ColumnID_Name
-		|| InName == SubsystemColumns::ColumnID_Module
-		|| InName == SubsystemColumns::ColumnID_Config
-		|| IsDynamicColumn(InName);
-}
-
-bool SubsystemColumns::IsDynamicColumn(FName InName)
-{
-	return InName == SubsystemColumns::ColumnID_DynamicSlot0
-		|| InName == SubsystemColumns::ColumnID_DynamicSlot1
-		|| InName == SubsystemColumns::ColumnID_DynamicSlot2
-		|| InName == SubsystemColumns::ColumnID_DynamicSlot3
-		|| InName == SubsystemColumns::ColumnID_DynamicSlot4;
-}
-
-int32 SubsystemColumns::GetDynamicColumnIndex(FName InName)
-{
-	if (InName == SubsystemColumns::ColumnID_DynamicSlot0) { return 0; }
-	if (InName == SubsystemColumns::ColumnID_DynamicSlot1) { return 1; }
-	if (InName == SubsystemColumns::ColumnID_DynamicSlot2) { return 2; }
-	if (InName == SubsystemColumns::ColumnID_DynamicSlot3) { return 3; }
-	if (InName == SubsystemColumns::ColumnID_DynamicSlot4) { return 4; }
-
-	checkNoEntry();
-	return -1;
-}
-
-FSlateColor FSubsystemDynamicColumn::GetColumnColor(ISubsystemTreeItem& InItem, bool bSelected) const
-{
-	return FSlateColor::UseForeground();
-}
-
-TSharedPtr<SWidget> FSubsystemDynamicColumn::GetColumnWidget(ISubsystemTreeItem& InItem) const
+TSharedPtr<SWidget> FSubsystemDynamicColumn::GenerateColumnWidget(TSharedRef<class SSubsystemTableItem> TableRow) const
 {
 	return SNullWidget::NullWidget;
 }
@@ -67,18 +37,35 @@ FSubsystemDynamicColumn_Module::FSubsystemDynamicColumn_Module()
 	Label = LOCTEXT("SubsystemBrowser_Column_Package", "Module");
 }
 
-FText FSubsystemDynamicColumn_Module::GetColumnText(ISubsystemTreeItem& InItem) const
+TSharedPtr<SWidget> FSubsystemDynamicColumn_Module::GenerateColumnWidget(TSharedRef<class SSubsystemTableItem> TableRow) const
 {
-	return FText::FromString(InItem.GetPackageString());
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.VAlign(VAlign_Center)
+	    .Padding(1, 0, 0, 0)
+		.AutoWidth()
+		[
+			SNew(STextBlock)
+			.Font(TableRow, &SSubsystemTableItem::GetDefaultFont)
+			.Text(this, &FSubsystemDynamicColumn_Module::ExtractModuleText, TableRow->Item)
+			.ToolTipText(this, &FSubsystemDynamicColumn_Module::ExtractModuleTooltipText, TableRow->Item)
+			.ColorAndOpacity(TableRow, &SSubsystemTableItem::GetDefaultColorAndOpacity)
+			.HighlightText(TableRow->HighlightText)
+		];
 }
 
-FSlateColor FSubsystemDynamicColumn_Module::GetColumnColor(ISubsystemTreeItem& InItem, bool bSelected) const
+FText FSubsystemDynamicColumn_Module::ExtractModuleText(TSharedPtr<ISubsystemTreeItem> Item) const
 {
-	if (InItem.IsGameModule() && !bSelected)
-	{
-		return FLinearColor(0.4f, 0.4f, 1.0f);
-	}
-	return FSlateColor::UseForeground();
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("Package"), FText::FromString(Item->GetShortPackageString()));
+	return FText::Format(LOCTEXT("SubsystemItemType_Package", "{Package}"), Args);
+}
+
+FText FSubsystemDynamicColumn_Module::ExtractModuleTooltipText(TSharedPtr<ISubsystemTreeItem> Item) const
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("Package"), FText::FromString(Item->GetPackageString()));
+	return FText::Format(LOCTEXT("SubsystemItemType_Package_Tooltip", "{Package}"), Args);
 }
 
 FSubsystemDynamicColumn_Config::FSubsystemDynamicColumn_Config()
@@ -87,9 +74,75 @@ FSubsystemDynamicColumn_Config::FSubsystemDynamicColumn_Config()
 	Label = LOCTEXT("SubsystemBrowser_Column_ConfigClass", "Config");
 }
 
-FText FSubsystemDynamicColumn_Config::GetColumnText(ISubsystemTreeItem& InItem) const
+TSharedPtr<SWidget> FSubsystemDynamicColumn_Config::GenerateColumnWidget(TSharedRef<SSubsystemTableItem> TableRow) const
 {
-	return FText::FromString(InItem.GetConfigNameString());
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.VAlign(VAlign_Center)
+		.Padding(1, 0, 0, 0)
+		.AutoWidth()
+		[
+			SNew(STextBlock)
+			.Font(TableRow, &SSubsystemTableItem::GetDefaultFont)
+			.Text(this, &FSubsystemDynamicColumn_Config::ExtractConfigText, TableRow->Item)
+			.ToolTipText(this, &FSubsystemDynamicColumn_Config::ExtractConfigText, TableRow->Item)
+			.ColorAndOpacity(TableRow, &SSubsystemTableItem::GetDefaultColorAndOpacity)
+			.HighlightText(TableRow->HighlightText)
+		];
+}
+
+FText FSubsystemDynamicColumn_Config::ExtractConfigText(TSharedPtr<ISubsystemTreeItem> Item) const
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("ConfigClass"), FText::FromString(Item->GetConfigNameString()));
+	return FText::Format(LOCTEXT("SubsystemItemType_ConfigClass", "{ConfigClass}"), Args);
 }
 
 #undef LOCTEXT_NAMESPACE
+
+#if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES
+
+// 1. Create a new struct inheriting FSubsystemDynamicColumn
+
+struct FSubsystemDynamicColumn_Tick : public FSubsystemDynamicColumn
+{
+	FSubsystemDynamicColumn_Tick()
+	{
+		// Configure name and header title
+		Name = TEXT("IsTickable");
+		Label = INVTEXT("Ticks?");
+	}
+
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<SSubsystemTableItem> TableRow) const override
+	{
+		// Build a widget to represent value
+		return SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.HAlign(HAlign_Center)
+			[
+				SNew(SImage)
+				.ColorAndOpacity(FSlateColor::UseForeground())
+				.Image(FEditorStyle::GetBrush(TEXT("GraphEditor.Conduit_16x")))
+				.DesiredSizeOverride(FVector2d{16,16})
+				.Visibility(this, &FSubsystemDynamicColumn_Tick::ExtractIsTickable, TableRow->Item)
+			];
+	}
+private:
+	EVisibility ExtractIsTickable(TSharedPtr<ISubsystemTreeItem> Item) const
+	{
+		auto* Subsystem = Item->GetAsSubsystemDescriptor();
+		return Subsystem && Subsystem->Class.IsValid() && Subsystem->Class->IsChildOf(UTickableWorldSubsystem::StaticClass())
+			? EVisibility::Visible : EVisibility::Hidden;
+	}
+};
+
+// 2. Call this during module initialization
+void RegisterCustomColumns()
+{
+	// Get a reference to Subsystem Browser module instance or load it
+	FSubsystemBrowserModule& Module = FModuleManager::LoadModuleChecked<FSubsystemBrowserModule>(TEXT("SubsystemBrowser"));
+	// Construct and register new column
+	Module.RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Tick>());
+}
+
+#endif

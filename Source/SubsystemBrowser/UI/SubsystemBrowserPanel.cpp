@@ -17,6 +17,7 @@
 #include "HAL/PlatformApplicationMisc.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
+#include "SubsystemTableHeader.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -78,58 +79,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 	SubsystemModel->SubsystemTextFilter = SearchBoxSubsystemFilter;
 
 	// Generate tree view header.
-	HeaderRowWidget =
-		SNew( SHeaderRow )
-
-		/** Subsystem name column */
-		+ SHeaderRow::Column(SubsystemColumns::ColumnID_Name)
-		  .FillWidth(0.60f)
-		  .SortMode(EColumnSortMode::None)
-		  .HeaderContent()
-		[
-			SNew(SBox)
-			.MinDesiredHeight(24)
-			[
-				SNew(SHorizontalBox)
-				+SHorizontalBox::Slot()
-				.VAlign(VAlign_Center)
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("SubsystemBrowser_Column_Name", "Name"))
-				]
-			]
-		]
-
-		/** Subsystem module name column */
-		+ SHeaderRow::Column( SubsystemColumns::ColumnID_Module )
-		  .FillWidth( 0.25f )
-		  .SortMode(EColumnSortMode::None)
-		  .HeaderContent()
-		[
-			SNew(SHorizontalBox)
-			+SHorizontalBox::Slot()
-			.VAlign(VAlign_Center)
-			[
-				SNew(STextBlock)
-				.Text(LOCTEXT("SubsystemBrowser_Column_Module", "Module"))
-			]
-		]
-
-		/** Subsystem config section column */
-		+ SHeaderRow::Column( SubsystemColumns::ColumnID_Config )
-		  .FillWidth( 0.15f )
-		  .SortMode(EColumnSortMode::None)
-		  .HeaderContent()
-		[
-			SNew(SHorizontalBox)
-			+SHorizontalBox::Slot()
-			.VAlign(VAlign_Center)
-			[
-				SNew(STextBlock)
-				.Text(LOCTEXT("SubsystemBrowser_Column_Config", "Config"))
-			]
-		]
-	;
+	HeaderRowWidget = SNew(SSubsystemsHeaderRow, SubsystemModel, SharedThis(this));
 
 	// Build the details viewer
 	FDetailsViewArgs DetailsViewArgs;
@@ -336,6 +286,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 		]
 	];
 }
+
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SSubsystemBrowserPanel::Tick(const FGeometry& AllotedGeometry, const double InCurrentTime, const float InDeltaTime)
@@ -405,15 +356,7 @@ void SSubsystemBrowserPanel::Populate()
 
 	if (bNeedListRebuild)
 	{
-#if ENABLE_SUBSYSTEM_BROWSER_DYNAMIC_COLUMNS
-		for (const SHeaderRow::FColumn& Column : TreeWidget->GetHeaderRow()->GetColumns())
-		{
-			const_cast<SHeaderRow::FColumn&>(Column).bIsVisible = IsColumnVisible(Column.ColumnId);
-		}
-
-		TreeWidget->GetHeaderRow()->RefreshColumns();
-#endif
-
+		HeaderRowWidget->RebuildColumns();
 		TreeWidget->RebuildList();
 
 		bNeedListRebuild = false;
@@ -531,13 +474,12 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 {
 	FMenuBuilder MenuBuilder(true, nullptr);
 
-#if ENABLE_SUBSYSTEM_BROWSER_DYNAMIC_COLUMNS
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewColumns", "Columns"));
 	{
-		for (auto& Column : SubsystemModel->GetDynamicColumns())
+		for (auto& Column : SubsystemModel->GetDynamicColumns(false))
 		{
 			MenuBuilder.AddMenuEntry(
-				Column->Label,
+				Column->GetColumnHeaderText(),
 				LOCTEXT("ToggleDisplayColumn_Tooltip", "Toggles display of subsystem browser columns."),
 				FSlateIcon(),
 				FUIAction(
@@ -551,7 +493,6 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 		}
 	}
 	MenuBuilder.EndSection();
-#endif
 
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewCategoryGroup", "Categories"));
 	{
@@ -681,12 +622,6 @@ void SSubsystemBrowserPanel::OnTreeViewMouseButtonDoubleClick(SubsystemTreeItemP
 		Item->bExpanded = ! Item->bExpanded;
 		TreeWidget->SetItemExpansion(Item, Item->bExpanded);
 	}
-}
-
-EVisibility SSubsystemBrowserPanel::GetVisibilityForColumn(FName ColumnName) const
-{
-	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	return Settings->GetTableColumnState(ColumnName) ? EVisibility::Visible : EVisibility::Collapsed;
 }
 
 void SSubsystemBrowserPanel::ToggleDisplayColumn(FName ColumnName)

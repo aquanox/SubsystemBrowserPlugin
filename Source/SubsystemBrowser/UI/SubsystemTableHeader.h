@@ -3,15 +3,15 @@
 #pragma once
 
 #include "SlateCore.h"
-#include "Model/SubsystemBrowserDescriptor.h"
 
 class FSubsystemModel;
 class SSubsystemBrowserPanel;
 
-class SSubsystemsTreeWidget : public STreeView<SubsystemTreeItemPtr>
+class SSubsystemsHeaderRow : public SHeaderRow
 {
 public:
 	void Construct(const FArguments& InArgs, const TSharedPtr<FSubsystemModel>& InModel, const TSharedPtr<SSubsystemBrowserPanel>& InBrowser);
+	void RebuildColumns();
 
 private:
 	TSharedPtr<FSubsystemModel> Model;

@@ -15,7 +15,8 @@ The Subsystem Browser Plugin comes to rescue with a dedicated panel to display w
    * Game Instance Subsystems
    * World Subsystems
    * Local Player Subsystems
- * Support for user-defined subsystem types (see SubsystemBrowserCategory.cpp example section)
+ * Support for user-defined subsystem types (see SubsystemBrowserCategory.cpp example section) **NEW**
+ * Support for user-defined table colums (see SubsystemBrowserColumn.cpp example section) **NEW**
  * Ability to view subsystems in different worlds 
  * Automatic toggle between PlayInEditor and Editor worlds when Starting / Stopping PIE
  * Ability to easily view and modify subsystem properties in Details View

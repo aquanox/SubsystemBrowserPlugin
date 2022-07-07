@@ -39,16 +39,13 @@ public:
 	const FSlateBrush* GetItemIconBrush() const;
 
 	FText			GetDisplayNameText() const;
-	FSlateFontInfo	GetDisplayNameFont() const;
-	FSlateColor		GetDisplayNameColorAndOpacity() const;
-	FText			GetDisplayNameTooltipText() const;
 
-	FText			GetPackageText() const;
-	FText			GetPackageTooltipText() const;
+	FSlateFontInfo	GetDefaultFont() const;
+	FSlateColor		GetDefaultColorAndOpacity() const;
 
-	FText			GetConfigClassText() const;
+	bool IsSelectedInternal() const;
 
-private:
+public:
 	TSharedPtr<FSubsystemModel>			Model;
 	SubsystemTreeItemPtr				Item;
 	TSharedPtr<SSubsystemBrowserPanel>	Browser;

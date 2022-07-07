@@ -14,6 +14,7 @@
  */
 class SSubsystemBrowserPanel : public SCompoundWidget
 {
+	friend class SSubsystemsHeaderRow;
 public:
 	static const FName PanelIconName;
 
@@ -68,7 +69,6 @@ protected:
 	void OnSelectionChanged(const SubsystemTreeItemPtr Item, ESelectInfo::Type SelectInfo);
 	void OnTreeViewMouseButtonDoubleClick(SubsystemTreeItemPtr Item);
 
-	EVisibility GetVisibilityForColumn(FName ColumnName) const;
 	void ToggleDisplayColumn(FName ColumnName);
 	bool GetColumnDisplayStatus(FName ColumnName) const;
 
@@ -144,7 +144,9 @@ private:
 	TSharedPtr<SubsystemCategoryFilter> CategoryFilter;
 	int32 FilteredSubsystemsCount = 0;
 
-	TSharedPtr<SHeaderRow>			HeaderRowWidget;
+	TSharedPtr<SSubsystemsHeaderRow> HeaderRowWidget;
+
+	TArray<SubsystemColumnPtr> DynamicColumnSlots;
 
 	/** Root items for the tree widget */
 	TArray<SubsystemTreeItemPtr> RootTreeItems;

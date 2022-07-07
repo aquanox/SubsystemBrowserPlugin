@@ -41,17 +41,19 @@ public:
 	 */
 	SUBSYSTEMBROWSER_API void RemoveCategory(FName CategoryName);
 
-#if ENABLE_SUBSYSTEM_BROWSER_CUSTOM_COLUMNS
 	/**
 	 * Get a list of all custom dynamic columns
 	 */
-	const TArray<SubsystemColumnPtr>& GetCustomDynamicColumns() const;
+	const TArray<SubsystemColumnPtr>& GetDynamicColumns() const;
+	/**
+	 *
+	 */
+	void RegisterDefaultDynamicColumns();
 	/**
 	 * Register a new custom dynamic column
 	 */
-	void RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn);
+	SUBSYSTEMBROWSER_API void RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn);
 
-#endif
 private:
 	static TSharedRef<SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args);
 	static TSharedRef<SWidget> CreateSubsystemBrowser(const FSpawnTabArgs& Args);
@@ -62,11 +64,8 @@ private:
 	TSharedPtr<class ISettingsSection> SettingsSection;
 	// Instances of subsystem categories
 	TArray<SubsystemCategoryPtr> Categories;
-
-#if ENABLE_SUBSYSTEM_BROWSER_CUSTOM_COLUMNS
 	// Instances of dynamic subsystem columns
-	TArray<SubsystemColumnPtr> CustomDynamicColumns;
-#endif
+	TArray<SubsystemColumnPtr> DynamicColumns;
 };
 
 #if UE_BUILD_DEBUG

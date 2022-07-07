@@ -63,13 +63,14 @@ public:
 
 	int32 GetNumSubsystemsFromVisibleCategories() const;
 
-	const TArray<SubsystemColumnPtr>& GetDynamicColumns() const;
+	TArray<SubsystemColumnPtr> GetDynamicColumns(bool bActiveOnly) const;
+	TArray<SubsystemColumnPtr> GetSelectedDynamicColumns() const { return GetDynamicColumns(true); }
+	SubsystemColumnPtr FindDynamicColumn(const FName& ColumnName, bool bActiveOnly) const;
 
 private:
 	void EmptyModel();
 	void PopulateCategories();
 	void PopulateSubsystems();
-	void PopulateColumns();
 
 	/* Global list of all categories */
 	TArray<SubsystemTreeItemPtr> AllCategories;

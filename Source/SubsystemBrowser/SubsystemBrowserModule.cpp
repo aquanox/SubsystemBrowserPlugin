@@ -52,11 +52,9 @@ void FSubsystemBrowserModule::StartupModule()
 			}
 		});
 
-		// Register default categories on startup (unless configured already)
-		if (!Categories.Num())
-		{
-			RegisterDefaultCategories();
-		}
+		// Register default columns and categories on startup
+		RegisterDefaultDynamicColumns();
+		RegisterDefaultCategories();
 	}
 }
 

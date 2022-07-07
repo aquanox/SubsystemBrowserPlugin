@@ -18,6 +18,7 @@ void USubsystemBrowserSettings::OnSettingsSelected()
 	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being selected"));
 
 	SyncCategorySettings();
+	SyncColumnSettings();
 }
 
 bool USubsystemBrowserSettings::OnSettingsModified()
@@ -31,6 +32,7 @@ void USubsystemBrowserSettings::SyncCategorySettings()
 {
 	TMap<FName, bool> CurrentSettings;
 	LoadDataFromConfig(CategoryVisibilityState, CurrentSettings);
+	// clear from possible stale/removed categories
 	CategoryVisibilityState.Empty();
 
 	for (const auto& Category : FSubsystemBrowserModule::Get().GetCategories())
@@ -95,6 +97,24 @@ void USubsystemBrowserSettings::SetShouldShowOnlyGame(bool bNewValue)
 {
 	bShowOnlyGameModules = bNewValue;
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowOnlyGameModules));
+}
+
+void USubsystemBrowserSettings::SyncColumnSettings()
+{
+	TMap<FName, bool> CurrentSettings;
+	LoadDataFromConfig(TableColumnVisibilityState, CurrentSettings);
+	// clear from possible stale/removed categories
+	TableColumnVisibilityState.Empty();
+
+	for (const auto& DynamicColumn : FSubsystemBrowserModule::Get().GetDynamicColumns())
+	{
+		if (!CurrentSettings.Contains(DynamicColumn->Name))
+		{
+			CurrentSettings.Emplace(DynamicColumn->Name, true);
+		}
+	}
+
+	StoreDataToConfig(CurrentSettings, TableColumnVisibilityState);
 }
 
 bool USubsystemBrowserSettings::GetTableColumnState(FName Column) const
