@@ -15,6 +15,7 @@ The Subsystem Browser Plugin comes to rescue with a dedicated panel to display w
    * Game Instance Subsystems
    * World Subsystems
    * Local Player Subsystems
+ * Support for user-defined subsystem types (see SubsystemBrowserCategory.cpp example section)
  * Ability to view subsystems in different worlds 
  * Automatic toggle between PlayInEditor and Editor worlds when Starting / Stopping PIE
  * Ability to easily view and modify subsystem properties in Details View
@@ -25,7 +26,7 @@ The Subsystem Browser Plugin comes to rescue with a dedicated panel to display w
 
 ## Unreal Engine Versions
 
-Tested with 4.25-4.27, UE5EA, UE5-main and can be easily modified to work with older engine versions.
+Tested with 4.25-4.27, 5.0, ue5-main and can be easily modified to work with other engine versions.
 
 ## Contributing
 

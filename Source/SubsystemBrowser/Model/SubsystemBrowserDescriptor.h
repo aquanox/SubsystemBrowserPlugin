@@ -2,9 +2,8 @@
 
 #pragma once
 
+#include "Model/SubsystemBrowserCategory.h"
 #include "Misc/TextFilter.h"
-
-DECLARE_DELEGATE_RetVal(TArray<UObject*>, FEnumSubsystemsDelegate);
 
 class FSubsystemModel;
 struct ISubsystemTreeItem;
@@ -12,16 +11,17 @@ struct FSubsystemTreeSubsystemItem;
 struct FSubsystemTreeCategoryItem;
 
 using FSubsystemTreeItemID = FName;
-using SubsystemTreeItemPtr = TSharedPtr<struct ISubsystemTreeItem>;
+using SubsystemTreeItemPtr = TSharedPtr<ISubsystemTreeItem>;
 
 /*
  * Abstract subsystem tree item node
  */
-struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
+struct ISubsystemTreeItem
 {
 	virtual ~ISubsystemTreeItem()  = default;
 
 	virtual FSubsystemTreeItemID GetID() const = 0;
+	virtual int32 GetSortOrder() const { return 0; }
 
 	TSharedPtr<FSubsystemModel> GetModel() const { return Model; }
 	SubsystemTreeItemPtr GetParent() const { return Parent; }
@@ -33,15 +33,14 @@ struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 
 	virtual UObject* GetObjectForDetails() const { return nullptr; }
 	virtual bool IsStale() const { return false; }
-	virtual bool IsTickable() const { return false; }
 	virtual bool IsConfigExportable() const { return false; }
 	virtual bool IsGameModule() const { return false; }
 
-	virtual FString GetDisplayNameString() const = 0;
-	virtual FString GetClassNameString() const = 0;
+	virtual FText GetDisplayName() const = 0;
+	FString GetDisplayNameString() const { return GetDisplayName().ToString(); }
 	virtual FString GetShortPackageString() const = 0;
 	virtual FString GetPackageString() const = 0;
-	virtual FString GetConfigClassNameString() const = 0;
+	virtual FString GetConfigNameString() const = 0;
 	virtual FString GetOwnerNameString() const = 0;
 
 	virtual FSubsystemTreeSubsystemItem* GetAsSubsystemDescriptor() const { return nullptr; }
@@ -61,34 +60,33 @@ struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 /**
  * Category node
  */
-struct FSubsystemTreeCategoryItem  : public ISubsystemTreeItem
+struct FSubsystemTreeCategoryItem final : public ISubsystemTreeItem
 {
-	FName					CategoryName;
-	UClass*					SubsystemBaseClass;
-	FText					Label;
-	FEnumSubsystemsDelegate Selector;
+	TSharedPtr<FSubsystemCategory> Data;
 
 	FSubsystemTreeCategoryItem() = default;
-	FSubsystemTreeCategoryItem(const FName& CategoryName,  const FText& Label, UClass* SubsystemBaseClass, const FEnumSubsystemsDelegate& Selector);
+	FSubsystemTreeCategoryItem(TSharedRef<FSubsystemCategory> InCategory);
 
-	virtual FSubsystemTreeItemID GetID() const override { return CategoryName; }
+	virtual FSubsystemTreeItemID GetID() const override { return Data->Name; }
+	virtual int32 GetSortOrder() const override { return Data->SortOrder; }
 
-	virtual FString GetDisplayNameString() const override { return Label.ToString(); }
-	virtual FString GetClassNameString() const override { return FString(); }
+	virtual FText GetDisplayName() const override { return Data->Label; }
 	virtual FString GetShortPackageString() const override  { return FString(); }
 	virtual FString GetPackageString() const override { return FString(); }
-	virtual FString GetConfigClassNameString() const override  { return FString(); }
+	virtual FString GetConfigNameString() const override  { return FString(); }
 	virtual FString GetOwnerNameString() const override  { return FString(); }
 
 	virtual bool CanHaveChildren() const override { return true; }
 
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const override { return const_cast<FSubsystemTreeCategoryItem*>(this); }
+
+	TArray<UObject*> Select(UWorld* InContext) const;
 };
 
 /**
  * Subsystem node
  */
-struct FSubsystemTreeSubsystemItem  : public ISubsystemTreeItem
+struct FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
 {
 	TWeakObjectPtr<UObject>			Subsystem;
 	TWeakObjectPtr<UClass>			Class;
@@ -98,15 +96,14 @@ struct FSubsystemTreeSubsystemItem  : public ISubsystemTreeItem
 	FString							Package;
 	FString							LongPackage;
 	FString							ShortPackage;
-	FString							ConfigClass;
+	FName							ConfigName;
 
-	FName							LocalPlayerName;
+	FString							OwnerName;
 
 	FString                         ModuleName;
 	FString							ModulePath;
 	TArray<FString>					SourceFilePaths;
 
-	bool							bTickable = false;
 	bool							bConfigExportable = false;
 	bool							bIsGameModuleClass = false;
 
@@ -115,17 +112,15 @@ struct FSubsystemTreeSubsystemItem  : public ISubsystemTreeItem
 
 	virtual FSubsystemTreeItemID GetID() const override { return ClassName; }
 
-	virtual FString GetDisplayNameString() const override;
-	virtual FString GetClassNameString() const override;
+	virtual FText GetDisplayName() const override;
 	virtual FString GetShortPackageString() const override;
 	virtual FString GetPackageString() const override;
-	virtual FString GetConfigClassNameString() const override { return ConfigClass; }
+	virtual FString GetConfigNameString() const override;
 	virtual FString GetOwnerNameString() const override;
 
 	virtual FSubsystemTreeSubsystemItem* GetAsSubsystemDescriptor() const override {  return const_cast<FSubsystemTreeSubsystemItem*>(this); }
 	virtual UObject* GetObjectForDetails() const override { return Subsystem.Get(); }
 	virtual bool IsStale() const override { return Subsystem.IsStale() || Class.IsStale(); }
-	virtual bool IsTickable() const override { return bTickable; }
 	virtual bool IsConfigExportable() const override { return bConfigExportable; }
 	virtual bool IsGameModule() const override { return bIsGameModuleClass; }
 };

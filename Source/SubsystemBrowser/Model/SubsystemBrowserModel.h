@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "Model/SubsystemDescriptor.h"
+#include "Model/SubsystemBrowserDescriptor.h"
+#include "Model/SubsystemBrowserColumn.h"
 #include "Misc/TextFilter.h"
 
 DECLARE_DELEGATE(FOnSubsystemSelectedDelegate);
@@ -33,17 +34,12 @@ private:
 	FChangedEvent						OnChangedInternal;
 };
 
-/* Represents a configurable column */
-struct FSubsystemColumn
+struct SubsystemCategorySorter
 {
-public:
-	TSharedPtr<class FSubsystemModel> Model;
-	FName Id;
-	FText Label;
-
-	//virtual ~FSubsystemColumn() = default;
-	//virtual FText GetColumnText(SubsystemTreeItemPtr InItem) const { return FText::GetEmpty(); }
-	//virtual FColor GetColumnColor(SubsystemTreeItemPtr InItem) const { return FColor::Black; }
+	bool operator()(const SubsystemTreeItemPtr& A, const SubsystemTreeItemPtr& B) const
+	{
+		return A->GetSortOrder() < B->GetSortOrder();
+	}
 };
 
 /* Subsystem list data model */
@@ -67,42 +63,13 @@ public:
 
 	int32 GetNumSubsystemsFromVisibleCategories() const;
 
-	const TArray<TSharedRef<FSubsystemColumn>>& GetOptionalColumns() const;
+	const TArray<SubsystemColumnPtr>& GetDynamicColumns() const;
 
 private:
 	void EmptyModel();
 	void PopulateCategories();
-
-	template<typename T>
-	void RegisterCategory(FName Id, FText Label, FEnumSubsystemsDelegate InDelegate)
-	{
-		auto Category = MakeShared<FSubsystemTreeCategoryItem>(Id, Label, T::StaticClass(), InDelegate);
-		Category->Model = AsShared();
-		AllCategories.Emplace(MoveTemp(Category));
-	}
-
 	void PopulateSubsystems();
-
-	TArray<UObject*> SelectEngineSubsystems() const;
-	TArray<UObject*> SelectEditorSubsystems() const;
-	TArray<UObject*> SelectGameInstanceSubsystems() const;
-	TArray<UObject*> SelectWorldSubsystems() const;
-	TArray<UObject*> SelectPlayerSubsystems() const;
-
 	void PopulateColumns();
-
-	template<typename T = FSubsystemColumn>
-	void RegisterColumn(FName Id, FText Label)
-	{
-		auto Column = MakeShared<T>();
-		Column->Id = Id;
-		Column->Label = Label;
-		Column->Model = AsShared();
-		OptionalColumns.Emplace(MoveTemp(Column));
-	}
-
-	/*  */
-	TArray<TSharedRef<FSubsystemColumn>> OptionalColumns;
 
 	/* Global list of all categories */
 	TArray<SubsystemTreeItemPtr> AllCategories;
@@ -110,6 +77,8 @@ private:
 	TArray<SubsystemTreeItemPtr> AllSubsystems;
 	/* Global list of all subsystems by category */
 	TMap<FName, TArray<SubsystemTreeItemPtr>> AllSubsystemsByCategory;
+	/* List of dynamic columns */
+	TArray<SubsystemColumnPtr> DynamicColumns;
 
 	/* Pointer to currently browsing world */
 	TWeakObjectPtr<UWorld> CurrentWorld;
@@ -118,20 +87,3 @@ public:
 	TSharedPtr<SubsystemTextFilter>		 SubsystemTextFilter;
 };
 
-namespace SubsystemColumns
-{
-	static const FName ColumnID_Marker("Marker");
-	static const FName ColumnID_Name("Name");
-	static const FName ColumnID_Package("Package");
-	static const FName ColumnID_ConfigClass("Config");
-}
-
-namespace SubsystemCategories
-{
-	static const FName CategoryEngine("EngineSubsystemCategory");
-	static const FName CategoryEditor("EditorSubsystemCategory");
-	static const FName CategoryGameInstance("GameInstanceCategory");
-	static const FName CategoryWorld("WorldSubsystemCategory");
-	static const FName CategoryPlayer("PlayerCategory");
-
-}

@@ -24,7 +24,7 @@ public:
 	SLATE_END_ARGS()
 
 	SSubsystemBrowserPanel();
-	~SSubsystemBrowserPanel();
+	virtual ~SSubsystemBrowserPanel();
 
 	void Construct(const FArguments& InArgs);
 
@@ -92,7 +92,7 @@ protected:
 
 	// World picker
 
-	const FSlateBrush* GetWorldssMenuBrush() const;
+	const FSlateBrush* GetWorldsMenuBrush() const;
 	FText GetCurrentWorldText() const;
 	FText GetWorldDescription(UWorld* World) const;
 	void OnSelectWorld(TWeakObjectPtr<UWorld> InWorld);

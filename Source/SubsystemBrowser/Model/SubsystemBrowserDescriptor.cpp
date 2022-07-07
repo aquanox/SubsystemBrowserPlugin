@@ -1,22 +1,27 @@
 // Copyright 2022, Aquanox.
 
-#include "Model/SubsystemDescriptor.h"
+#include "Model/SubsystemBrowserDescriptor.h"
 
 #include "SourceCodeNavigation.h"
 #include "Model/SubsystemBrowserModel.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Engine/LocalPlayer.h"
 
-static bool FTickableGameObject_IsTickableObject(UObject* Object) { return false; }
 static bool FSourceCodeNavigation_IsGameModuleClass(UClass* InClass);
 static void FSourceCodeNavigation_CollectSourceFiles(UClass* InClass, TArray<FString>& OutSourceFiles);
+static FString GetSubsystemOwnerName(UObject* InObject);
 
-FSubsystemTreeCategoryItem::FSubsystemTreeCategoryItem(const FName& CategoryName, const FText& Label, UClass* SubsystemBaseClass, const FEnumSubsystemsDelegate& Selector)
-	: CategoryName(CategoryName)
-	, SubsystemBaseClass(SubsystemBaseClass)
-	, Label(Label)
-	, Selector(Selector)
+FSubsystemTreeCategoryItem::FSubsystemTreeCategoryItem(TSharedRef<FSubsystemCategory> InCategory)
+	: Data(InCategory)
 {
+
+}
+
+TArray<UObject*> FSubsystemTreeCategoryItem::Select(UWorld* InContext) const
+{
+	TArray<UObject*> OutResult;
+	Data->Selector.Execute(InContext, OutResult);
+	return OutResult;
 }
 
 FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(UObject* Instance)
@@ -27,57 +32,51 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(UObject* Instance)
 	UClass* const InClass = Instance->GetClass();
 	Class = InClass;
 
-	// setup data needed to display so hotreloads won't crash editor or disaster happen
+	// save data needed to display so hotreload or other things won't crash editor or disaster happen
 	DisplayName = InClass->GetDisplayNameText();
 	ClassName = InClass->GetFName();
 	Package = InClass->GetOuterUPackage()->GetName();
 	ShortPackage = FPackageName::GetShortName(Package);
 	LongPackage = FString::Printf(TEXT("%s.%s"), *Package, *ClassName.ToString());
 
-	bConfigExportable = InClass->HasAnyClassFlags(CLASS_Config);
-	ConfigClass = bConfigExportable ? InClass->ClassConfigName.ToString() : FString();
+	if (InClass->HasAnyClassFlags(CLASS_Config))
+	{
+		bConfigExportable = true;
+		ConfigName = InClass->ClassConfigName;
+	}
 
-	bTickable = FTickableGameObject_IsTickableObject(Instance);
 	bIsGameModuleClass = FSourceCodeNavigation_IsGameModuleClass(InClass);
 
 	FSourceCodeNavigation::FindModulePath(InClass->GetOuterUPackage(), ModulePath);
 	FSourceCodeNavigation::FindClassModuleName(InClass, ModuleName);
 	FSourceCodeNavigation_CollectSourceFiles(InClass, SourceFilePaths);
 
-	if (auto PlayerSubsystem = Cast<ULocalPlayerSubsystem>(Instance))
-	{
-		if (auto LocalPlayer = PlayerSubsystem->GetLocalPlayer<ULocalPlayer>())
-		{
-			LocalPlayerName = LocalPlayer->GetFName();
-		}
-	}
+	OwnerName = GetSubsystemOwnerName(Instance);
 }
 
-FString FSubsystemTreeSubsystemItem::GetDisplayNameString() const
+FText FSubsystemTreeSubsystemItem::GetDisplayName() const
 {
-	return (DisplayName.ToString());
-}
-
-FString FSubsystemTreeSubsystemItem::GetClassNameString() const
-{
-	return (ClassName.ToString());
+	return DisplayName;
 }
 
 FString FSubsystemTreeSubsystemItem::GetShortPackageString() const
 {
-	return (ShortPackage);
+	return ShortPackage;
 }
 
 FString FSubsystemTreeSubsystemItem::GetPackageString() const
 {
-	return (Package);
+	return Package;
+}
+
+FString FSubsystemTreeSubsystemItem::GetConfigNameString() const
+{
+	return ConfigName.IsNone() ? FString() : ConfigName.ToString();
 }
 
 FString FSubsystemTreeSubsystemItem::GetOwnerNameString() const
 {
-	if (LocalPlayerName.IsNone())
-		return FString();
-	return (LocalPlayerName.ToString());
+	return OwnerName;
 }
 
 static bool FSourceCodeNavigation_IsGameModuleClass(UClass* InClass)
@@ -131,4 +130,17 @@ static void FSourceCodeNavigation_CollectSourceFiles(UClass* InClass, TArray<FSt
 			OutSourceFiles.Add(AbsoluteSourcePath);
 		}
 	}
+}
+
+static FString GetSubsystemOwnerName(UObject* Instance)
+{
+	if (auto PlayerSubsystem = Cast<ULocalPlayerSubsystem>(Instance))
+	{
+		if (auto LocalPlayer = PlayerSubsystem->GetLocalPlayer<ULocalPlayer>())
+		{
+			return LocalPlayer->GetName();
+		}
+	}
+
+	return FString();
 }

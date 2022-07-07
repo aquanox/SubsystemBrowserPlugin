@@ -69,7 +69,7 @@ TSharedRef<SWidget> SSubsystemTableItem::GenerateWidgetForColumn(const FName& Co
 					.HighlightText(HighlightText)
 			];
 	}
-	else if (ColumnID == SubsystemColumns::ColumnID_Package)
+	else if (ColumnID == SubsystemColumns::ColumnID_Module)
 	{
 		TableRowContent = SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
@@ -85,7 +85,7 @@ TSharedRef<SWidget> SSubsystemTableItem::GenerateWidgetForColumn(const FName& Co
 				.HighlightText(HighlightText)
 			];
 	}
-	else if (ColumnID == SubsystemColumns::ColumnID_ConfigClass)
+	else if (ColumnID == SubsystemColumns::ColumnID_Config)
 	{
 		TableRowContent = SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
@@ -157,7 +157,7 @@ FSlateFontInfo SSubsystemTableItem::GetDisplayNameFont() const
 FText SSubsystemTableItem::GetDisplayNameText() const
 {
 	FFormatNamedArguments Args;
-	Args.Add(TEXT("DisplayText"), FText::FromString(Item->GetDisplayNameString()));
+	Args.Add(TEXT("DisplayText"), Item->GetDisplayName());
 	Args.Add(TEXT("Stale"), (Item->IsStale() ? LOCTEXT("SubsystemItem_Stale", " (Stale)") : FText::GetEmpty()));
 
 	if (Item->GetOwnerNameString().IsEmpty())
@@ -174,13 +174,6 @@ FText SSubsystemTableItem::GetDisplayNameText() const
 FText SSubsystemTableItem::GetDisplayNameTooltipText() const
 {
 	return GetDisplayNameText();
-}
-
-FText SSubsystemTableItem::GetClassText() const
-{
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Class"), FText::FromString(Item->GetClassNameString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_Class", "{Class}"), Args);
 }
 
 FText SSubsystemTableItem::GetPackageText() const
@@ -200,7 +193,7 @@ FText SSubsystemTableItem::GetPackageTooltipText() const
 FText SSubsystemTableItem::GetConfigClassText() const
 {
 	FFormatNamedArguments Args;
-	Args.Add(TEXT("ConfigClass"), FText::FromString(Item->GetConfigClassNameString()));
+	Args.Add(TEXT("ConfigClass"), FText::FromString(Item->GetConfigNameString()));
 	return FText::Format(LOCTEXT("SubsystemItemType_ConfigClass", "{ConfigClass}"), Args);
 }
 

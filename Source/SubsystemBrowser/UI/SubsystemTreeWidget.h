@@ -3,7 +3,7 @@
 #pragma once
 
 #include "SlateCore.h"
-#include "Model/SubsystemDescriptor.h"
+#include "Model/SubsystemBrowserDescriptor.h"
 
 class FSubsystemModel;
 class SSubsystemBrowserPanel;

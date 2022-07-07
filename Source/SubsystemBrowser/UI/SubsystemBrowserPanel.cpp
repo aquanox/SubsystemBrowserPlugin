@@ -4,6 +4,7 @@
 
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
+#include "SubsystemBrowserFlags.h"
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Images/SImage.h"
@@ -99,8 +100,8 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 			]
 		]
 
-		/** Subsystem package column */
-		+ SHeaderRow::Column( SubsystemColumns::ColumnID_Package )
+		/** Subsystem module name column */
+		+ SHeaderRow::Column( SubsystemColumns::ColumnID_Module )
 		  .FillWidth( 0.25f )
 		  .SortMode(EColumnSortMode::None)
 		  .HeaderContent()
@@ -110,12 +111,12 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 			.VAlign(VAlign_Center)
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("SubsystemBrowser_Column_Package", "Module"))
+				.Text(LOCTEXT("SubsystemBrowser_Column_Module", "Module"))
 			]
 		]
 
-		/** Subsystem config class column */
-		+ SHeaderRow::Column( SubsystemColumns::ColumnID_ConfigClass )
+		/** Subsystem config section column */
+		+ SHeaderRow::Column( SubsystemColumns::ColumnID_Config )
 		  .FillWidth( 0.15f )
 		  .SortMode(EColumnSortMode::None)
 		  .HeaderContent()
@@ -125,9 +126,10 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 			.VAlign(VAlign_Center)
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("SubsystemBrowser_Column_ConfigClass", "Config"))
+				.Text(LOCTEXT("SubsystemBrowser_Column_Config", "Config"))
 			]
-		];
+		]
+	;
 
 	// Build the details viewer
 	FDetailsViewArgs DetailsViewArgs;
@@ -189,7 +191,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 						.VAlign(VAlign_Center)
 						[
 							SNew(SImage)
-							.Image(this, &SSubsystemBrowserPanel::GetWorldssMenuBrush)
+							.Image(this, &SSubsystemBrowserPanel::GetWorldsMenuBrush)
 						]
 
 						// Text
@@ -403,7 +405,7 @@ void SSubsystemBrowserPanel::Populate()
 
 	if (bNeedListRebuild)
 	{
-#if !(ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION < 26)
+#if ENABLE_SUBSYSTEM_BROWSER_DYNAMIC_COLUMNS
 		for (const SHeaderRow::FColumn& Column : TreeWidget->GetHeaderRow()->GetColumns())
 		{
 			const_cast<SHeaderRow::FColumn&>(Column).bIsVisible = IsColumnVisible(Column.ColumnId);
@@ -446,13 +448,13 @@ void SSubsystemBrowserPanel::TransformItemToString(const ISubsystemTreeItem&  It
 	if (Item.GetAsSubsystemDescriptor())
 	{
 		OutSearchStrings.Add(Item.GetDisplayNameString());
-		if (IsColumnVisible(SubsystemColumns::ColumnID_Package))
+		if (IsColumnVisible(SubsystemColumns::ColumnID_Module))
 		{
 			OutSearchStrings.Add(Item.GetShortPackageString());
 		}
-		if (IsColumnVisible(SubsystemColumns::ColumnID_ConfigClass))
+		if (IsColumnVisible(SubsystemColumns::ColumnID_Config))
 		{
-			OutSearchStrings.Add(Item.GetConfigClassNameString());
+			OutSearchStrings.Add(Item.GetConfigNameString());
 		}
 	}
 }
@@ -529,19 +531,19 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 {
 	FMenuBuilder MenuBuilder(true, nullptr);
 
-#if !(ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION < 26)
+#if ENABLE_SUBSYSTEM_BROWSER_DYNAMIC_COLUMNS
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewColumns", "Columns"));
 	{
-		for (auto& Column : SubsystemModel->GetOptionalColumns())
+		for (auto& Column : SubsystemModel->GetDynamicColumns())
 		{
 			MenuBuilder.AddMenuEntry(
 				Column->Label,
 				LOCTEXT("ToggleDisplayColumn_Tooltip", "Toggles display of subsystem browser columns."),
 				FSlateIcon(),
 				FUIAction(
-					FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayColumn, Column->Id),
+					FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayColumn, Column->Name),
 					FCanExecuteAction(),
-					FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetColumnDisplayStatus, Column->Id)
+					FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetColumnDisplayStatus, Column->Name)
 				),
 				NAME_None,
 				EUserInterfaceActionType::ToggleButton
@@ -558,7 +560,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			check(Category->GetAsCategoryDescriptor());
 			FSubsystemTreeItemID CategoryID = Category->GetID();
 
-			MenuBuilder.AddMenuEntry(Category->GetAsCategoryDescriptor()->Label,
+			MenuBuilder.AddMenuEntry(Category->GetDisplayName(),
 				LOCTEXT("ToggleDisplayCategory_Tooltip", "Toggles display of subsystems for category."),
 				FSlateIcon(),
 				FUIAction(
@@ -599,18 +601,6 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
-		//MenuBuilder.AddMenuEntry(
-		//	LOCTEXT("ToggleTickableOnly", "Only Tickable"),
-		//	LOCTEXT("ToggleTickableOnly_Tooltip", "Show only subsystems that are tickable."),
-		//	FSlateIcon(),
-		//	FUIAction(
-		//		FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleShouldShowOnlyTickable),
-		//		FCanExecuteAction(),
-		//		FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::ShouldShowOnlyTikable)
-		//	),
-		//	NAME_None,
-		//	EUserInterfaceActionType::ToggleButton
-		//);
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("ToggleHiddenProps", "Show Hidden Properties"),
 			LOCTEXT("ToggleHiddenProps_Tooltip", "Enforces display of all hidden object properties in details panel."),
@@ -782,7 +772,7 @@ void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item,
 	bUpdatingSelection = false;
 }
 
-const FSlateBrush* SSubsystemBrowserPanel::GetWorldssMenuBrush() const
+const FSlateBrush* SSubsystemBrowserPanel::GetWorldsMenuBrush() const
 {
 	return FEditorStyle::GetBrush("WorldBrowser.LevelsMenuBrush");
 }
@@ -1205,7 +1195,7 @@ void SSubsystemBrowserPanel::ContextMenu_ConfigExport(bool bModifiedOnly) const
 	{
 		FString ClipboardText;
 
-		ClipboardText += FString::Printf(TEXT("; Should be in Default%s.ini"), *SelectedSubsystem->GetConfigClassNameString());
+		ClipboardText += FString::Printf(TEXT("; Should be in Default%s.ini"), *SelectedSubsystem->GetConfigNameString());
 		ClipboardText += LINE_TERMINATOR;
 		ClipboardText += FString::Printf(TEXT("[%s.%s]"), *SelectedSubsystem->Package, *SelectedSubsystem->ClassName.ToString());
 		ClipboardText += LINE_TERMINATOR;

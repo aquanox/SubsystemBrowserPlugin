@@ -3,7 +3,7 @@
 #pragma once
 
 #include "SlateCore.h"
-#include "Model/SubsystemDescriptor.h"
+#include "Model/SubsystemBrowserDescriptor.h"
 
 class FSubsystemModel;
 class SSubsystemBrowserPanel;
@@ -38,16 +38,16 @@ public:
 
 	const FSlateBrush* GetItemIconBrush() const;
 
-	FSlateColor GetDisplayNameColorAndOpacity() const;
+	FText			GetDisplayNameText() const;
+	FSlateFontInfo	GetDisplayNameFont() const;
+	FSlateColor		GetDisplayNameColorAndOpacity() const;
+	FText			GetDisplayNameTooltipText() const;
 
-	FSlateFontInfo GetDisplayNameFont() const;
+	FText			GetPackageText() const;
+	FText			GetPackageTooltipText() const;
 
-	FText GetDisplayNameText() const;
-	FText GetDisplayNameTooltipText() const;
-	FText GetClassText() const;
-	FText GetPackageText() const;
-	FText GetPackageTooltipText() const;
-	FText GetConfigClassText() const;
+	FText			GetConfigClassText() const;
+
 private:
 	TSharedPtr<FSubsystemModel>			Model;
 	SubsystemTreeItemPtr				Item;

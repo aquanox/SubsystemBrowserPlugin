@@ -3,11 +3,6 @@
 #include "Model/SubsystemBrowserModel.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
-#include "Subsystems/LocalPlayerSubsystem.h"
-#include "Subsystems/EngineSubsystem.h"
-#include "Subsystems/WorldSubsystem.h"
-#include "EditorSubsystem.h"
-#include "Engine/LocalPlayer.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -151,20 +146,21 @@ int32 FSubsystemModel::GetNumSubsystemsFromVisibleCategories() const
 
 void FSubsystemModel::PopulateColumns()
 {
-	RegisterColumn(
-		SubsystemColumns::ColumnID_Package,
-		LOCTEXT("SubsystemBrowser_Column_Package", "Module")
-	);
+	DynamicColumns.Add(MakeShared<FSubsystemDynamicColumn_Module>());
+	DynamicColumns.Add(MakeShared<FSubsystemDynamicColumn_Config>());
 
-	RegisterColumn(
-		SubsystemColumns::ColumnID_ConfigClass,
-		LOCTEXT("SubsystemBrowser_Column_ConfigClass", "Config")
-	);
+#if ENABLE_SUBSYSTEM_BROWSER_CUSTOM_COLUMNS
+	FSubsystemBrowserModule& BrowserModule = FSubsystemBrowserModule::Get();
+	DynamicColumns.Append(BrowserModule.GetCustomDynamicColumns());
+#endif
+
+	// Sort columns by order
+	DynamicColumns.StableSort(SubsystemColumnSorter());
 }
 
-const TArray<TSharedRef<FSubsystemColumn>>& FSubsystemModel::GetOptionalColumns() const
+const TArray<SubsystemColumnPtr>& FSubsystemModel::GetDynamicColumns() const
 {
-	return OptionalColumns;
+	return DynamicColumns;
 }
 
 void FSubsystemModel::EmptyModel()
@@ -177,41 +173,20 @@ void FSubsystemModel::EmptyModel()
 
 	AllSubsystems.Empty();
 	AllSubsystemsByCategory.Empty();
-
-	OptionalColumns.Empty();
 }
 
 void FSubsystemModel::PopulateCategories()
 {
-	RegisterCategory<UEngineSubsystem>(
-		SubsystemCategories::CategoryEngine,
-		LOCTEXT("SubsystemBrowser_Engine", "Engine Subsystems"),
-		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectEngineSubsystems)
-	);
+	FSubsystemBrowserModule& BrowserModule = FSubsystemBrowserModule::Get();
+	for (auto& SubsystemCategory : BrowserModule.GetCategories())
+	{
+		auto Category = MakeShared<FSubsystemTreeCategoryItem>(SubsystemCategory.ToSharedRef());
+		Category->Model = AsShared();
+		AllCategories.Add(MoveTemp(Category));
+	}
 
-	RegisterCategory<UEditorSubsystem>(
-		SubsystemCategories::CategoryEditor,
-		LOCTEXT("SubsystemBrowser_Editor", "Editor Subsystems"),
-		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectEditorSubsystems)
-	);
-
-	RegisterCategory<UGameInstanceSubsystem>(
-		SubsystemCategories::CategoryGameInstance,
-		LOCTEXT("SubsystemBrowser_GameInstance", "Game Instance Subsystems"),
-		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectGameInstanceSubsystems)
-	);
-
-	RegisterCategory<UWorldSubsystem>(
-		SubsystemCategories::CategoryWorld,
-		LOCTEXT("SubsystemBrowser_World", "World Subsystems"),
-		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectWorldSubsystems)
-	);
-
-	RegisterCategory<ULocalPlayerSubsystem>(
-		SubsystemCategories::CategoryPlayer,
-		LOCTEXT("SubsystemBrowser_Player", "Player Subsystems"),
-		FEnumSubsystemsDelegate::CreateSP(this, &FSubsystemModel::SelectPlayerSubsystems)
-	);
+	// sort categories after populating them
+	AllCategories.StableSort(SubsystemCategorySorter());
 }
 
 void FSubsystemModel::PopulateSubsystems()
@@ -219,66 +194,23 @@ void FSubsystemModel::PopulateSubsystems()
 	check(!AllSubsystems.Num());
 	check(!AllSubsystemsByCategory.Num());
 
+	UWorld* const LocalWorld = CurrentWorld.Get();
+
 	for (const auto & Category : AllCategories)
 	{
 		const FSubsystemTreeCategoryItem* AsCategory = Category->GetAsCategoryDescriptor();
 
-		for (UObject* Impl : AsCategory->Selector.Execute())
+		for (UObject* Impl : AsCategory->Select(LocalWorld))
 		{
 			auto Descriptor = MakeShared<FSubsystemTreeSubsystemItem>(Impl);
 			Descriptor->Model = AsShared();
 			Descriptor->Parent = Category;
+
 			AllSubsystems.Add(Descriptor);
 			AllSubsystemsByCategory.FindOrAdd(AsCategory->GetID()).Add(Descriptor);
 		}
 	}
 }
 
-TArray<UObject*> FSubsystemModel::SelectEngineSubsystems() const
-{
-	TArray<UObject*> Result;
-	Result.Append(GEngine->GetEngineSubsystemArray<UEngineSubsystem>());
-	return Result;
-}
-
-TArray<UObject*> FSubsystemModel::SelectEditorSubsystems() const
-{
-	TArray<UObject*> Result;
-	Result.Append(GEditor->GetEditorSubsystemArray<UEditorSubsystem>());
-	return Result;
-}
-
-TArray<UObject*> FSubsystemModel::SelectGameInstanceSubsystems() const
-{
-	TArray<UObject*> Result;
-	if (CurrentWorld.IsValid() && CurrentWorld->GetGameInstance())
-	{
-		Result.Append(CurrentWorld->GetGameInstance()->GetSubsystemArray<UGameInstanceSubsystem>());
-	}
-	return Result;
-}
-
-TArray<UObject*> FSubsystemModel::SelectWorldSubsystems() const
-{
-	TArray<UObject*> Result;
-	if (CurrentWorld.IsValid())
-	{
-		Result.Append(CurrentWorld->GetSubsystemArray<UWorldSubsystem>());
-	}
-	return Result;
-}
-
-TArray<UObject*> FSubsystemModel::SelectPlayerSubsystems() const
-{
-	TArray<UObject*> Result;
-	if (CurrentWorld.IsValid() && CurrentWorld->GetGameInstance())
-	{
-		for (ULocalPlayer* const LocalPlayer : CurrentWorld->GetGameInstance()->GetLocalPlayers())
-		{
-			Result.Append(LocalPlayer->GetSubsystemArray<ULocalPlayerSubsystem>());
-		}
-	}
-	return Result;
-}
 
 #undef LOCTEXT_NAMESPACE

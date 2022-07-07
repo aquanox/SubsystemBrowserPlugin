@@ -6,85 +6,70 @@
 
 USubsystemBrowserSettings::FSettingChangedEvent USubsystemBrowserSettings::SettingChangedEvent;
 
-namespace Helpers
-{
-	template<typename TList, typename TMap>
-	void LoadDataFromConfig(const TList& InConfigList, TMap& OutMap)
-	{
-		for (const auto& Option : InConfigList)
-		{
-			OutMap.Add(Option.Name, Option.bValue);
-		}
-	}
-
-	template<typename TList, typename TMap>
-	void StoreDataToConfig(const TMap& InMap, TList& OutConfigList)
-	{
-		for (const auto& Option : InMap)
-		{
-			if (auto Existing = OutConfigList.FindByKey(Option.Key))
-			{
-				Existing->bValue = Option.Value;
-			}
-			else
-			{
-				OutConfigList.Emplace(Option.Key, Option.Value);
-			}
-		}
-	}
-
-	template<typename TMap>
-	void SetConfigFlag(TMap& InMap, FName Category, bool State)
-	{
-		if (auto Existing = InMap.FindByKey(Category))
-		{
-			Existing->bValue = State;
-		}
-		else
-		{
-			InMap.Emplace(FSubsystemBrowserConfigItem { Category, State });
-		}
-	}
-}
-
-
 USubsystemBrowserSettings::USubsystemBrowserSettings()
 {
-	CategoryVisibilityState.Emplace(SubsystemCategories::CategoryEngine, true);
-	CategoryVisibilityState.Emplace(SubsystemCategories::CategoryEditor, true);
-	CategoryVisibilityState.Emplace(SubsystemCategories::CategoryGameInstance, true);
-	CategoryVisibilityState.Emplace(SubsystemCategories::CategoryPlayer, true);
-	CategoryVisibilityState.Emplace(SubsystemCategories::CategoryWorld, true);
+	// fill default columns
+	TableColumnVisibilityState.Emplace(SubsystemColumns::ColumnID_Module, true);
+	TableColumnVisibilityState.Emplace(SubsystemColumns::ColumnID_Config, true);
+}
 
-	TableColumnVisibilityState.Emplace(SubsystemColumns::ColumnID_Package, true);
-	TableColumnVisibilityState.Emplace(SubsystemColumns::ColumnID_ConfigClass, true);
+void USubsystemBrowserSettings::OnSettingsSelected()
+{
+	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being selected"));
+
+	SyncCategorySettings();
+}
+
+bool USubsystemBrowserSettings::OnSettingsModified()
+{
+	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being modified"));
+	return true;
+}
+
+// Sync category settings with categories we have in module
+void USubsystemBrowserSettings::SyncCategorySettings()
+{
+	TMap<FName, bool> CurrentSettings;
+	LoadDataFromConfig(CategoryVisibilityState, CurrentSettings);
+	CategoryVisibilityState.Empty();
+
+	for (const auto& Category : FSubsystemBrowserModule::Get().GetCategories())
+	{
+		if (!CurrentSettings.Contains(Category->Name))
+		{
+			CurrentSettings.Emplace(Category->Name, true);
+		}
+	}
+
+	StoreDataToConfig(CurrentSettings, CategoryVisibilityState);
 }
 
 void USubsystemBrowserSettings::LoadCategoryStates(TMap<FName, bool>& States)
 {
-	Helpers::LoadDataFromConfig(CategoryVisibilityState, States);
+	SyncCategorySettings();
+	LoadDataFromConfig(CategoryVisibilityState, States);
 }
 
 void USubsystemBrowserSettings::SetCategoryStates(const TMap<FName, bool>& States)
 {
-	Helpers::StoreDataToConfig(States, CategoryVisibilityState);
+	StoreDataToConfig(States, CategoryVisibilityState);
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, CategoryVisibilityState));
 }
 
 void USubsystemBrowserSettings::SetCategoryState(FName Category, bool State)
 {
-	Helpers::SetConfigFlag(CategoryVisibilityState, Category, State);
+	SetConfigFlag(CategoryVisibilityState, Category, State);
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, CategoryVisibilityState));
 }
 
 void USubsystemBrowserSettings::LoadTreeExpansionStates(TMap<FName, bool>& States)
 {
-	Helpers::LoadDataFromConfig(TreeExpansionState, States);
+	LoadDataFromConfig(TreeExpansionState, States);
 }
 
 void USubsystemBrowserSettings::SetTreeExpansionStates(TMap<FName, bool> const& States)
 {
-	Helpers::StoreDataToConfig(States, TreeExpansionState);
+	StoreDataToConfig(States, TreeExpansionState);
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, TreeExpansionState));
 }
 
@@ -120,7 +105,7 @@ bool USubsystemBrowserSettings::GetTableColumnState(FName Column) const
 
 void USubsystemBrowserSettings::SetTableColumnState(FName Column, bool State)
 {
-	Helpers::SetConfigFlag(TableColumnVisibilityState, Column, State);
+	SetConfigFlag(TableColumnVisibilityState, Column, State);
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, TableColumnVisibilityState));
 }
 
@@ -132,9 +117,16 @@ void USubsystemBrowserSettings::NotifyPropertyChange(FName PropertyName)
 	SettingChangedEvent.Broadcast(PropertyName);
 }
 
+void USubsystemBrowserSettings::PostLoad()
+{
+	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being loaded"));
+
+	Super::PostLoad();
+}
+
 void USubsystemBrowserSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UObject::PostEditChangeProperty(PropertyChangedEvent);
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	// Take the class member property name instead of struct member
 	FName PropertyName = (PropertyChangedEvent.MemberProperty ? PropertyChangedEvent.MemberProperty->GetFName() : PropertyChangedEvent.GetPropertyName());

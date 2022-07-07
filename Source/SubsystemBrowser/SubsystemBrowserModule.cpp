@@ -3,6 +3,7 @@
 #include "SubsystemBrowserModule.h"
 
 #include "ISettingsModule.h"
+#include "ISettingsSection.h"
 #include "UI/SubsystemBrowserPanel.h"
 #include "LevelEditor.h"
 #include "SubsystemBrowserSettings.h"
@@ -25,11 +26,16 @@ void FSubsystemBrowserModule::StartupModule()
 		ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
 		if (RegisterConfigPanel)
 		{
-			SettingsSection = SettingsModule.RegisterSettings("Editor", "ContentEditors", "Subsystem Browser",
+			USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
+
+			SettingsSection = SettingsModule.RegisterSettings(
+				TEXT("Editor"), TEXT("ContentEditors"), TEXT("Subsystem Browser"),
 				LOCTEXT("SubsystemBrowserSettingsName", "Subsystem Browser"),
 				LOCTEXT("SubsystemBrowserSettingsDescription", "Settings for Subsystem Browser Plugin"),
-				USubsystemBrowserSettings::Get()
+				SettingsObject
 			);
+			SettingsSection->OnSelect().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsSelected);
+			//SettingsSection->OnModified().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsModified);
 		}
 
 		FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
@@ -45,6 +51,12 @@ void FSubsystemBrowserModule::StartupModule()
 					.SetIcon( FSlateIcon(FEditorStyle::GetStyleSetName(), SSubsystemBrowserPanel::PanelIconName) );
 			}
 		});
+
+		// Register default categories on startup (unless configured already)
+		if (!Categories.Num())
+		{
+			RegisterDefaultCategories();
+		}
 	}
 }
 

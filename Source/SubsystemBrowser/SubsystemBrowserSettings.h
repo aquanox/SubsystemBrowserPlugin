@@ -38,11 +38,18 @@ public:
 		return GetMutableDefault<USubsystemBrowserSettings>();
 	}
 
+	// Called when browser settings being opened
+	void OnSettingsSelected();
+	// Called when browser settings were modified
+	bool OnSettingsModified();
+
 	DECLARE_EVENT_OneParam(USubsystemBrowserSettings, FSettingChangedEvent, FName /*PropertyName*/);
 	static FSettingChangedEvent& OnSettingChanged() { return SettingChangedEvent; }
 
+	virtual void PostLoad() override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
+	void SyncCategorySettings();
 	void LoadCategoryStates(TMap<FName, bool>& States);
 	void SetCategoryStates(const TMap<FName, bool>& States);
 	void SetCategoryState(FName Category, bool State);
@@ -65,15 +72,26 @@ public:
 	bool ShouldShowOnlyGame() const { return bShowOnlyGameModules; }
 	void SetShouldShowOnlyGame(bool bNewValue);
 
+private:
+
+	template<typename TList, typename TMap>
+	void LoadDataFromConfig(const TList& InConfigList, TMap& OutMap);
+
+	template<typename TList, typename TMap>
+	void StoreDataToConfig(const TMap& InMap, TList& OutConfigList);
+
+	template<typename TMap>
+	void SetConfigFlag(TMap& InMap, FName Category, bool State);
+
 protected:
 
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView, EditFixedSize, EditFixedOrder, TitleProperty="Name"))
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> CategoryVisibilityState;
 
 	UPROPERTY(config, /*EditAnywhere, Category=General,*/ meta=(ConfigAffectsView, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> TreeExpansionState;
 
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsColumns, EditFixedSize, EditFixedOrder, TitleProperty="Name"))
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsColumns, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> TableColumnVisibilityState;
 
 	UPROPERTY(config, EditAnywhere, Category=General)
@@ -95,3 +113,41 @@ private:
 	static FSettingChangedEvent SettingChangedEvent;
 
 };
+
+template <typename TList, typename TMap>
+void USubsystemBrowserSettings::LoadDataFromConfig(const TList& InConfigList, TMap& OutMap)
+{
+	for (const auto& Option : InConfigList)
+	{
+		OutMap.Add(Option.Name, Option.bValue);
+	}
+}
+
+template <typename TList, typename TMap>
+void USubsystemBrowserSettings::StoreDataToConfig(const TMap& InMap, TList& OutConfigList)
+{
+	for (const auto& Option : InMap)
+	{
+		if (auto Existing = OutConfigList.FindByKey(Option.Key))
+		{
+			Existing->bValue = Option.Value;
+		}
+		else
+		{
+			OutConfigList.Emplace(Option.Key, Option.Value);
+		}
+	}
+}
+
+template <typename TMap>
+void USubsystemBrowserSettings::SetConfigFlag(TMap& InMap, FName Category, bool State)
+{
+	if (auto* Existing = InMap.FindByKey(Category))
+	{
+		Existing->bValue = State;
+	}
+	else
+	{
+		InMap.Emplace(FSubsystemBrowserConfigItem{ Category, State });
+	}
+}
