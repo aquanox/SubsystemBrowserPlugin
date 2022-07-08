@@ -64,7 +64,6 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 void FSubsystemBrowserModule::RegisterCategory(TSharedRef<FSubsystemCategory> InCategory)
 {
 	if (InCategory->Name.IsNone()
-		|| InCategory->Label.IsEmptyOrWhitespace()
 		|| !InCategory->SubsystemClass.IsValid()
 		|| !InCategory->Selector.IsBound())
 	{

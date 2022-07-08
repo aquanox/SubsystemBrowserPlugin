@@ -3,22 +3,47 @@
 #pragma once
 
 struct ISubsystemTreeItem;
+class SSubsystemTableItem;
 
 /* Represents a configurable column */
 struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSubsystemDynamicColumn>
 {
-	/* Column identifier */
+	/* Column config identifier */
 	FName Name;
-	/* Column display name */
-	FText Label;
+	/* Column display name for table header */
+	FText TableLabel;
+	/* Column display name for menu */
+	FText ConfigLabel;
+	/* Column preferred width ratio (from 0 to 1) */
+	float PreferredWidthRatio = 0.1f;
 	/* Column sort order */
 	int32 SortOrder = 0;
 
+	FSubsystemDynamicColumn();
 	virtual ~FSubsystemDynamicColumn() = default;
-	virtual FText GetColumnHeaderText() const { return Label; }
-	virtual float GetPreferredWidth() const { return 0.1f; }
+	/**
+	 * Generate visual representation of column in header row
+	 */
+	virtual SHeaderRow::FColumn::FArguments GenerateHeaderColumnWidget() const;
+	/**
+	 * Generate visual representation of column in table row
+	 */
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const = 0;
 
-	virtual TSharedPtr< SWidget > GenerateColumnWidget(TSharedRef<class SSubsystemTableItem> TableRow) const;
+	/**
+	 * Gather searchable strings for column
+	 */
+	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const {}
+
+	/**
+	 * Does this column support sorting? WIP
+	 */
+	//virtual bool SupportsSorting() const { return false; }
+
+	/**
+	 * Perform sorting of table items. WIP
+	 */
+	//virtual void SortItems(TArray<ISubsystemTreeItem>& RootItems, const EColumnSortMode::Type SortMode) const {}
 };
 
 using SubsystemColumnPtr = TSharedPtr<FSubsystemDynamicColumn>;
@@ -34,21 +59,21 @@ struct SubsystemColumnSorter
 struct FSubsystemDynamicColumn_Module : public FSubsystemDynamicColumn
 {
 	FSubsystemDynamicColumn_Module();
-	virtual float GetPreferredWidth() const override { return 0.25f; }
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<class SSubsystemTableItem> TableRow) const override;
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const override;
+	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override;
 
 private:
-	FText ExtractModuleText(TSharedPtr<ISubsystemTreeItem> Item) const;
-	FText ExtractModuleTooltipText(TSharedPtr<ISubsystemTreeItem> Item) const;
+	FText ExtractModuleText(TSharedRef<SSubsystemTableItem> TableRow) const;
+	FText ExtractModuleTooltipText(TSharedRef<SSubsystemTableItem> TableRow) const;
 };
 
 struct FSubsystemDynamicColumn_Config : public FSubsystemDynamicColumn
 {
 	FSubsystemDynamicColumn_Config();
-	virtual float GetPreferredWidth() const override { return 0.15f; }
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<SSubsystemTableItem> TableRow) const override;
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const override;
+	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override;
 private:
-	FText ExtractConfigText(TSharedPtr<ISubsystemTreeItem> Item) const;
+	FText ExtractConfigText(TSharedRef<SSubsystemTableItem> TableRow) const;
 };
 
 namespace SubsystemColumns

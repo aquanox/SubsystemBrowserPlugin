@@ -12,6 +12,7 @@ struct FSubsystemTreeCategoryItem;
 
 using FSubsystemTreeItemID = FName;
 using SubsystemTreeItemPtr = TSharedPtr<ISubsystemTreeItem>;
+using SubsystemTreeItemRef = TSharedRef<ISubsystemTreeItem>;
 
 /*
  * Abstract subsystem tree item node

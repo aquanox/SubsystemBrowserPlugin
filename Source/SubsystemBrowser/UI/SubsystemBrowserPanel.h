@@ -107,10 +107,6 @@ protected:
 	void SetSelectedObject(SubsystemTreeItemPtr Item);
 	void ResetSelectedObject();
 
-	bool IsPropertyReadOnly(const FPropertyAndParent& PropertyAndParent) const;
-	bool IsPropertyVisible(const FPropertyAndParent& PropertyAndParent) const;
-	bool IsPropertyEditingEnabled() const { return true; }
-
 	// Item context menu
 
 	TSharedPtr<SWidget> ConstructSubsystemContextMenu();

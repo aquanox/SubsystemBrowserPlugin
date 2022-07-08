@@ -43,13 +43,11 @@ public:
 	FSlateFontInfo	GetDefaultFont() const;
 	FSlateColor		GetDefaultColorAndOpacity() const;
 
-	bool IsSelectedInternal() const;
-
 public:
 	TSharedPtr<FSubsystemModel>			Model;
 	SubsystemTreeItemPtr				Item;
 	TSharedPtr<SSubsystemBrowserPanel>	Browser;
 
-	TAttribute<FText> HighlightText;
-	TAttribute<bool> IsItemExpanded;
+	TAttribute<FText>					HighlightText;
+	TAttribute<bool>					IsItemExpanded;
 };

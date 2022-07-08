@@ -98,8 +98,6 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 	FPropertyEditorModule& EditModule = FModuleManager::Get().GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	DetailsView = EditModule.CreateDetailView( DetailsViewArgs );
 	check(DetailsView.IsValid());
-	//DetailsView->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateSP(this, &SSubsystemBrowserPanel::IsPropertyReadOnly));
-	//DetailsView->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateSP(this, &SSubsystemBrowserPanel::IsPropertyVisible));
 
 	// Context menu
 
@@ -391,13 +389,10 @@ void SSubsystemBrowserPanel::TransformItemToString(const ISubsystemTreeItem&  It
 	if (Item.GetAsSubsystemDescriptor())
 	{
 		OutSearchStrings.Add(Item.GetDisplayNameString());
-		if (IsColumnVisible(SubsystemColumns::ColumnID_Module))
+
+		for (auto& Column : SubsystemModel->GetSelectedDynamicColumns())
 		{
-			OutSearchStrings.Add(Item.GetShortPackageString());
-		}
-		if (IsColumnVisible(SubsystemColumns::ColumnID_Config))
-		{
-			OutSearchStrings.Add(Item.GetConfigNameString());
+			Column->PopulateSearchStrings(Item, OutSearchStrings);
 		}
 	}
 }
@@ -479,7 +474,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 		for (auto& Column : SubsystemModel->GetDynamicColumns(false))
 		{
 			MenuBuilder.AddMenuEntry(
-				Column->GetColumnHeaderText(),
+				Column->ConfigLabel,
 				LOCTEXT("ToggleDisplayColumn_Tooltip", "Toggles display of subsystem browser columns."),
 				FSlateIcon(),
 				FUIAction(
@@ -871,16 +866,6 @@ void SSubsystemBrowserPanel::ResetSelectedObject()
 		DetailsView->SetObject(nullptr);
 		RefreshDetails();
 	}
-}
-
-bool SSubsystemBrowserPanel::IsPropertyReadOnly(const FPropertyAndParent& InPropertyAndParent) const
-{
-	return false;
-}
-
-bool SSubsystemBrowserPanel::IsPropertyVisible(const FPropertyAndParent& PropertyAndParent) const
-{
-	return true;
 }
 
 SubsystemTreeItemPtr SSubsystemBrowserPanel::GetFirstSelectedItem() const

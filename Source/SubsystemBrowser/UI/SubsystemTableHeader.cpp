@@ -43,20 +43,7 @@ void SSubsystemsHeaderRow::RebuildColumns()
 
 	for (const auto& Column : Model->GetSelectedDynamicColumns())
 	{
-		AddColumn(
-			SSubsystemsHeaderRow::Column( Column->Name )
-			  .SortMode(EColumnSortMode::None)
-			  .FillWidth( Column.ToSharedRef(), &FSubsystemDynamicColumn::GetPreferredWidth )
-			  .HeaderContent()
-			[
-				SNew(SHorizontalBox)
-				+SHorizontalBox::Slot()
-				.VAlign(VAlign_Center)
-				[
-					SNew(STextBlock)
-					.Text(Column.ToSharedRef(), &FSubsystemDynamicColumn::GetColumnHeaderText)
-				]
-			]);
+		AddColumn(Column->GenerateHeaderColumnWidget());
 	}
 
 	RefreshColumns();

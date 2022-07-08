@@ -18,11 +18,11 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory
 	FName Name;
 	/* Category display title */
 	FText Label;
-	/* Subsystem class */
+	/* Subsystem base class (optional) */
 	TWeakObjectPtr<UClass> SubsystemClass;
 	/* Data supplier function */
 	FEnumSubsystemsDelegate Selector;
-	/* Sort weight for the category */
+	/* Sort weight for the category (with 0 being topmost, 1000 bottom last) */
 	int32 SortOrder = 0;
 };
 

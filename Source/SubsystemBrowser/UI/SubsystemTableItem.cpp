@@ -71,7 +71,7 @@ TSharedRef<SWidget> SSubsystemTableItem::GenerateWidgetForColumn(const FName& Co
 	}
 	else if (SubsystemColumnPtr Column = Model->FindDynamicColumn(ColumnID, false))
 	{
-		TableRowContent = Column->GenerateColumnWidget(SharedThis(this));
+		TableRowContent = Column->GenerateColumnWidget(Item.ToSharedRef(), SharedThis(this));
 	}
 
 	return TableRowContent.ToSharedRef();
@@ -112,11 +112,6 @@ FSlateColor SSubsystemTableItem::GetDefaultColorAndOpacity() const
 	}
 
 	return FSlateColor::UseForeground();
-}
-
-bool SSubsystemTableItem::IsSelectedInternal() const
-{
-	return Browser->IsItemSelected(Item);
 }
 
 FSlateFontInfo SSubsystemTableItem::GetDefaultFont() const

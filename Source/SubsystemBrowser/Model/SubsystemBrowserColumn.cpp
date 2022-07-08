@@ -20,24 +20,58 @@ void FSubsystemBrowserModule::RegisterDefaultDynamicColumns()
 
 void FSubsystemBrowserModule::RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn)
 {
+	if (InColumn->Name.IsNone()
+		|| InColumn->Name == SubsystemColumns::ColumnID_Name)
+	{
+		UE_LOG(LogSubsystemBrowser, Error, TEXT("Invalid column being registered"));
+		return;
+	}
+
+	for (auto& Column : DynamicColumns)
+	{
+		if (Column->Name == InColumn->Name)
+		{
+			UE_LOG(LogSubsystemBrowser, Error, TEXT("Duplicating column with name %s."), *Column->Name.ToString());
+			return;
+		}
+	}
+
 	DynamicColumns.Add(InColumn);
 
 	// Sort columns by order
 	DynamicColumns.StableSort(SubsystemColumnSorter());
 }
 
-TSharedPtr<SWidget> FSubsystemDynamicColumn::GenerateColumnWidget(TSharedRef<class SSubsystemTableItem> TableRow) const
+FSubsystemDynamicColumn::FSubsystemDynamicColumn()
 {
-	return SNullWidget::NullWidget;
+}
+
+SHeaderRow::FColumn::FArguments FSubsystemDynamicColumn::GenerateHeaderColumnWidget() const
+{
+	return SHeaderRow::Column( Name )
+			  .SortMode(EColumnSortMode::None)
+			  .FillWidth( PreferredWidthRatio )
+			  .HeaderContent()
+			[
+				SNew(SHorizontalBox)
+				+SHorizontalBox::Slot()
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(TableLabel)
+				]
+			];
 }
 
 FSubsystemDynamicColumn_Module::FSubsystemDynamicColumn_Module()
 {
 	Name = SubsystemColumns::ColumnID_Module;
-	Label = LOCTEXT("SubsystemBrowser_Column_Package", "Module");
+	TableLabel = LOCTEXT("SubsystemBrowser_Column_Module", "Module");
+	ConfigLabel = LOCTEXT("SubsystemBrowser_Column_Module", "Module");
+	PreferredWidthRatio = 0.25f;
 }
 
-TSharedPtr<SWidget> FSubsystemDynamicColumn_Module::GenerateColumnWidget(TSharedRef<class SSubsystemTableItem> TableRow) const
+TSharedPtr<SWidget> FSubsystemDynamicColumn_Module::GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
 {
 	return SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
@@ -47,34 +81,41 @@ TSharedPtr<SWidget> FSubsystemDynamicColumn_Module::GenerateColumnWidget(TShared
 		[
 			SNew(STextBlock)
 			.Font(TableRow, &SSubsystemTableItem::GetDefaultFont)
-			.Text(this, &FSubsystemDynamicColumn_Module::ExtractModuleText, TableRow->Item)
-			.ToolTipText(this, &FSubsystemDynamicColumn_Module::ExtractModuleTooltipText, TableRow->Item)
+			.Text(this, &FSubsystemDynamicColumn_Module::ExtractModuleText, TableRow)
+			.ToolTipText(this, &FSubsystemDynamicColumn_Module::ExtractModuleTooltipText, TableRow)
 			.ColorAndOpacity(TableRow, &SSubsystemTableItem::GetDefaultColorAndOpacity)
 			.HighlightText(TableRow->HighlightText)
 		];
 }
 
-FText FSubsystemDynamicColumn_Module::ExtractModuleText(TSharedPtr<ISubsystemTreeItem> Item) const
+void FSubsystemDynamicColumn_Module::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
 {
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Package"), FText::FromString(Item->GetShortPackageString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_Package", "{Package}"), Args);
+	OutSearchStrings.Add(Item.GetShortPackageString());
 }
 
-FText FSubsystemDynamicColumn_Module::ExtractModuleTooltipText(TSharedPtr<ISubsystemTreeItem> Item) const
+FText FSubsystemDynamicColumn_Module::ExtractModuleText(TSharedRef<SSubsystemTableItem> TableRow) const
 {
 	FFormatNamedArguments Args;
-	Args.Add(TEXT("Package"), FText::FromString(Item->GetPackageString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_Package_Tooltip", "{Package}"), Args);
+	Args.Add(TEXT("Module"), FText::FromString(TableRow->Item->GetShortPackageString()));
+	return FText::Format(LOCTEXT("SubsystemItemType_Module", "{Module}"), Args);
+}
+
+FText FSubsystemDynamicColumn_Module::ExtractModuleTooltipText(TSharedRef<SSubsystemTableItem> TableRow) const
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("Module"), FText::FromString(TableRow->Item->GetPackageString()));
+	return FText::Format(LOCTEXT("SubsystemItemType_Module_Tooltip", "{Module}"), Args);
 }
 
 FSubsystemDynamicColumn_Config::FSubsystemDynamicColumn_Config()
 {
 	Name = SubsystemColumns::ColumnID_Config;
-	Label = LOCTEXT("SubsystemBrowser_Column_ConfigClass", "Config");
+	TableLabel = LOCTEXT("SubsystemBrowser_Column_Config", "Config");
+	ConfigLabel = LOCTEXT("SubsystemBrowser_Column_Config", "Config");
+	PreferredWidthRatio = 0.15f;
 }
 
-TSharedPtr<SWidget> FSubsystemDynamicColumn_Config::GenerateColumnWidget(TSharedRef<SSubsystemTableItem> TableRow) const
+TSharedPtr<SWidget> FSubsystemDynamicColumn_Config::GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
 {
 	return SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
@@ -84,23 +125,28 @@ TSharedPtr<SWidget> FSubsystemDynamicColumn_Config::GenerateColumnWidget(TShared
 		[
 			SNew(STextBlock)
 			.Font(TableRow, &SSubsystemTableItem::GetDefaultFont)
-			.Text(this, &FSubsystemDynamicColumn_Config::ExtractConfigText, TableRow->Item)
-			.ToolTipText(this, &FSubsystemDynamicColumn_Config::ExtractConfigText, TableRow->Item)
+			.Text(this, &FSubsystemDynamicColumn_Config::ExtractConfigText, TableRow)
+			.ToolTipText(this, &FSubsystemDynamicColumn_Config::ExtractConfigText, TableRow)
 			.ColorAndOpacity(TableRow, &SSubsystemTableItem::GetDefaultColorAndOpacity)
 			.HighlightText(TableRow->HighlightText)
 		];
 }
 
-FText FSubsystemDynamicColumn_Config::ExtractConfigText(TSharedPtr<ISubsystemTreeItem> Item) const
+void FSubsystemDynamicColumn_Config::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
+{
+	OutSearchStrings.Add(Item.GetConfigNameString());
+}
+
+FText FSubsystemDynamicColumn_Config::ExtractConfigText(TSharedRef<SSubsystemTableItem> TableRow) const
 {
 	FFormatNamedArguments Args;
-	Args.Add(TEXT("ConfigClass"), FText::FromString(Item->GetConfigNameString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_ConfigClass", "{ConfigClass}"), Args);
+	Args.Add(TEXT("Config"), FText::FromString(TableRow->Item->GetConfigNameString()));
+	return FText::Format(LOCTEXT("SubsystemItemType_Config", "{Config}"), Args);
 }
 
 #undef LOCTEXT_NAMESPACE
 
-#if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES
+#if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES && ENGINE_MAJOR_VERSION > 4
 
 // 1. Create a new struct inheriting FSubsystemDynamicColumn
 
@@ -110,10 +156,12 @@ struct FSubsystemDynamicColumn_Tick : public FSubsystemDynamicColumn
 	{
 		// Configure name and header title
 		Name = TEXT("IsTickable");
-		Label = INVTEXT("Ticks?");
+		TableLabel = INVTEXT("");
+		ConfigLabel = INVTEXT("Tickable");
+		PreferredWidthRatio = 0.05f;
 	}
 
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<SSubsystemTableItem> TableRow) const override
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<struct ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const override
 	{
 		// Build a widget to represent value
 		return SNew(SHorizontalBox)
