@@ -21,10 +21,12 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSu
 
 	FSubsystemDynamicColumn();
 	virtual ~FSubsystemDynamicColumn() = default;
+
 	/**
 	 * Generate visual representation of column in header row
 	 */
 	virtual SHeaderRow::FColumn::FArguments GenerateHeaderColumnWidget() const;
+
 	/**
 	 * Generate visual representation of column in table row
 	 */
@@ -56,6 +58,9 @@ struct SubsystemColumnSorter
 	}
 };
 
+/*
+ * "Module" column implementation
+ */
 struct FSubsystemDynamicColumn_Module : public FSubsystemDynamicColumn
 {
 	FSubsystemDynamicColumn_Module();
@@ -67,6 +72,9 @@ private:
 	FText ExtractModuleTooltipText(TSharedRef<SSubsystemTableItem> TableRow) const;
 };
 
+/**
+ * "Config" column implementation
+ */
 struct FSubsystemDynamicColumn_Config : public FSubsystemDynamicColumn
 {
 	FSubsystemDynamicColumn_Config();

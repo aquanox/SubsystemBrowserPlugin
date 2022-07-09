@@ -87,4 +87,3 @@ public:
 	TSharedPtr<SubsystemCategoryFilter>  CategoryFilter;
 	TSharedPtr<SubsystemTextFilter>		 SubsystemTextFilter;
 };
-

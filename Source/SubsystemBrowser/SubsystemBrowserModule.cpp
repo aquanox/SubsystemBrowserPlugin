@@ -7,6 +7,7 @@
 #include "UI/SubsystemBrowserPanel.h"
 #include "LevelEditor.h"
 #include "SubsystemBrowserSettings.h"
+#include "SubsystemBrowserStyle.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
@@ -17,26 +18,23 @@ DEFINE_LOG_CATEGORY(LogSubsystemBrowser);
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
 const FName FSubsystemBrowserModule::SubsystemBrowserTabName = TEXT("SubsystemBrowserTab");
-constexpr bool RegisterConfigPanel = true;
 
 void FSubsystemBrowserModule::StartupModule()
 {
 	if (GIsEditor && !IsRunningCommandlet())
 	{
-		ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
-		if (RegisterConfigPanel)
-		{
-			USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
+		FSubsystemBrowserStyle::Register();
 
-			SettingsSection = SettingsModule.RegisterSettings(
-				TEXT("Editor"), TEXT("ContentEditors"), TEXT("Subsystem Browser"),
-				LOCTEXT("SubsystemBrowserSettingsName", "Subsystem Browser"),
-				LOCTEXT("SubsystemBrowserSettingsDescription", "Settings for Subsystem Browser Plugin"),
-				SettingsObject
-			);
-			SettingsSection->OnSelect().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsSelected);
-			//SettingsSection->OnModified().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsModified);
-		}
+		USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
+
+		ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
+		SettingsSection = SettingsModule.RegisterSettings(
+			TEXT("Editor"), TEXT("ContentEditors"), TEXT("Subsystem Browser"),
+			LOCTEXT("SubsystemBrowserSettingsName", "Subsystem Browser"),
+			LOCTEXT("SubsystemBrowserSettingsDescription", "Settings for Subsystem Browser Plugin"),
+			SettingsObject
+		);
+		SettingsSection->OnSelect().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsSelected);
 
 		FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 		LevelEditorModule.OnTabManagerChanged().AddLambda([ &LevelEditorModule ]()
@@ -67,6 +65,8 @@ void FSubsystemBrowserModule::ShutdownModule()
 		{
 			LevelEditorModule->GetLevelEditorTabManager()->UnregisterTabSpawner(SubsystemBrowserTabName);
 		}
+
+		FSubsystemBrowserStyle::UnRegister();
 	}
 }
 

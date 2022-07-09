@@ -160,6 +160,3 @@ private:
 	bool bLoadedExpansionSettings = false;
 	bool bNeedListRebuild = true; // needs initial header update to upply config
 };
-
-
-
