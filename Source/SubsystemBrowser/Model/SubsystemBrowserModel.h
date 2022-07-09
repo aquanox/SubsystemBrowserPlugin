@@ -53,6 +53,7 @@ public:
 
 	bool IsSubsystemFilterActive() const { return SubsystemTextFilter.IsValid() && SubsystemTextFilter->HasText(); }
 
+	int32 GetNumCategories() const;
 	const TArray<SubsystemTreeItemPtr>& GetAllCategories() const;
 	void GetFilteredCategories(TArray<SubsystemTreeItemPtr>& OutCategories) const;
 
@@ -63,6 +64,7 @@ public:
 
 	int32 GetNumSubsystemsFromVisibleCategories() const;
 
+	int32 GetNumDynamicColumns() const;
 	TArray<SubsystemColumnPtr> GetDynamicColumns(bool bActiveOnly) const;
 	TArray<SubsystemColumnPtr> GetSelectedDynamicColumns() const { return GetDynamicColumns(true); }
 	SubsystemColumnPtr FindDynamicColumn(const FName& ColumnName, bool bActiveOnly) const;

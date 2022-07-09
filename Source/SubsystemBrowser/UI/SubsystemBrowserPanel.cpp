@@ -467,46 +467,40 @@ FSlateColor SSubsystemBrowserPanel::GetViewOptionsButtonForegroundColor() const
 
 TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 {
+	USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+
 	FMenuBuilder MenuBuilder(true, nullptr);
 
-	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewColumns", "Columns"));
+	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewColumnsGroup", "Columns"));
 	{
-		for (auto& Column : SubsystemModel->GetDynamicColumns(false))
+		if (SubsystemModel->GetNumDynamicColumns() > Settings->MaxColumnTogglesToShow)
 		{
-			MenuBuilder.AddMenuEntry(
-				Column->ConfigLabel,
-				LOCTEXT("ToggleDisplayColumn_Tooltip", "Toggles display of subsystem browser columns."),
-				FSlateIcon(),
-				FUIAction(
-					FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayColumn, Column->Name),
-					FCanExecuteAction(),
-					FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetColumnDisplayStatus, Column->Name)
-				),
-				NAME_None,
-				EUserInterfaceActionType::ToggleButton
+			MenuBuilder.AddSubMenu(
+				LOCTEXT("ChooseColumnSubMenu", "Choose Columns"),
+				LOCTEXT("ChooseColumnSubMenu_ToolTip", "Choose columns to display in browser."),
+				FNewMenuDelegate::CreateSP(this, &SSubsystemBrowserPanel::BuildColumnPickerContent)
 			);
+		}
+		else
+		{
+			BuildColumnPickerContent(MenuBuilder);
 		}
 	}
 	MenuBuilder.EndSection();
 
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewCategoryGroup", "Categories"));
 	{
-		for (const SubsystemTreeItemPtr & Category : SubsystemModel->GetAllCategories())
+		if (SubsystemModel->GetNumCategories() > Settings->MaxCategoryTogglesToShow)
 		{
-			check(Category->GetAsCategoryDescriptor());
-			FSubsystemTreeItemID CategoryID = Category->GetID();
-
-			MenuBuilder.AddMenuEntry(Category->GetDisplayName(),
-				LOCTEXT("ToggleDisplayCategory_Tooltip", "Toggles display of subsystems for category."),
-				FSlateIcon(),
-				FUIAction(
-					FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayCategory, CategoryID),
-					FCanExecuteAction(),
-					FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetCategoryDisplayStatus, CategoryID)
-				),
-				NAME_None,
-				EUserInterfaceActionType::ToggleButton
+			MenuBuilder.AddSubMenu(
+				LOCTEXT("ChooseCategorySubMenu", "Choose Category"),
+				LOCTEXT("ChooseCategorySubMenu_ToolTip", "Choose categories to display in browser."),
+				FNewMenuDelegate::CreateSP(this, &SSubsystemBrowserPanel::BuildCategoryPickerContent)
 			);
+		}
+		else
+		{
+			BuildCategoryPickerContent(MenuBuilder);
 		}
 	}
 	MenuBuilder.EndSection();
@@ -549,10 +543,60 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
+		MenuBuilder.AddMenuEntry(
+			LOCTEXT("OpenSettingsPanel", "All Options"),
+			LOCTEXT("OpenSettingsPanel_Tooltip", "Open plugin settings panel."),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowPluginSettingsTab)
+			),
+			NAME_None,
+			EUserInterfaceActionType::Button
+		);
 	}
 	MenuBuilder.EndSection();
 
 	return MenuBuilder.MakeWidget();
+}
+
+void SSubsystemBrowserPanel::BuildColumnPickerContent(FMenuBuilder& MenuBuilder)
+{
+	for (const SubsystemColumnPtr& Column : SubsystemModel->GetDynamicColumns(false))
+	{
+		MenuBuilder.AddMenuEntry(
+			Column->ConfigLabel,
+			LOCTEXT("ToggleDisplayColumn_Tooltip", "Toggles display of subsystem browser columns."),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayColumn, Column->Name),
+				FCanExecuteAction(),
+				FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetColumnDisplayStatus, Column->Name)
+			),
+			NAME_None,
+			EUserInterfaceActionType::ToggleButton
+		);
+	}
+}
+
+void SSubsystemBrowserPanel::BuildCategoryPickerContent(FMenuBuilder& MenuBuilder)
+{
+	for (const SubsystemTreeItemPtr& Category : SubsystemModel->GetAllCategories())
+	{
+		check(Category->GetAsCategoryDescriptor());
+		FSubsystemTreeItemID CategoryID = Category->GetID();
+
+		MenuBuilder.AddMenuEntry(Category->GetDisplayName(),
+			LOCTEXT("ToggleDisplayCategory_Tooltip", "Toggles display of subsystems for category."),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayCategory, CategoryID),
+				FCanExecuteAction(),
+				FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetCategoryDisplayStatus, CategoryID)
+			),
+			NAME_None,
+			EUserInterfaceActionType::ToggleButton
+		);
+	}
 }
 
 void SSubsystemBrowserPanel::ToggleDisplayCategory(FSubsystemTreeItemID InCategory)
@@ -681,6 +725,11 @@ void SSubsystemBrowserPanel::ToggleShouldShowOnlyGame()
 	Settings->SetShouldShowOnlyGame(!bOldValue);
 
 	FullRefresh();
+}
+
+void SSubsystemBrowserPanel::ShowPluginSettingsTab() const
+{
+	FSubsystemBrowserModule::Get().SummonPluginSettingsTab();
 }
 
 void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item, ESelectInfo::Type SelectInfo)

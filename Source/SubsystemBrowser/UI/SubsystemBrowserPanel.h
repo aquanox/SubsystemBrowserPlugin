@@ -57,6 +57,8 @@ protected:
 
 	FSlateColor GetViewOptionsButtonForegroundColor() const;
 	TSharedRef<SWidget> GetViewOptionsButtonContent();
+	void BuildColumnPickerContent(FMenuBuilder& MenuBuilder);
+	void BuildCategoryPickerContent(FMenuBuilder& MenuBuilder);
 
 	void ToggleDisplayCategory(FSubsystemTreeItemID InCategory);
 	bool GetCategoryDisplayStatus(FSubsystemTreeItemID InCategory);
@@ -80,6 +82,8 @@ protected:
 
 	bool ShouldShowOnlyGame() const;
 	void ToggleShouldShowOnlyGame();
+
+	void ShowPluginSettingsTab() const;
 
 	// Selection and Expansion
 

@@ -29,7 +29,7 @@ void FSubsystemBrowserModule::StartupModule()
 
 		ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
 		SettingsSection = SettingsModule.RegisterSettings(
-			TEXT("Editor"), TEXT("ContentEditors"), TEXT("Subsystem Browser"),
+			TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"),
 			LOCTEXT("SubsystemBrowserSettingsName", "Subsystem Browser"),
 			LOCTEXT("SubsystemBrowserSettingsDescription", "Settings for Subsystem Browser Plugin"),
 			SettingsObject
@@ -96,12 +96,18 @@ TSharedRef<SWidget> FSubsystemBrowserModule::CreateSubsystemBrowser(const class 
 void FSubsystemBrowserModule::SummonSubsystemTab()
 {
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-	auto LevelEditorInstance = LevelEditorModule.GetLevelEditorInstance().Pin();
+	TSharedPtr<ILevelEditor> LevelEditorInstance = LevelEditorModule.GetLevelEditorInstance().Pin();
 #if ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION < 26
 	FGlobalTabmanager::Get()->InvokeTab(SubsystemBrowserTabName);
 #else
 	FGlobalTabmanager::Get()->TryInvokeTab(SubsystemBrowserTabName);
 #endif
+}
+
+void FSubsystemBrowserModule::SummonPluginSettingsTab()
+{
+	ISettingsModule& Module = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
+	Module.ShowViewer(TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"));
 }
 
 #undef LOCTEXT_NAMESPACE

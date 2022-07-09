@@ -54,6 +54,8 @@ public:
 	 */
 	SUBSYSTEMBROWSER_API void RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn);
 
+	void SummonPluginSettingsTab();
+
 private:
 	static TSharedRef<SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args);
 	static TSharedRef<SWidget> CreateSubsystemBrowser(const FSpawnTabArgs& Args);

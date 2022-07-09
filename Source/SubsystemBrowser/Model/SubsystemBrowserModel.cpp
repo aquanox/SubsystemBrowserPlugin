@@ -55,6 +55,11 @@ void FSubsystemModel::SetCurrentWorld(TWeakObjectPtr<UWorld> InWorld)
 	PopulateSubsystems();
 }
 
+int32 FSubsystemModel::GetNumCategories() const
+{
+	return AllCategories.Num();
+}
+
 const TArray<SubsystemTreeItemPtr>& FSubsystemModel::GetAllCategories() const
 {
 	return AllCategories;
@@ -141,6 +146,11 @@ int32 FSubsystemModel::GetNumSubsystemsFromVisibleCategories() const
 	}
 
 	return Count;
+}
+
+int32 FSubsystemModel::GetNumDynamicColumns() const
+{
+	return FSubsystemBrowserModule::Get().GetDynamicColumns().Num();
 }
 
 TArray<SubsystemColumnPtr> FSubsystemModel::GetDynamicColumns(bool bActiveOnly) const

@@ -98,14 +98,29 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category=General)
 	float HorizontalSeparatorLocation = 0.33f;
 
+	// Should color some data in table?
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
 	bool bEnableColoring = false;
 
+	// Should show hidden properties in Details View?
+	// Enforces display of all hidden object properties in details panel.
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
 	bool bShowHiddenProperties = true;
 
+	// Should show subsystems only from Game Modules?
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
 	bool bShowOnlyGameModules = false;
+
+public:
+	// Maximum number of column toggles to show in menu before folding into submenu
+	// Specify 0 to always fold
+	UPROPERTY(config, EditAnywhere, Category=General)
+	int32 MaxColumnTogglesToShow = 4;
+
+	// Maximum number of category toggles to show in menu before folding into submenu
+	// Specify 0 to always fold
+	UPROPERTY(config, EditAnywhere, Category=General)
+	int32 MaxCategoryTogglesToShow = 6;
 
 private:
 	void NotifyPropertyChange(FName PropertyName);
