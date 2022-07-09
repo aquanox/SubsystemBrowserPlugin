@@ -7,6 +7,7 @@
 #include "SlateBasics.h"
 #include "UI/SubsystemTreeWidget.h"
 #include "UI/SubsystemTableItem.h"
+#include "UI/SubsystemTableHeader.h"
 #include "Model/SubsystemBrowserModel.h"
 
 /**
@@ -14,7 +15,6 @@
  */
 class SSubsystemBrowserPanel : public SCompoundWidget
 {
-	friend class SSubsystemsHeaderRow;
 public:
 	static const FName PanelIconName;
 

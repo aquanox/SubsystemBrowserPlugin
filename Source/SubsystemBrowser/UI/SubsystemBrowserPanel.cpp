@@ -17,7 +17,6 @@
 #include "HAL/PlatformApplicationMisc.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
-#include "SubsystemTableHeader.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
