@@ -146,7 +146,7 @@ FText FSubsystemDynamicColumn_Config::ExtractConfigText(TSharedRef<SSubsystemTab
 
 #undef LOCTEXT_NAMESPACE
 
-#if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES && ENGINE_MAJOR_VERSION > 4
+#if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES && SB_UE_VERSION_NEWER_OR_SAME(4, 27, 0)
 
 // 1. Create a new struct inheriting FSubsystemDynamicColumn
 

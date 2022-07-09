@@ -21,10 +21,10 @@
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
-#if ENGINE_MAJOR_VERSION < 5
-const FName SSubsystemBrowserPanel::PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
-#else
+#if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
 const FName SSubsystemBrowserPanel::PanelIconName(TEXT("Icons.Settings"));
+#else
+const FName SSubsystemBrowserPanel::PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
 #endif
 
 static void ShowBrowserInfoMessage(FText InText, SNotificationItem::ECompletionState InType)
@@ -449,10 +449,10 @@ FSlateColor SSubsystemBrowserPanel::GetFilterStatusTextColor() const
 
 void SSubsystemBrowserPanel::BrowserSplitterFinishedResizing()
 {
-#if ENGINE_MAJOR_VERSION < 5
-	float NewValue = BrowserSplitter->SlotAt(0).SizeValue.Get();
-#else
+#if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
 	float NewValue = BrowserSplitter->SlotAt(0).GetSizeValue();
+#else
+	float NewValue = BrowserSplitter->SlotAt(0).SizeValue.Get();
 #endif
 	USubsystemBrowserSettings::Get()->SetSeparatorLocation(NewValue);
 }
@@ -546,7 +546,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("OpenSettingsPanel", "All Options"),
 			LOCTEXT("OpenSettingsPanel_Tooltip", "Open plugin settings panel."),
-			FSlateIcon(),
+			FSlateIcon(FEditorStyle::GetStyleSetName(), "EditorPreferences.TabIcon"),
 			FUIAction(
 				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowPluginSettingsTab)
 			),

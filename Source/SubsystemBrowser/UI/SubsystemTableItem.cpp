@@ -5,6 +5,7 @@
 #include "UI/SubsystemBrowserPanel.h"
 #include "SlateOptMacros.h"
 #include "EditorStyleSet.h"
+#include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserSettings.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
@@ -80,12 +81,12 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 const FSlateBrush* SSubsystemTableItem::GetItemIconBrush() const
 {
-#if ENGINE_MAJOR_VERSION < 5
-	static const FName FolderOpenName(TEXT("WorldBrowser.FolderOpen"));
-	static const FName FolderClosedName(TEXT("WorldBrowser.FolderClosed"));
-#else
+#if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
 	static const FName FolderOpenName(TEXT("Icons.FolderOpen"));
 	static const FName FolderClosedName(TEXT("Icons.FolderClosed"));
+#else
+	static const FName FolderOpenName(TEXT("WorldBrowser.FolderOpen"));
+	static const FName FolderClosedName(TEXT("WorldBrowser.FolderClosed"));
 #endif
 
 	if (Item.IsValid() && Item->CanHaveChildren())
