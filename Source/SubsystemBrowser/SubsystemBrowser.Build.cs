@@ -9,6 +9,7 @@ public class SubsystemBrowser : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		// bUseUnity = false;
+        bTreatAsEngineModule = true;
 
 		PublicIncludePaths.Add(ModuleDirectory);
 		PrivateIncludePaths.Add(ModuleDirectory);

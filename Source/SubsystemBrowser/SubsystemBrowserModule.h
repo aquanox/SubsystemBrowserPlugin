@@ -57,8 +57,8 @@ public:
 	void SummonPluginSettingsTab();
 
 private:
-	static TSharedRef<SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args);
-	static TSharedRef<SWidget> CreateSubsystemBrowser(const FSpawnTabArgs& Args);
+	static TSharedRef<class SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args);
+	static TSharedRef<class SWidget> CreateSubsystemBrowser(const FSpawnTabArgs& Args);
 
 	static void SummonSubsystemTab();
 

@@ -5,6 +5,7 @@
 #include "ISettingsModule.h"
 #include "ISettingsSection.h"
 #include "UI/SubsystemBrowserPanel.h"
+#include "Widgets/Docking/SDockTab.h"
 #include "LevelEditor.h"
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"

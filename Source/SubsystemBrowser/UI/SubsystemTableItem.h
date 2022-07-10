@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "SlateCore.h"
+#include "Widgets/Views/STableRow.h"
 #include "Model/SubsystemBrowserDescriptor.h"
 
 class FSubsystemModel;

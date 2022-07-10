@@ -2,13 +2,16 @@
 
 #pragma once
 
-#include "SKismetInspector.h"
-#include "SlateCore.h"
-#include "SlateBasics.h"
+#include "CoreMinimal.h"
+#include "SlateFwd.h"
+#include "Widgets/SWidget.h"
+#include "Widgets/SCompoundWidget.h"
+#include "Widgets/Views/ITableRow.h"
 #include "UI/SubsystemTreeWidget.h"
 #include "UI/SubsystemTableItem.h"
 #include "UI/SubsystemTableHeader.h"
 #include "Model/SubsystemBrowserModel.h"
+#include "IDetailsView.h"
 
 /**
  * Subsystem browser tab content widget
@@ -133,7 +136,6 @@ private:
 	TSharedPtr<FSubsystemModel> SubsystemModel;
 
 	TSharedPtr<IDetailsView>	DetailsView;
-	TSharedPtr<IDetailsView>	WorldDetailsView;
 	TSharedPtr<SVerticalBox>	VerticalBox;
 	TSharedPtr<SBorder>			VerticalBoxBorder;
 	TSharedPtr<SSplitter>		BrowserSplitter;
