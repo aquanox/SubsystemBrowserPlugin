@@ -1,6 +1,7 @@
 // Copyright 2022, Aquanox.
 
 #include "Model/SubsystemBrowserColumn.h"
+#include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserDescriptor.h"
 #include "UI/SubsystemTableItem.h"

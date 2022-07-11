@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleInterface.h"
-#include "SubsystemBrowserFlags.h"
 #include "Model/SubsystemBrowserCategory.h" // [no-fwd]
 #include "Model/SubsystemBrowserColumn.h" // [no-fwd]
 

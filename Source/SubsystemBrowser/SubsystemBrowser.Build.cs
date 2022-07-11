@@ -8,10 +8,11 @@ public class SubsystemBrowser : ModuleRules
 		: base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		// bUseUnity = false;
-        bTreatAsEngineModule = true;
+		// These two to emulate engine installation and includes
+        // bUseUnity = false;
+        // bTreatAsEngineModule = true;
 
-		PublicIncludePaths.Add(ModuleDirectory);
+        PublicIncludePaths.Add(ModuleDirectory);
 		PrivateIncludePaths.Add(ModuleDirectory);
 
 		PrivateDependencyModuleNames.AddRange(new string []
