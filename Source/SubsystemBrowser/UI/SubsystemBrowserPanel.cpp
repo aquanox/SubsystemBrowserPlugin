@@ -8,6 +8,7 @@
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Images/SImage.h"
+#include "Widgets/Views/STableRow.h"
 #include "SlateOptMacros.h"
 #include "SourceCodeNavigation.h"
 #include "ToolMenus.h"

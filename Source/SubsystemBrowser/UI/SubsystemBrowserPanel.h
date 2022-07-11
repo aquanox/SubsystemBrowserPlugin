@@ -6,7 +6,6 @@
 #include "SlateFwd.h"
 #include "Widgets/SWidget.h"
 #include "Widgets/SCompoundWidget.h"
-#include "Widgets/Views/ITableRow.h"
 #include "UI/SubsystemTreeWidget.h"
 #include "UI/SubsystemTableItem.h"
 #include "UI/SubsystemTableHeader.h"
@@ -68,7 +67,7 @@ protected:
 
 	// Tree view
 
-	TSharedRef<ITableRow> GenerateTreeRow(SubsystemTreeItemPtr Item, const TSharedRef<STableViewBase>& OwnerTable);
+	TSharedRef<class ITableRow> GenerateTreeRow(SubsystemTreeItemPtr Item, const TSharedRef<STableViewBase>& OwnerTable);
 	void GetChildrenForTree(SubsystemTreeItemPtr Item, TArray<SubsystemTreeItemPtr>& OutChildren);
 	void OnExpansionChanged(SubsystemTreeItemPtr Item, bool bIsItemExpanded);
 	void OnSelectionChanged(const SubsystemTreeItemPtr Item, ESelectInfo::Type SelectInfo);
