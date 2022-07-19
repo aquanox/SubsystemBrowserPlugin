@@ -53,13 +53,19 @@ public:
 	 */
 	SUBSYSTEMBROWSER_API void RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn);
 
+	/**
+	 * Open editor settings tab with plugin settings pre-selected
+	 */
 	void SummonPluginSettingsTab();
+
+	/**
+	 * Open subsystems tab
+	 */
+	void SummonSubsystemTab();
 
 private:
 	static TSharedRef<class SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args);
 	static TSharedRef<class SWidget> CreateSubsystemBrowser(const FSpawnTabArgs& Args);
-
-	static void SummonSubsystemTab();
 
 	// Saved instance of Settings section
 	TSharedPtr<class ISettingsSection> SettingsSection;

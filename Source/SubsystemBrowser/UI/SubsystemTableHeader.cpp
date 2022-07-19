@@ -21,27 +21,7 @@ void SSubsystemsHeaderRow::RebuildColumns()
 {
 	ClearColumns();
 
-	// Subsystem name column
-	AddColumn(
-		SSubsystemsHeaderRow::Column(SubsystemColumns::ColumnID_Name)
-		  .FillWidth(0.60f)
-		  .SortMode(EColumnSortMode::None)
-		  .HeaderContent()
-		[
-			SNew(SBox)
-			.MinDesiredHeight(24)
-			[
-				SNew(SHorizontalBox)
-				+SHorizontalBox::Slot()
-				.VAlign(VAlign_Center)
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("SubsystemBrowser_Column_Name", "Name"))
-				]
-			]
-		]);
-
-	for (const auto& Column : Model->GetSelectedDynamicColumns())
+	for (const SubsystemColumnPtr& Column : Model->GetSelectedTableColumns())
 	{
 		AddColumn(Column->GenerateHeaderColumnWidget());
 	}

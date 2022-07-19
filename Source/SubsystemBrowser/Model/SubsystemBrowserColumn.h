@@ -2,8 +2,7 @@
 
 #pragma once
 
-struct ISubsystemTreeItem;
-class SSubsystemTableItem;
+#include "Model/SubsystemBrowserDescriptor.h"
 
 /* Represents a configurable column */
 struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSubsystemDynamicColumn>
@@ -30,7 +29,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSu
 	/**
 	 * Generate visual representation of column in table row
 	 */
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const = 0;
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const = 0;
 
 	/**
 	 * Gather searchable strings for column
@@ -46,6 +45,16 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSu
 	 * Perform sorting of table items. WIP
 	 */
 	//virtual void SortItems(TArray<ISubsystemTreeItem>& RootItems, const EColumnSortMode::Type SortMode) const {}
+
+	/**
+	 * Test if custom column name is valid (not None or permanent column)
+	 */
+	static bool IsValidColumnName(FName InName);
+
+	/**
+	 * Get default column visibility state
+	 */
+	virtual bool IsVisibleByDefault() const { return false; }
 };
 
 using SubsystemColumnPtr = TSharedPtr<FSubsystemDynamicColumn>;
@@ -58,36 +67,22 @@ struct SubsystemColumnSorter
 	}
 };
 
-/*
- * "Module" column implementation
- */
-struct FSubsystemDynamicColumn_Module : public FSubsystemDynamicColumn
-{
-	FSubsystemDynamicColumn_Module();
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const override;
-	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override;
-
-private:
-	FText ExtractModuleText(TSharedRef<SSubsystemTableItem> TableRow) const;
-	FText ExtractModuleTooltipText(TSharedRef<SSubsystemTableItem> TableRow) const;
-};
-
 /**
- * "Config" column implementation
+ * A prefab type for simple columns that have text representation
  */
-struct FSubsystemDynamicColumn_Config : public FSubsystemDynamicColumn
+struct SUBSYSTEMBROWSER_API FSubsystemDynamicTextColumn : public FSubsystemDynamicColumn
 {
-	FSubsystemDynamicColumn_Config();
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const override;
-	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override;
-private:
-	FText ExtractConfigText(TSharedRef<SSubsystemTableItem> TableRow) const;
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const override;
+	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override { }
+protected:
+	/* get text to display for specified item */
+	virtual FText ExtractText(TSharedRef<ISubsystemTreeItem> Item) const = 0;
+	/* get tooltip text to display for specified item */
+	virtual FText ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const { return ExtractText(Item); }
+	/* get color and opacity of text for specified item */
+	virtual FSlateColor ExtractColor(TSharedRef<class SSubsystemTableItem> TableRow) const;
+	/* get font of text for specified item */
+	virtual FSlateFontInfo ExtractFont(TSharedRef<class SSubsystemTableItem> TableRow) const;
 };
 
-namespace SubsystemColumns
-{
-	static const FName ColumnID_Marker("Marker");
-	static const FName ColumnID_Name("Name");
-	static const FName ColumnID_Module("Module");
-	static const FName ColumnID_Config("Config");
-}
+// FSubsystemDynamicImageColumn

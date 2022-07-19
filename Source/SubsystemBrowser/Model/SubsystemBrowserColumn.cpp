@@ -1,46 +1,21 @@
 // Copyright 2022, Aquanox.
 
 #include "Model/SubsystemBrowserColumn.h"
+
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserModule.h"
-#include "SubsystemBrowserDescriptor.h"
+#include "Model/SubsystemBrowserDescriptor.h"
+#include "Model/SubsystemBrowserColumn_Name.h"
+#include "Model/SubsystemBrowserColumn_Config.h"
+#include "Model/SubsystemBrowserColumn_Module.h"
 #include "UI/SubsystemTableItem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
-
-const TArray<SubsystemColumnPtr>& FSubsystemBrowserModule::GetDynamicColumns() const
-{
-	return DynamicColumns;
-}
 
 void FSubsystemBrowserModule::RegisterDefaultDynamicColumns()
 {
 	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Module>());
 	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Config>());
-}
-
-void FSubsystemBrowserModule::RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn)
-{
-	if (InColumn->Name.IsNone()
-		|| InColumn->Name == SubsystemColumns::ColumnID_Name)
-	{
-		UE_LOG(LogSubsystemBrowser, Error, TEXT("Invalid column being registered"));
-		return;
-	}
-
-	for (auto& Column : DynamicColumns)
-	{
-		if (Column->Name == InColumn->Name)
-		{
-			UE_LOG(LogSubsystemBrowser, Error, TEXT("Duplicating column with name %s."), *Column->Name.ToString());
-			return;
-		}
-	}
-
-	DynamicColumns.Add(InColumn);
-
-	// Sort columns by order
-	DynamicColumns.StableSort(SubsystemColumnSorter());
 }
 
 FSubsystemDynamicColumn::FSubsystemDynamicColumn()
@@ -51,72 +26,29 @@ SHeaderRow::FColumn::FArguments FSubsystemDynamicColumn::GenerateHeaderColumnWid
 {
 	return SHeaderRow::Column( Name )
 			  .SortMode(EColumnSortMode::None)
-			  .FillWidth( PreferredWidthRatio )
+			  .FillWidth(PreferredWidthRatio)
 			  .HeaderContent()
 			[
-				SNew(SHorizontalBox)
-				+SHorizontalBox::Slot()
-				.VAlign(VAlign_Center)
+				SNew(SBox)
+				.MinDesiredHeight(24)
 				[
-					SNew(STextBlock)
-					.Text(TableLabel)
+					SNew(SHorizontalBox)
+					+SHorizontalBox::Slot()
+					.VAlign(VAlign_Center)
+					[
+						SNew(STextBlock)
+						.Text(TableLabel)
+					]
 				]
 			];
 }
 
-FSubsystemDynamicColumn_Module::FSubsystemDynamicColumn_Module()
+bool FSubsystemDynamicColumn::IsValidColumnName(FName InName)
 {
-	Name = SubsystemColumns::ColumnID_Module;
-	TableLabel = LOCTEXT("SubsystemBrowser_Column_Module", "Module");
-	ConfigLabel = LOCTEXT("SubsystemBrowser_Column_Module", "Module");
-	PreferredWidthRatio = 0.25f;
+	return !InName.IsNone() && InName != SubsystemColumns::ColumnID_Name;
 }
 
-TSharedPtr<SWidget> FSubsystemDynamicColumn_Module::GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
-{
-	return SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot()
-		.VAlign(VAlign_Center)
-	    .Padding(1, 0, 0, 0)
-		.AutoWidth()
-		[
-			SNew(STextBlock)
-			.Font(TableRow, &SSubsystemTableItem::GetDefaultFont)
-			.Text(this, &FSubsystemDynamicColumn_Module::ExtractModuleText, TableRow)
-			.ToolTipText(this, &FSubsystemDynamicColumn_Module::ExtractModuleTooltipText, TableRow)
-			.ColorAndOpacity(TableRow, &SSubsystemTableItem::GetDefaultColorAndOpacity)
-			.HighlightText(TableRow->HighlightText)
-		];
-}
-
-void FSubsystemDynamicColumn_Module::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
-{
-	OutSearchStrings.Add(Item.GetShortPackageString());
-}
-
-FText FSubsystemDynamicColumn_Module::ExtractModuleText(TSharedRef<SSubsystemTableItem> TableRow) const
-{
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Module"), FText::FromString(TableRow->Item->GetShortPackageString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_Module", "{Module}"), Args);
-}
-
-FText FSubsystemDynamicColumn_Module::ExtractModuleTooltipText(TSharedRef<SSubsystemTableItem> TableRow) const
-{
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Module"), FText::FromString(TableRow->Item->GetPackageString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_Module_Tooltip", "{Module}"), Args);
-}
-
-FSubsystemDynamicColumn_Config::FSubsystemDynamicColumn_Config()
-{
-	Name = SubsystemColumns::ColumnID_Config;
-	TableLabel = LOCTEXT("SubsystemBrowser_Column_Config", "Config");
-	ConfigLabel = LOCTEXT("SubsystemBrowser_Column_Config", "Config");
-	PreferredWidthRatio = 0.15f;
-}
-
-TSharedPtr<SWidget> FSubsystemDynamicColumn_Config::GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
+TSharedPtr<SWidget> FSubsystemDynamicTextColumn::GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
 {
 	return SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
@@ -125,24 +57,22 @@ TSharedPtr<SWidget> FSubsystemDynamicColumn_Config::GenerateColumnWidget(TShared
 		.AutoWidth()
 		[
 			SNew(STextBlock)
-			.Font(TableRow, &SSubsystemTableItem::GetDefaultFont)
-			.Text(this, &FSubsystemDynamicColumn_Config::ExtractConfigText, TableRow)
-			.ToolTipText(this, &FSubsystemDynamicColumn_Config::ExtractConfigText, TableRow)
-			.ColorAndOpacity(TableRow, &SSubsystemTableItem::GetDefaultColorAndOpacity)
+			.Font(this, &FSubsystemDynamicTextColumn::ExtractFont, TableRow)
+			.ColorAndOpacity(this, &FSubsystemDynamicTextColumn::ExtractColor, TableRow)
+			.Text(this, &FSubsystemDynamicTextColumn::ExtractText, Item)
+			.ToolTipText(this, &FSubsystemDynamicTextColumn::ExtractTooltipText, Item)
 			.HighlightText(TableRow->HighlightText)
 		];
 }
 
-void FSubsystemDynamicColumn_Config::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
+FSlateColor FSubsystemDynamicTextColumn::ExtractColor(TSharedRef<SSubsystemTableItem> TableRow) const
 {
-	OutSearchStrings.Add(Item.GetConfigNameString());
+	return TableRow->GetDefaultColorAndOpacity();
 }
 
-FText FSubsystemDynamicColumn_Config::ExtractConfigText(TSharedRef<SSubsystemTableItem> TableRow) const
+FSlateFontInfo FSubsystemDynamicTextColumn::ExtractFont(TSharedRef<SSubsystemTableItem> TableRow) const
 {
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Config"), FText::FromString(TableRow->Item->GetConfigNameString()));
-	return FText::Format(LOCTEXT("SubsystemItemType_Config", "{Config}"), Args);
+	return TableRow->GetDefaultFont();
 }
 
 #undef LOCTEXT_NAMESPACE

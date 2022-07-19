@@ -10,7 +10,8 @@
 #include "UI/SubsystemTableItem.h"
 #include "UI/SubsystemTableHeader.h"
 #include "Model/SubsystemBrowserModel.h"
-#include "IDetailsView.h"
+
+class IDetailsView;
 
 /**
  * Subsystem browser tab content widget
@@ -18,8 +19,6 @@
 class SSubsystemBrowserPanel : public SCompoundWidget
 {
 public:
-	static const FName PanelIconName;
-
 	SLATE_BEGIN_ARGS(SSubsystemBrowserPanel)
 		:_InWorld(nullptr)
 		{}
@@ -32,7 +31,6 @@ public:
 	void Construct(const FArguments& InArgs);
 
 	bool IsItemSelected(SubsystemTreeItemPtr Item);
-	bool IsColumnVisible(FName ColumnName) const { return GetColumnDisplayStatus(ColumnName); }
 
 protected:
 	virtual void Tick( const FGeometry& AllotedGeometry, const double InCurrentTime, const float InDeltaTime ) override;
@@ -74,16 +72,10 @@ protected:
 	void OnTreeViewMouseButtonDoubleClick(SubsystemTreeItemPtr Item);
 
 	void ToggleDisplayColumn(FName ColumnName);
-	bool GetColumnDisplayStatus(FName ColumnName) const;
-
-	bool IsTableColoringEnabled() const;
 	void ToggleTableColoring();
-
-	bool ShouldShowHiddenProperties() const;
 	void ToggleShowHiddenProperties();
-
-	bool ShouldShowOnlyGame() const;
 	void ToggleShouldShowOnlyGame();
+	void ToggleShouldShowOnlyPlugins();
 
 	void ShowPluginSettingsTab() const;
 

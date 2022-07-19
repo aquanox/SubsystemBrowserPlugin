@@ -66,12 +66,19 @@ public:
 
 	bool IsColoringEnabled() const { return bEnableColoring; }
 	void SetColoringEnabled(bool bNewValue);
+	void ToggleColoringEnabled() { SetColoringEnabled(!bEnableColoring); }
 
 	bool ShouldShowHiddenProperties() const { return bShowHiddenProperties; }
 	void SetShowHiddenProperties(bool bNewValue);
+	void ToggleShouldShowHiddenProperties() { SetShowHiddenProperties(!bShowHiddenProperties); }
 
 	bool ShouldShowOnlyGame() const { return bShowOnlyGameModules; }
 	void SetShouldShowOnlyGame(bool bNewValue);
+	void ToggleShouldShowOnlyGame() { SetShouldShowOnlyGame(!bShowOnlyGameModules); }
+
+	bool ShouldShowOnlyPlugins() const { return bShowOnlyPluginModules; }
+	void SetShouldShowOnlyPlugins(bool bNewValue);
+	void ToggleShouldShowOnlyPlugins() { SetShouldShowOnlyPlugins(!bShowOnlyPluginModules); }
 
 private:
 
@@ -110,6 +117,10 @@ protected:
 	// Should show subsystems only from Game Modules?
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
 	bool bShowOnlyGameModules = false;
+
+	// Should show subsystems only from Plugins?
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
+	bool bShowOnlyPluginModules = false;
 
 public:
 	// Maximum number of column toggles to show in menu before folding into submenu

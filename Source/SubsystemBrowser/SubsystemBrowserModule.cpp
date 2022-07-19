@@ -9,6 +9,7 @@
 #include "LevelEditor.h"
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
+#include "SubsystemBrowserFlags.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
@@ -19,6 +20,12 @@ DEFINE_LOG_CATEGORY(LogSubsystemBrowser);
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
 const FName FSubsystemBrowserModule::SubsystemBrowserTabName = TEXT("SubsystemBrowserTab");
+
+#if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
+static const FName PanelIconName(TEXT("Icons.Settings"));
+#else
+static const FName PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
+#endif
 
 void FSubsystemBrowserModule::StartupModule()
 {
@@ -47,7 +54,7 @@ void FSubsystemBrowserModule::StartupModule()
 					.SetDisplayName(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 					.SetTooltipText(LOCTEXT("SubsystemBrowserTooltip", "Open the Subsystem Browser tab."))
 					.SetGroup( WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory() )
-					.SetIcon( FSlateIcon(FEditorStyle::GetStyleSetName(), SSubsystemBrowserPanel::PanelIconName) );
+					.SetIcon( FSlateIcon(FEditorStyle::GetStyleSetName(), PanelIconName) );
 			}
 		});
 
@@ -74,8 +81,8 @@ void FSubsystemBrowserModule::ShutdownModule()
 TSharedRef<SDockTab> FSubsystemBrowserModule::HandleTabManagerSpawnTab(const FSpawnTabArgs& Args)
 {
 	return SNew(SDockTab)
-#if ENGINE_MAJOR_VERSION < 5
-		.Icon(FEditorStyle::GetBrush(SSubsystemBrowserPanel::PanelIconName))
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+		.Icon(FEditorStyle::GetBrush(PanelIconName))
 #endif
 		.Label(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 	[
@@ -88,9 +95,9 @@ TSharedRef<SDockTab> FSubsystemBrowserModule::HandleTabManagerSpawnTab(const FSp
 	];
 }
 
-TSharedRef<SWidget> FSubsystemBrowserModule::CreateSubsystemBrowser(const class FSpawnTabArgs& Args)
+TSharedRef<SWidget> FSubsystemBrowserModule::CreateSubsystemBrowser(const FSpawnTabArgs& Args)
 {
-	UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
+	UWorld* EditorWorld = GEditor ? GEditor->GetEditorWorldContext().World() : nullptr;
 	return SNew(SSubsystemBrowserPanel).InWorld(EditorWorld);
 }
 
@@ -98,7 +105,7 @@ void FSubsystemBrowserModule::SummonSubsystemTab()
 {
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 	TSharedPtr<ILevelEditor> LevelEditorInstance = LevelEditorModule.GetLevelEditorInstance().Pin();
-#if ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION < 26
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
 	FGlobalTabmanager::Get()->InvokeTab(SubsystemBrowserTabName);
 #else
 	FGlobalTabmanager::Get()->TryInvokeTab(SubsystemBrowserTabName);
@@ -109,6 +116,72 @@ void FSubsystemBrowserModule::SummonPluginSettingsTab()
 {
 	ISettingsModule& Module = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
 	Module.ShowViewer(TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"));
+}
+
+const TArray<SubsystemCategoryPtr>& FSubsystemBrowserModule::GetCategories() const
+{
+	return Categories;
+}
+
+const TArray<SubsystemColumnPtr>& FSubsystemBrowserModule::GetDynamicColumns() const
+{
+	return DynamicColumns;
+}
+
+void FSubsystemBrowserModule::RegisterCategory(TSharedRef<FSubsystemCategory> InCategory)
+{
+	if (InCategory->Name.IsNone()
+		|| !InCategory->SubsystemClass.IsValid()
+		|| !InCategory->Selector.IsBound())
+	{
+		UE_LOG(LogSubsystemBrowser, Error, TEXT("Invalid category being registered"));
+		return;
+	}
+
+	for (const SubsystemCategoryPtr& Category : Categories)
+	{
+		if (Category->Name == InCategory->Name)
+		{
+			UE_LOG(LogSubsystemBrowser, Error, TEXT("Duplicating category with name %s."), *Category->Name.ToString());
+			return;
+		}
+	}
+
+	Categories.Add(InCategory);
+}
+
+void FSubsystemBrowserModule::RemoveCategory(FName CategoryName)
+{
+	for (auto It = Categories.CreateIterator(); It; ++It)
+	{
+		if ((*It)->Name == CategoryName)
+		{
+			It.RemoveCurrent();
+		}
+	}
+}
+
+void FSubsystemBrowserModule::RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn)
+{
+	if (!FSubsystemDynamicColumn::IsValidColumnName(InColumn->Name))
+	{
+		UE_LOG(LogSubsystemBrowser, Error, TEXT("Invalid column being registered"));
+		return;
+	}
+
+	for (SubsystemColumnPtr& Column : DynamicColumns)
+	{
+		if (Column->Name == InColumn->Name)
+		{
+			UE_LOG(LogSubsystemBrowser, Error, TEXT("Duplicating column with name %s."), *Column->Name.ToString());
+			return;
+		}
+	}
+
+	DynamicColumns.Add(InColumn);
+
+	// Sort columns by order
+	DynamicColumns.StableSort(SubsystemColumnSorter());
 }
 
 #undef LOCTEXT_NAMESPACE

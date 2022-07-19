@@ -18,14 +18,9 @@
 #include "HAL/PlatformApplicationMisc.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
+#include "IDetailsView.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
-
-#if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
-const FName SSubsystemBrowserPanel::PanelIconName(TEXT("Icons.Settings"));
-#else
-const FName SSubsystemBrowserPanel::PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
-#endif
 
 static void ShowBrowserInfoMessage(FText InText, SNotificationItem::ECompletionState InType)
 {
@@ -388,9 +383,7 @@ void SSubsystemBrowserPanel::TransformItemToString(const ISubsystemTreeItem&  It
 {
 	if (Item.GetAsSubsystemDescriptor())
 	{
-		OutSearchStrings.Add(Item.GetDisplayNameString());
-
-		for (auto& Column : SubsystemModel->GetSelectedDynamicColumns())
+		for (auto& Column : SubsystemModel->GetSelectedTableColumns())
 		{
 			Column->PopulateSearchStrings(Item, OutSearchStrings);
 		}
@@ -514,7 +507,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			FUIAction(
 				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleTableColoring),
 				FCanExecuteAction(),
-				FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::IsTableColoringEnabled)
+				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::IsColoringEnabled)
 			),
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
@@ -526,7 +519,19 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			FUIAction(
 				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleShouldShowOnlyGame),
 				FCanExecuteAction(),
-				FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::ShouldShowOnlyGame)
+				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldShowOnlyGame)
+			),
+			NAME_None,
+			EUserInterfaceActionType::ToggleButton
+		);
+		MenuBuilder.AddMenuEntry(
+			LOCTEXT("TogglePluginOnly", "Only Plugin Modules"),
+			LOCTEXT("TogglePluginOnly_Tooltip", "Show only subsystems that are within plugins."),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleShouldShowOnlyPlugins),
+				FCanExecuteAction(),
+				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldShowOnlyPlugins)
 			),
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
@@ -538,7 +543,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			FUIAction(
 				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleShowHiddenProperties),
 				FCanExecuteAction(),
-				FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::ShouldShowHiddenProperties)
+				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldShowHiddenProperties)
 			),
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
@@ -561,7 +566,9 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 
 void SSubsystemBrowserPanel::BuildColumnPickerContent(FMenuBuilder& MenuBuilder)
 {
-	for (const SubsystemColumnPtr& Column : SubsystemModel->GetDynamicColumns(false))
+	USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+
+	for (const SubsystemColumnPtr& Column : SubsystemModel->GetDynamicTableColumns())
 	{
 		MenuBuilder.AddMenuEntry(
 			Column->ConfigLabel,
@@ -570,7 +577,7 @@ void SSubsystemBrowserPanel::BuildColumnPickerContent(FMenuBuilder& MenuBuilder)
 			FUIAction(
 				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleDisplayColumn, Column->Name),
 				FCanExecuteAction(),
-				FIsActionChecked::CreateSP(this, &SSubsystemBrowserPanel::GetColumnDisplayStatus, Column->Name)
+				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::GetTableColumnState, Column->Name)
 			),
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
@@ -674,55 +681,32 @@ void SSubsystemBrowserPanel::ToggleDisplayColumn(FName ColumnName)
 	bNeedsRefresh = true;
 }
 
-bool SSubsystemBrowserPanel::GetColumnDisplayStatus(FName ColumnName) const
-{
-	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	return Settings->GetTableColumnState(ColumnName);
-}
-
-bool SSubsystemBrowserPanel::IsTableColoringEnabled() const
-{
-	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	return Settings->IsColoringEnabled();
-}
-
 void SSubsystemBrowserPanel::ToggleTableColoring()
 {
-	USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	bool bOldValue = Settings->IsColoringEnabled();
-	Settings->SetColoringEnabled(!bOldValue);
+	USubsystemBrowserSettings::Get()->ToggleColoringEnabled();
 
 	RefreshView();
 }
 
-bool SSubsystemBrowserPanel::ShouldShowHiddenProperties() const
-{
-	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	return Settings->ShouldShowHiddenProperties();
-}
-
 void SSubsystemBrowserPanel::ToggleShowHiddenProperties()
 {
-	USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	bool bOldValue = Settings->ShouldShowHiddenProperties();
-	Settings->SetShowHiddenProperties(!bOldValue);
+	USubsystemBrowserSettings::Get()->ToggleShouldShowHiddenProperties();
 
 	RefreshView();
 
 	ShowBrowserInfoMessage(LOCTEXT("PropertyToggleWarning", "Changes will be applied after panel restart"), SNotificationItem::CS_Pending);
 }
 
-bool SSubsystemBrowserPanel::ShouldShowOnlyGame() const
-{
-	USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	return Settings->ShouldShowOnlyGame();
-}
-
 void SSubsystemBrowserPanel::ToggleShouldShowOnlyGame()
 {
-	USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	bool bOldValue = Settings->ShouldShowOnlyGame();
-	Settings->SetShouldShowOnlyGame(!bOldValue);
+	USubsystemBrowserSettings::Get()->ToggleShouldShowOnlyGame();
+
+	FullRefresh();
+}
+
+void SSubsystemBrowserPanel::ToggleShouldShowOnlyPlugins()
+{
+	USubsystemBrowserSettings::Get()->ToggleShouldShowOnlyPlugins();
 
 	FullRefresh();
 }

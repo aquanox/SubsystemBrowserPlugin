@@ -11,9 +11,9 @@ DECLARE_DELEGATE(FOnSubsystemSelectedDelegate);
 /* Subsystem text filter */
 class SubsystemTextFilter : public TTextFilter<const ISubsystemTreeItem&>
 {
+	using Super = TTextFilter<const ISubsystemTreeItem&>;
 public:
-	SubsystemTextFilter(const FItemToStringArray& InTransformDelegate)
-		: TTextFilter<const ISubsystemTreeItem&>(InTransformDelegate) { }
+	SubsystemTextFilter(const FItemToStringArray& InTransformDelegate) : Super(InTransformDelegate) { }
 
 	bool HasText() const { return !GetRawFilterText().IsEmpty(); }
 };
@@ -51,7 +51,7 @@ public:
 	TWeakObjectPtr<UWorld> GetCurrentWorld() const;
 	void SetCurrentWorld(TWeakObjectPtr<UWorld> InWorld);
 
-	bool IsSubsystemFilterActive() const { return SubsystemTextFilter.IsValid() && SubsystemTextFilter->HasText(); }
+	bool IsSubsystemFilterActive() const;
 
 	int32 GetNumCategories() const;
 	const TArray<SubsystemTreeItemPtr>& GetAllCategories() const;
@@ -62,13 +62,20 @@ public:
 
 	void GetFilteredSubsystems(SubsystemTreeItemPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const;
 
+	/* get total number of subsystems in visible categories */
 	int32 GetNumSubsystemsFromVisibleCategories() const;
 
-	int32 GetNumDynamicColumns() const;
-	TArray<SubsystemColumnPtr> GetDynamicColumns(bool bActiveOnly) const;
-	TArray<SubsystemColumnPtr> GetSelectedDynamicColumns() const { return GetDynamicColumns(true); }
-	SubsystemColumnPtr FindDynamicColumn(const FName& ColumnName, bool bActiveOnly) const;
+	/* find a permanent or dynamic column by its name */
+	SubsystemColumnPtr FindTableColumn(const FName& ColumnName) const;
+	/* returns all visible permanent and dynamic columns in sorted order */
+	TArray<SubsystemColumnPtr> GetSelectedTableColumns() const;
 
+	/* returns all dynamic columns in sorted order */
+	TArray<SubsystemColumnPtr> GetDynamicTableColumns() const;
+	/* return a total number of dynamic columns registered */
+	int32 GetNumDynamicColumns() const;
+	/* check if dynamic column is enabled by settings */
+	bool ShouldShowColumn(SubsystemColumnPtr Column) const;
 private:
 	void EmptyModel();
 	void PopulateCategories();
@@ -80,8 +87,8 @@ private:
 	TArray<SubsystemTreeItemPtr> AllSubsystems;
 	/* Global list of all subsystems by category */
 	TMap<FName, TArray<SubsystemTreeItemPtr>> AllSubsystemsByCategory;
-	/* List of dynamic columns */
-	TArray<SubsystemColumnPtr> DynamicColumns;
+	/* List of permanent columns */
+	TArray<SubsystemColumnPtr> PermanentColumns;
 
 	/* Pointer to currently browsing world */
 	TWeakObjectPtr<UWorld> CurrentWorld;

@@ -38,8 +38,6 @@ public:
 
 	const FSlateBrush* GetItemIconBrush() const;
 
-	FText			GetDisplayNameText() const;
-
 	FSlateFontInfo	GetDefaultFont() const;
 	FSlateColor		GetDefaultColorAndOpacity() const;
 

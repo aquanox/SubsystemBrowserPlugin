@@ -28,17 +28,3 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory
 
 using SubsystemCategoryPtr = TSharedPtr<FSubsystemCategory>;
 
-namespace SubsystemCategoryHelpers
-{
-	static const FName CategoryEngine("EngineSubsystemCategory");
-	static const FName CategoryEditor("EditorSubsystemCategory");
-	static const FName CategoryGameInstance("GameInstanceCategory");
-	static const FName CategoryWorld("WorldSubsystemCategory");
-	static const FName CategoryPlayer("PlayerCategory");
-
-	void SelectEngineSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
-	void SelectEditorSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
-	void SelectGameInstanceSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
-	void SelectWorldSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
-	void SelectPlayerSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
-}

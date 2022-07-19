@@ -1,6 +1,8 @@
 // Copyright 2022, Aquanox.
 
 #include "Model/SubsystemBrowserModel.h"
+
+#include "SubsystemBrowserColumn_Name.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
 
@@ -38,6 +40,7 @@ bool SubsystemCategoryFilter::IsCategoryVisible(FSubsystemTreeItemID InCategory)
 
 FSubsystemModel::FSubsystemModel()
 {
+	PermanentColumns.Add(MakeShared<FSubsystemDynamicColumn_Name>());
 }
 
 TWeakObjectPtr<UWorld> FSubsystemModel::GetCurrentWorld() const
@@ -53,6 +56,11 @@ void FSubsystemModel::SetCurrentWorld(TWeakObjectPtr<UWorld> InWorld)
 
 	PopulateCategories();
 	PopulateSubsystems();
+}
+
+bool FSubsystemModel::IsSubsystemFilterActive() const
+{
+	return SubsystemTextFilter.IsValid() && SubsystemTextFilter->HasText();
 }
 
 int32 FSubsystemModel::GetNumCategories() const
@@ -113,6 +121,8 @@ void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemPtr Category, TArra
 		{
 			if (Settings->ShouldShowOnlyGame() && !Item->IsGameModule())
 				continue;
+			if (Settings->ShouldShowOnlyPlugins() && !Item->IsPluginModule())
+				continue;
 
 			if (!SubsystemTextFilter.IsValid() || SubsystemTextFilter->PassesFilter(*Item))
 			{
@@ -123,9 +133,7 @@ void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemPtr Category, TArra
 
 	if (OutChildren.Num() > 1)
 	{
-		OutChildren.Sort([](SubsystemTreeItemPtr Item1, SubsystemTreeItemPtr Item2) {
-			return Item1->GetDisplayNameString() < Item2->GetDisplayNameString();
-		});
+		OutChildren.Sort(SubsystemTreeItemSorter());
 	}
 }
 
@@ -138,7 +146,7 @@ int32 FSubsystemModel::GetNumSubsystemsFromVisibleCategories() const
 
 	TArray<SubsystemTreeItemPtr> Subsystems;
 
-	for (const auto & Category : VisibleCategories)
+	for (const SubsystemTreeItemPtr& Category : VisibleCategories)
 	{
 		GetAllSubsystemsInCategory(Category, Subsystems);
 
@@ -153,30 +161,50 @@ int32 FSubsystemModel::GetNumDynamicColumns() const
 	return FSubsystemBrowserModule::Get().GetDynamicColumns().Num();
 }
 
-TArray<SubsystemColumnPtr> FSubsystemModel::GetDynamicColumns(bool bActiveOnly) const
+bool FSubsystemModel::ShouldShowColumn(SubsystemColumnPtr Column) const
 {
-	TArray<SubsystemColumnPtr> Result;
+	if (PermanentColumns.Contains(Column))
+		return true;
 
+	return USubsystemBrowserSettings::Get()->GetTableColumnState(Column->Name);
+}
+
+TArray<SubsystemColumnPtr> FSubsystemModel::GetSelectedTableColumns() const
+{
 	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	for (const auto& Column : FSubsystemBrowserModule::Get().GetDynamicColumns())
+
+	TArray<SubsystemColumnPtr> Result;
+	Result.Append(PermanentColumns);
+
+	for (const SubsystemColumnPtr& Column : FSubsystemBrowserModule::Get().GetDynamicColumns())
 	{
-		if (!bActiveOnly || Settings->GetTableColumnState(Column->Name))
+		if (Settings->GetTableColumnState(Column->Name))
 		{
 			Result.Add(Column);
 		}
 	}
 
 	Result.StableSort(SubsystemColumnSorter());
-
 	return Result;
 }
 
-SubsystemColumnPtr FSubsystemModel::FindDynamicColumn(const FName& ColumnName, bool bActiveOnly) const
+TArray<SubsystemColumnPtr> FSubsystemModel::GetDynamicTableColumns() const
 {
-	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	for (const auto& Column : FSubsystemBrowserModule::Get().GetDynamicColumns())
+	TArray<SubsystemColumnPtr> Result;
+	Result.Append(FSubsystemBrowserModule::Get().GetDynamicColumns());
+	Result.StableSort(SubsystemColumnSorter());
+	return Result;
+}
+
+SubsystemColumnPtr FSubsystemModel::FindTableColumn(const FName& ColumnName) const
+{
+	TArray<SubsystemColumnPtr, TInlineAllocator<8>> Result;
+	Result.Append(PermanentColumns);
+	Result.Append(FSubsystemBrowserModule::Get().GetDynamicColumns());
+
+	for (const SubsystemColumnPtr& Column : Result)
 	{
-		if (Column->Name == ColumnName && (!bActiveOnly || Settings->GetTableColumnState(Column->Name)))
+		if (Column->Name == ColumnName)
 		{
 			return Column;
 		}
@@ -186,7 +214,7 @@ SubsystemColumnPtr FSubsystemModel::FindDynamicColumn(const FName& ColumnName, b
 
 void FSubsystemModel::EmptyModel()
 {
-	for (const auto & Category : AllCategories)
+	for (const SubsystemTreeItemPtr& Category : AllCategories)
 	{
 		Category->RemoveAllChildren();
 	}
@@ -232,6 +260,5 @@ void FSubsystemModel::PopulateSubsystems()
 		}
 	}
 }
-
 
 #undef LOCTEXT_NAMESPACE

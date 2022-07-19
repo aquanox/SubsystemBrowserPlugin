@@ -25,52 +25,15 @@ void SSubsystemTableItem::Construct(const FArguments& InArgs, TSharedRef<STableV
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 TSharedRef<SWidget> SSubsystemTableItem::GenerateWidgetForColumn(const FName& ColumnID)
 {
-	if (!Browser->IsColumnVisible(ColumnID) || !Item.IsValid())
+	if (!Item.IsValid())
 	{
 		return SNullWidget::NullWidget;
 	}
 
-	TSharedPtr< SWidget > TableRowContent = SNullWidget::NullWidget;
+	TSharedPtr<SWidget> TableRowContent = SNullWidget::NullWidget;
 
-	if (ColumnID == SubsystemColumns::ColumnID_Name)
-	{
-		TableRowContent =
-			SNew(SHorizontalBox)
-			+SHorizontalBox::Slot()
-			.AutoWidth()
-			[
-				SNew(SExpanderArrow, SharedThis(this))
-			]
-
-			+SHorizontalBox::Slot()
-			.VAlign(VAlign_Center)
-		    .Padding(1, 0, 0, 0)
-			.AutoWidth()
-			[
-				SNew(SBox)
-				.VAlign(VAlign_Center)
-				.HeightOverride(22)
-				.WidthOverride(Item->CanHaveChildren() ? 16.f : 7.f)
-				[
-					SNew(SImage)
-					.Image(this, &SSubsystemTableItem::GetItemIconBrush)
-				]
-			]
-
-			+SHorizontalBox::Slot()
-			.VAlign(VAlign_Center)
-		    .Padding(4, 3, 0, 3)
-			.AutoWidth()
-			[
-				SNew(STextBlock)
-					.Font(this, &SSubsystemTableItem::GetDefaultFont)
-					.Text(this, &SSubsystemTableItem::GetDisplayNameText)
-					.ToolTipText(this, &SSubsystemTableItem::GetDisplayNameText)
-					.ColorAndOpacity(this, &SSubsystemTableItem::GetDefaultColorAndOpacity)
-					.HighlightText(HighlightText)
-			];
-	}
-	else if (SubsystemColumnPtr Column = Model->FindDynamicColumn(ColumnID, false))
+	SubsystemColumnPtr Column = Model->FindTableColumn(ColumnID);
+	if (Column.IsValid() && Model->ShouldShowColumn(Column) )
 	{
 		TableRowContent = Column->GenerateColumnWidget(Item.ToSharedRef(), SharedThis(this));
 	}
@@ -125,23 +88,6 @@ FSlateFontInfo SSubsystemTableItem::GetDefaultFont() const
 	// {
 		return FEditorStyle::GetFontStyle("WorldBrowser.LabelFont");
 	// }
-}
-
-FText SSubsystemTableItem::GetDisplayNameText() const
-{
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("DisplayText"), Item->GetDisplayName());
-	Args.Add(TEXT("Stale"), (Item->IsStale() ? LOCTEXT("SubsystemItem_Stale", " (Stale)") : FText::GetEmpty()));
-
-	if (Item->GetOwnerNameString().IsEmpty())
-	{
-		return FText::Format(LOCTEXT("SubsystemItem_Name", "{DisplayText}{Stale}"), Args);
-	}
-	else
-	{
-		Args.Add(TEXT("OwnedBy"), FText::FromString(Item->GetOwnerNameString()));
-		return FText::Format(LOCTEXT("SubsystemItem_NameOwned", "{DisplayText} ({OwnedBy}){Stale}"), Args);
-	}
 }
 
 #undef LOCTEXT_NAMESPACE

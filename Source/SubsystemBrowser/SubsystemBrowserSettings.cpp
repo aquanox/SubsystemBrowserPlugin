@@ -8,9 +8,6 @@ USubsystemBrowserSettings::FSettingChangedEvent USubsystemBrowserSettings::Setti
 
 USubsystemBrowserSettings::USubsystemBrowserSettings()
 {
-	// fill default columns
-	TableColumnVisibilityState.Emplace(SubsystemColumns::ColumnID_Module, true);
-	TableColumnVisibilityState.Emplace(SubsystemColumns::ColumnID_Config, true);
 }
 
 void USubsystemBrowserSettings::OnSettingsSelected()
@@ -99,6 +96,12 @@ void USubsystemBrowserSettings::SetShouldShowOnlyGame(bool bNewValue)
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowOnlyGameModules));
 }
 
+void USubsystemBrowserSettings::SetShouldShowOnlyPlugins(bool bNewValue)
+{
+	bShowOnlyPluginModules = bNewValue;
+	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowOnlyPluginModules));
+}
+
 void USubsystemBrowserSettings::SyncColumnSettings()
 {
 	TMap<FName, bool> CurrentSettings;
@@ -110,7 +113,7 @@ void USubsystemBrowserSettings::SyncColumnSettings()
 	{
 		if (!CurrentSettings.Contains(DynamicColumn->Name))
 		{
-			CurrentSettings.Emplace(DynamicColumn->Name, true);
+			CurrentSettings.Emplace(DynamicColumn->Name, DynamicColumn->IsVisibleByDefault());
 		}
 	}
 

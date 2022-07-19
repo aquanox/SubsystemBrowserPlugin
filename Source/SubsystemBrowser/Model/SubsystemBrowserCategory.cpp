@@ -13,23 +13,27 @@
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
-const TArray<SubsystemCategoryPtr>& FSubsystemBrowserModule::GetCategories() const
+namespace SubsystemCategoryHelpers
 {
-	return Categories;
+	void SelectEngineSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
+	void SelectEditorSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
+	void SelectGameInstanceSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
+	void SelectWorldSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
+	void SelectPlayerSubsystems(UWorld* InContext, TArray<UObject*>& OutData);
 }
 
 void FSubsystemBrowserModule::RegisterDefaultCategories()
 {
 	auto CategoryEngine = MakeShared<FSubsystemCategory>();
-	CategoryEngine->Name		   = SubsystemCategoryHelpers::CategoryEngine;
-	CategoryEngine->Label		   = LOCTEXT("SubsystemBrowser_Engine", "Engine Subsystems");
+	CategoryEngine->Name = TEXT("EngineSubsystemCategory");
+	CategoryEngine->Label = LOCTEXT("SubsystemBrowser_Engine", "Engine Subsystems");
 	CategoryEngine->SubsystemClass = UEngineSubsystem::StaticClass();
-	CategoryEngine->Selector	   = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectEngineSubsystems);
+	CategoryEngine->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectEngineSubsystems);
 	CategoryEngine->SortOrder = 100;
 	RegisterCategory(CategoryEngine);
 
 	auto CategoryEditor = MakeShared<FSubsystemCategory>();
-	CategoryEditor->Name = SubsystemCategoryHelpers::CategoryEditor;
+	CategoryEditor->Name = TEXT("EditorSubsystemCategory");
 	CategoryEditor->Label = LOCTEXT("SubsystemBrowser_Editor", "Editor Subsystems");
 	CategoryEditor->SubsystemClass = UEditorSubsystem::StaticClass();
 	CategoryEditor->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectEditorSubsystems);
@@ -37,7 +41,7 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	RegisterCategory(CategoryEditor);
 
 	auto CategoryGameInstance = MakeShared<FSubsystemCategory>();
-	CategoryGameInstance->Name = SubsystemCategoryHelpers::CategoryGameInstance;
+	CategoryGameInstance->Name = TEXT("GameInstanceCategory");
 	CategoryGameInstance->Label = LOCTEXT("SubsystemBrowser_GameInstance", "Game Instance Subsystems");
 	CategoryGameInstance->SubsystemClass = UGameInstanceSubsystem::StaticClass();
 	CategoryGameInstance->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectGameInstanceSubsystems);
@@ -45,7 +49,7 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	RegisterCategory(CategoryGameInstance);
 
 	auto CategoryWorld = MakeShared<FSubsystemCategory>();
-	CategoryWorld->Name = SubsystemCategoryHelpers::CategoryWorld;
+	CategoryWorld->Name = TEXT("WorldSubsystemCategory");
 	CategoryWorld->Label = LOCTEXT("SubsystemBrowser_World", "World Subsystems");
 	CategoryWorld->SubsystemClass = UWorldSubsystem::StaticClass();
 	CategoryWorld->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectWorldSubsystems);
@@ -53,45 +57,12 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	RegisterCategory(CategoryWorld);
 
 	auto CategoryPlayer = MakeShared<FSubsystemCategory>();
-	CategoryPlayer->Name = SubsystemCategoryHelpers::CategoryPlayer;
+	CategoryPlayer->Name = TEXT("PlayerCategory");
 	CategoryPlayer->Label = LOCTEXT("SubsystemBrowser_Player", "Player Subsystems");
 	CategoryPlayer->SubsystemClass = ULocalPlayerSubsystem::StaticClass();
 	CategoryPlayer->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectPlayerSubsystems);
 	CategoryPlayer->SortOrder = 500;
 	RegisterCategory(CategoryPlayer);
-}
-
-void FSubsystemBrowserModule::RegisterCategory(TSharedRef<FSubsystemCategory> InCategory)
-{
-	if (InCategory->Name.IsNone()
-		|| !InCategory->SubsystemClass.IsValid()
-		|| !InCategory->Selector.IsBound())
-	{
-		UE_LOG(LogSubsystemBrowser, Error, TEXT("Invalid category being registered"));
-		return;
-	}
-
-	for (auto& Category : Categories)
-	{
-		if (Category->Name == InCategory->Name)
-		{
-			UE_LOG(LogSubsystemBrowser, Error, TEXT("Duplicating category with name %s."), *Category->Name.ToString());
-			return;
-		}
-	}
-
-	Categories.Add(InCategory);
-}
-
-void FSubsystemBrowserModule::RemoveCategory(FName CategoryName)
-{
-	for (auto It = Categories.CreateIterator(); It; ++It)
-	{
-		if ((*It)->Name == CategoryName)
-		{
-			It.RemoveCurrent();
-		}
-	}
 }
 
 void SubsystemCategoryHelpers::SelectEngineSubsystems(UWorld* CurrentWorld, TArray<UObject*>& OutData)

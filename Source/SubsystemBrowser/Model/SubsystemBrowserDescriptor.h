@@ -17,7 +17,7 @@ using SubsystemTreeItemRef = TSharedRef<ISubsystemTreeItem>;
 /*
  * Abstract subsystem tree item node
  */
-struct ISubsystemTreeItem
+struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 {
 	virtual ~ISubsystemTreeItem()  = default;
 
@@ -36,6 +36,7 @@ struct ISubsystemTreeItem
 	virtual bool IsStale() const { return false; }
 	virtual bool IsConfigExportable() const { return false; }
 	virtual bool IsGameModule() const { return false; }
+	virtual bool IsPluginModule() const { return false; }
 
 	virtual FText GetDisplayName() const = 0;
 	FString GetDisplayNameString() const { return GetDisplayName().ToString(); }
@@ -43,6 +44,7 @@ struct ISubsystemTreeItem
 	virtual FString GetPackageString() const = 0;
 	virtual FString GetConfigNameString() const = 0;
 	virtual FString GetOwnerNameString() const = 0;
+	virtual FString GetPluginNameString() const = 0;
 
 	virtual FSubsystemTreeSubsystemItem* GetAsSubsystemDescriptor() const { return nullptr; }
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const { return nullptr; }
@@ -56,6 +58,14 @@ struct ISubsystemTreeItem
 	TSharedPtr<FSubsystemModel> Model;
 	mutable SubsystemTreeItemPtr Parent;
 	mutable TArray<SubsystemTreeItemPtr> Children;
+};
+
+struct SubsystemTreeItemSorter
+{
+	bool operator()(SubsystemTreeItemPtr Item1, SubsystemTreeItemPtr Item2) const
+	{
+		return Item1->GetDisplayNameString() < Item2->GetDisplayNameString();
+	}
 };
 
 /**
@@ -76,6 +86,7 @@ struct FSubsystemTreeCategoryItem final : public ISubsystemTreeItem
 	virtual FString GetPackageString() const override { return FString(); }
 	virtual FString GetConfigNameString() const override  { return FString(); }
 	virtual FString GetOwnerNameString() const override  { return FString(); }
+	virtual FString GetPluginNameString() const override  { return FString(); }
 
 	virtual bool CanHaveChildren() const override { return true; }
 
@@ -101,12 +112,14 @@ struct FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
 
 	FString							OwnerName;
 
-	FString                         ModuleName;
-	FString							ModulePath;
 	TArray<FString>					SourceFilePaths;
+
+	FString							PluginName;
+	FString							PluginDisplayName;
 
 	bool							bConfigExportable = false;
 	bool							bIsGameModuleClass = false;
+	bool							bIsPluginClass = false;
 
 	FSubsystemTreeSubsystemItem() = default;
 	FSubsystemTreeSubsystemItem(UObject* Subsystem);
@@ -118,10 +131,12 @@ struct FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
 	virtual FString GetPackageString() const override;
 	virtual FString GetConfigNameString() const override;
 	virtual FString GetOwnerNameString() const override;
+	virtual FString GetPluginNameString() const override;
 
 	virtual FSubsystemTreeSubsystemItem* GetAsSubsystemDescriptor() const override {  return const_cast<FSubsystemTreeSubsystemItem*>(this); }
 	virtual UObject* GetObjectForDetails() const override { return Subsystem.Get(); }
 	virtual bool IsStale() const override { return Subsystem.IsStale() || Class.IsStale(); }
 	virtual bool IsConfigExportable() const override { return bConfigExportable; }
 	virtual bool IsGameModule() const override { return bIsGameModuleClass; }
+	virtual bool IsPluginModule() const override { return bIsPluginClass; }
 };
