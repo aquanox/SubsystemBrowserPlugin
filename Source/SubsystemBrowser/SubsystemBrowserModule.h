@@ -32,6 +32,11 @@ public:
 	 */
 	void RegisterDefaultCategories();
 	/**
+	 * Register a new subsystem category
+	 */
+	template<typename TCategory, typename... TArgs>
+	void RegisterCategory(TArgs&&... InArgs);
+	/**
 	 * Register a new subsystem category to show
 	 */
 	SUBSYSTEMBROWSER_API void RegisterCategory(TSharedRef<FSubsystemCategory> InCategory);
@@ -48,6 +53,11 @@ public:
 	 *
 	 */
 	void RegisterDefaultDynamicColumns();
+	/**
+	 * Register a new custom dynamic column
+	 */
+	template<typename TColumn, typename... TArgs>
+	void RegisterDynamicColumn(TArgs&&... InArgs);
 	/**
 	 * Register a new custom dynamic column
 	 */
@@ -74,6 +84,18 @@ private:
 	// Instances of dynamic subsystem columns
 	TArray<SubsystemColumnPtr> DynamicColumns;
 };
+
+template <typename TCategory, typename... TArgs>
+void FSubsystemBrowserModule::RegisterCategory(TArgs&&... InArgs)
+{
+	RegisterCategory(MakeShared<TCategory>(Forward<TArgs>(InArgs)...));
+}
+
+template <typename TColumn, typename... TArgs>
+void FSubsystemBrowserModule::RegisterDynamicColumn(TArgs&&... InArgs)
+{
+	RegisterDynamicColumn(MakeShared<TColumn>(Forward<TArgs>(InArgs)...));
+}
 
 #if UE_BUILD_DEBUG
 DECLARE_LOG_CATEGORY_EXTERN(LogSubsystemBrowser, Log, All);
