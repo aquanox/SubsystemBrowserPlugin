@@ -128,3 +128,16 @@ void FSubsystemBrowserUtils::CollectSourceFiles(UClass* InClass, TArray<FString>
 	}
 }
 
+bool FSubsystemBrowserUtils::HasPropertiesToDisplay(UClass* InClass)
+{
+	for (TFieldIterator<FProperty> It(InClass, EFieldIterationFlags::IncludeSuper|EFieldIterationFlags::IncludeDeprecated); It; ++It)
+	{
+		FProperty* const Property = *It;
+		if (Property->HasAnyPropertyFlags(CPF_BlueprintVisible|CPF_Edit|CPF_AdvancedDisplay))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+

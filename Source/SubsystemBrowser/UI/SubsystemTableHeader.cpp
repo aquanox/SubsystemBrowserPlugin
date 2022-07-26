@@ -19,14 +19,7 @@ void SSubsystemsHeaderRow::Construct(const FArguments& InArgs, const TSharedPtr<
 
 void SSubsystemsHeaderRow::RebuildColumns()
 {
-	ClearColumns();
-
-	for (const SubsystemColumnPtr& Column : Model->GetSelectedTableColumns())
-	{
-		AddColumn(Column->GenerateHeaderColumnWidget());
-	}
-
-	RefreshColumns();
+	Browser.Pin()->SetupColumns(*this);
 }
 
 #undef LOCTEXT_NAMESPACE

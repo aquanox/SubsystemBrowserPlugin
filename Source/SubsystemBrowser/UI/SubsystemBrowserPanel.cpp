@@ -57,6 +57,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 
 	SubsystemModel = MakeShared<FSubsystemModel>();
 	SubsystemModel->SetCurrentWorld(InArgs._InWorld);
+	SubsystemModel->OnDataChanged.AddSP(this, &SSubsystemBrowserPanel::OnSubsystemDataChanged);
 
 	// Generate search box
 	SearchBoxSubsystemFilter = MakeShared<SubsystemTextFilter>(
@@ -294,6 +295,25 @@ void SSubsystemBrowserPanel::Tick(const FGeometry& AllotedGeometry, const double
 		}
 	}
 
+	if (bSortDirty)
+	{
+		// SortItems(RootTreeItems);
+		for (const auto& Pair : TreeItemMap)
+		{
+			Pair.Value->bChildrenRequireSort = true;
+		}
+
+		TreeWidget->RequestTreeRefresh();
+
+		bSortDirty = false;
+	}
+
+	if (bNeedsColumnRefresh)
+	{
+		bNeedsColumnRefresh = false;
+		HeaderRowWidget->RefreshColumns();
+	}
+
 	if (bNeedRefreshDetails)
 	{
 		if (DetailsView.IsValid())
@@ -377,6 +397,7 @@ void SSubsystemBrowserPanel::FullRefresh()
 
 	RefreshView();
 	RefreshDetails();
+	RequestSort();
 }
 
 void SSubsystemBrowserPanel::TransformItemToString(const ISubsystemTreeItem&  Item, TArray<FString>& OutSearchStrings) const
@@ -625,6 +646,32 @@ bool SSubsystemBrowserPanel::GetCategoryDisplayStatus(FSubsystemTreeItemID InCat
 	return CategoryFilter->IsCategoryVisible(InCategory);
 }
 
+void SSubsystemBrowserPanel::SetupColumns(SHeaderRow& HeaderRow)
+{
+	HeaderRow.ClearColumns();
+
+	for (const SubsystemColumnPtr& Column : SubsystemModel->GetSelectedTableColumns())
+	{
+		auto ColumnArgs = Column->GenerateHeaderColumnWidget();
+
+		if (Column->SupportsSorting())
+		{
+			ColumnArgs
+				.SortMode(this, &SSubsystemBrowserPanel::GetColumnSortMode, Column->Name)
+				.OnSort(this, &SSubsystemBrowserPanel::OnColumnSortModeChanged);
+		}
+		else
+		{
+			ColumnArgs.SortMode(EColumnSortMode::None);
+		}
+
+		HeaderRow.AddColumn(ColumnArgs);
+	}
+
+	bNeedsColumnRefresh = true;
+}
+
+
 TSharedRef<ITableRow> SSubsystemBrowserPanel::GenerateTreeRow(SubsystemTreeItemPtr Item, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	check(Item.IsValid());
@@ -641,6 +688,22 @@ TSharedRef<ITableRow> SSubsystemBrowserPanel::GenerateTreeRow(SubsystemTreeItemP
 void SSubsystemBrowserPanel::GetChildrenForTree(SubsystemTreeItemPtr Item, TArray<SubsystemTreeItemPtr>& OutChildren)
 {
 	OutChildren = Item->GetChildren();
+
+	if (OutChildren.Num() && Item->bChildrenRequireSort)
+	{
+		// Sort the children we returned
+		SortItems(OutChildren);
+
+		// Empty out the children and repopulate them in the correct order
+		Item->Children.Empty();
+		for (auto& Child : OutChildren)
+		{
+			Item->Children.Emplace(Child);
+		}
+
+		// They no longer need sorting
+		Item->bChildrenRequireSort = false;
+	}
 }
 
 void SSubsystemBrowserPanel::OnExpansionChanged(SubsystemTreeItemPtr Item, bool bIsItemExpanded)
@@ -723,16 +786,14 @@ void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item,
 		return;
 	}
 
-	if (bUpdatingSelection)
-		return;
+	if (!bUpdatingSelection)
+	{
+		TGuardValue<bool> ReentrantGuard(bUpdatingSelection, true);
 
-	bUpdatingSelection = true;
+		const TArray<SubsystemTreeItemPtr>& SelectedItems = TreeWidget->GetSelectedItems();
 
-	const TArray<SubsystemTreeItemPtr>& SelectedItems = TreeWidget->GetSelectedItems();
-
-	SetSelectedObject(SelectedItems.Num() ? SelectedItems[0] : nullptr);
-
-	bUpdatingSelection = false;
+		SetSelectedObject(SelectedItems.Num() ? SelectedItems[0] : nullptr);
+	}
 }
 
 const FSlateBrush* SSubsystemBrowserPanel::GetWorldsMenuBrush() const
@@ -883,6 +944,8 @@ void SSubsystemBrowserPanel::SetSelectedObject(SubsystemTreeItemPtr Item)
 	UObject* InObject = Item.IsValid() ? Item->GetObjectForDetails() : nullptr;
 	UE_LOG(LogSubsystemBrowser, Log, TEXT("Selected object %s"), *GetNameSafe(InObject));
 
+	SubsystemModel->NotifySelected(Item);
+
 	if (DetailsView.IsValid())
 	{
 		DetailsView->SetObject(InObject);
@@ -893,6 +956,8 @@ void SSubsystemBrowserPanel::SetSelectedObject(SubsystemTreeItemPtr Item)
 void SSubsystemBrowserPanel::ResetSelectedObject()
 {
 	UE_LOG(LogSubsystemBrowser, Log, TEXT("Reset selected object"));
+
+	SubsystemModel->NotifySelected(nullptr);
 
 	if (DetailsView.IsValid())
 	{
@@ -1261,5 +1326,46 @@ void SSubsystemBrowserPanel::OnSettingsChanged(FName InPropertyName)
 	}
 }
 
+void SSubsystemBrowserPanel::OnSubsystemDataChanged(TSharedRef<ISubsystemTreeItem> Item)
+{
+	RefreshView();
+}
+
+EColumnSortMode::Type SSubsystemBrowserPanel::GetColumnSortMode(FName ColumnId) const
+{
+	if (SortByColumn == ColumnId)
+	{
+		auto Column = SubsystemModel->FindTableColumn(ColumnId);
+		if (Column.IsValid() && Column->SupportsSorting())
+		{
+			return SortMode;
+		}
+	}
+	return EColumnSortMode::None;
+}
+
+void SSubsystemBrowserPanel::OnColumnSortModeChanged(const EColumnSortPriority::Type SortPriority, const FName& ColumnId,
+	const EColumnSortMode::Type InSortMode)
+{
+	auto Column = SubsystemModel->FindTableColumn(ColumnId);
+	if (!Column.IsValid() || !Column->SupportsSorting())
+	{
+		return;
+	}
+
+	SortByColumn = ColumnId;
+	SortMode = InSortMode;
+
+	bSortDirty = true;
+}
+
+void SSubsystemBrowserPanel::SortItems(TArray<SubsystemTreeItemPtr>& Items) const
+{
+	auto Column = SubsystemModel->FindTableColumn(SortByColumn);
+	if (Column.IsValid() && Column->SupportsSorting())
+	{
+		Column->SortItems(Items, SortMode);
+	}
+}
 
 #undef LOCTEXT_NAMESPACE

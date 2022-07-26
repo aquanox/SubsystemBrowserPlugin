@@ -38,4 +38,9 @@ struct FSubsystemBrowserUtils
 	 * Collect related source files belonging to specified class
 	 */
 	static void CollectSourceFiles(UClass* InClass, TArray<FString>& OutSourceFiles);
+
+	/**
+	 * Test if class has usable properties to be displayed in details panel
+	 */
+	 static bool HasPropertiesToDisplay(UClass* InClass);
 };

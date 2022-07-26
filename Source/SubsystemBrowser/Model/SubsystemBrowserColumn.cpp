@@ -4,10 +4,12 @@
 
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserModule.h"
+#include "SubsystemBrowserSettings.h"
 #include "Model/SubsystemBrowserDescriptor.h"
 #include "Model/SubsystemBrowserColumn_Name.h"
 #include "Model/SubsystemBrowserColumn_Config.h"
 #include "Model/SubsystemBrowserColumn_Module.h"
+#include "SubsystemBrowserSorting.h"
 #include "UI/SubsystemTableItem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
@@ -25,7 +27,6 @@ FSubsystemDynamicColumn::FSubsystemDynamicColumn()
 SHeaderRow::FColumn::FArguments FSubsystemDynamicColumn::GenerateHeaderColumnWidget() const
 {
 	return SHeaderRow::Column( Name )
-			  .SortMode(EColumnSortMode::None)
 			  .FillWidth(PreferredWidthRatio)
 			  .HeaderContent()
 			[
@@ -57,22 +58,52 @@ TSharedPtr<SWidget> FSubsystemDynamicTextColumn::GenerateColumnWidget(TSharedRef
 		.AutoWidth()
 		[
 			SNew(STextBlock)
-			.Font(this, &FSubsystemDynamicTextColumn::ExtractFont, TableRow)
-			.ColorAndOpacity(this, &FSubsystemDynamicTextColumn::ExtractColor, TableRow)
+			.Font(this, &FSubsystemDynamicTextColumn::ExtractFont, Item)
+			.ColorAndOpacity(this, &FSubsystemDynamicTextColumn::ExtractColorIfEnabled, Item)
 			.Text(this, &FSubsystemDynamicTextColumn::ExtractText, Item)
 			.ToolTipText(this, &FSubsystemDynamicTextColumn::ExtractTooltipText, Item)
 			.HighlightText(TableRow->HighlightText)
 		];
 }
 
-FSlateColor FSubsystemDynamicTextColumn::ExtractColor(TSharedRef<SSubsystemTableItem> TableRow) const
+FText FSubsystemDynamicTextColumn::ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const
 {
-	return TableRow->GetDefaultColorAndOpacity();
+	return ExtractText(Item);
 }
 
-FSlateFontInfo FSubsystemDynamicTextColumn::ExtractFont(TSharedRef<SSubsystemTableItem> TableRow) const
+FSlateColor FSubsystemDynamicTextColumn::ExtractColor(TSharedRef<ISubsystemTreeItem> Item) const
 {
-	return TableRow->GetDefaultFont();
+	if (Item->IsStale())
+	{
+		return FSlateColor::UseSubduedForeground();
+	}
+	if (Item->IsGameModule() && !Item->IsSelected())
+	{
+		return FLinearColor(0.4f, 0.4f, 1.0f);
+	}
+
+	return FSlateColor::UseForeground();
+}
+
+FSlateColor FSubsystemDynamicTextColumn::ExtractColorIfEnabled(TSharedRef<ISubsystemTreeItem> Item) const
+{
+	if (USubsystemBrowserSettings::Get()->IsColoringEnabled())
+	{
+		return ExtractColor(Item);
+	}
+	return Item->IsStale() ? FSlateColor::UseSubduedForeground() : FSlateColor::UseForeground();
+}
+
+FSlateFontInfo FSubsystemDynamicTextColumn::ExtractFont(TSharedRef<ISubsystemTreeItem> Item) const
+{
+	return FEditorStyle::GetFontStyle("WorldBrowser.LabelFont");
+}
+
+void FSubsystemDynamicTextColumn::SortItems(TArray<SubsystemTreeItemPtr>& RootItems, const EColumnSortMode::Type SortMode) const
+{
+	SubsystemBrowser::FSortHelper<FString>()
+		.Primary([this](TSharedPtr<ISubsystemTreeItem> Item) { return ExtractText(Item.ToSharedRef()).ToString(); }, SortMode)
+		.Sort(RootItems);
 }
 
 #undef LOCTEXT_NAMESPACE

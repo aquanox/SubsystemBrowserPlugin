@@ -39,12 +39,12 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSu
 	/**
 	 * Does this column support sorting? WIP
 	 */
-	//virtual bool SupportsSorting() const { return false; }
+	virtual bool SupportsSorting() const { return false; }
 
 	/**
 	 * Perform sorting of table items. WIP
 	 */
-	//virtual void SortItems(TArray<ISubsystemTreeItem>& RootItems, const EColumnSortMode::Type SortMode) const {}
+	virtual void SortItems(TArray<SubsystemTreeItemPtr>& RootItems, const EColumnSortMode::Type SortMode) const {}
 
 	/**
 	 * Test if custom column name is valid (not None or permanent column)
@@ -72,17 +72,24 @@ struct SubsystemColumnSorter
  */
 struct SUBSYSTEMBROWSER_API FSubsystemDynamicTextColumn : public FSubsystemDynamicColumn
 {
+	using Super = FSubsystemDynamicTextColumn;
+
 	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const override;
 	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override { }
 protected:
 	/* get text to display for specified item */
 	virtual FText ExtractText(TSharedRef<ISubsystemTreeItem> Item) const = 0;
 	/* get tooltip text to display for specified item */
-	virtual FText ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const { return ExtractText(Item); }
+	virtual FText ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const;
 	/* get color and opacity of text for specified item */
-	virtual FSlateColor ExtractColor(TSharedRef<class SSubsystemTableItem> TableRow) const;
+	virtual FSlateColor ExtractColor(TSharedRef<ISubsystemTreeItem> Item) const;
+	/* internal */
+	FSlateColor ExtractColorIfEnabled(TSharedRef<ISubsystemTreeItem> Item) const;
 	/* get font of text for specified item */
-	virtual FSlateFontInfo ExtractFont(TSharedRef<class SSubsystemTableItem> TableRow) const;
+	virtual FSlateFontInfo ExtractFont(TSharedRef<ISubsystemTreeItem> Item) const;
+	/* text columns support sorting by default */
+	virtual bool SupportsSorting() const override { return true; }
+	virtual void SortItems(TArray<SubsystemTreeItemPtr>& RootItems, const EColumnSortMode::Type SortMode) const override;
 };
 
 // FSubsystemDynamicImageColumn

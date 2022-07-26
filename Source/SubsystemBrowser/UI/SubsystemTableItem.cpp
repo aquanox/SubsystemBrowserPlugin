@@ -65,29 +65,9 @@ const FSlateBrush* SSubsystemTableItem::GetItemIconBrush() const
 	return nullptr;
 }
 
-FSlateColor SSubsystemTableItem::GetDefaultColorAndOpacity() const
+bool SSubsystemTableItem::IsColoringEnabled() const
 {
-	if (USubsystemBrowserSettings::Get()->IsColoringEnabled() && !Browser->IsItemSelected(Item))
-	{
-		if (Item->IsGameModule())
-		{
-			return FLinearColor(0.4f, 0.4f, 1.0f);
-		}
-	}
-
-	return FSlateColor::UseForeground();
-}
-
-FSlateFontInfo SSubsystemTableItem::GetDefaultFont() const
-{
-	// if (Item->GetAsSubsystemDescriptor() && Browser->IsItemSelected(Item))
-	// {
-		// return FEditorStyle::GetFontStyle("WorldBrowser.LabelFontBold");
-	// }
-	// else
-	// {
-		return FEditorStyle::GetFontStyle("WorldBrowser.LabelFont");
-	// }
+	return USubsystemBrowserSettings::Get()->IsColoringEnabled();
 }
 
 #undef LOCTEXT_NAMESPACE

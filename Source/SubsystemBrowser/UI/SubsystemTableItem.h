@@ -38,8 +38,7 @@ public:
 
 	const FSlateBrush* GetItemIconBrush() const;
 
-	FSlateFontInfo	GetDefaultFont() const;
-	FSlateColor		GetDefaultColorAndOpacity() const;
+	bool IsColoringEnabled() const;
 
 public:
 	TSharedPtr<FSubsystemModel>			Model;

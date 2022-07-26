@@ -6,8 +6,6 @@
 #include "Model/SubsystemBrowserColumn.h"
 #include "Misc/TextFilter.h"
 
-DECLARE_DELEGATE(FOnSubsystemSelectedDelegate);
-
 /* Subsystem text filter */
 class SubsystemTextFilter : public TTextFilter<const ISubsystemTreeItem&>
 {
@@ -76,6 +74,19 @@ public:
 	int32 GetNumDynamicColumns() const;
 	/* check if dynamic column is enabled by settings */
 	bool ShouldShowColumn(SubsystemColumnPtr Column) const;
+
+	bool IsItemSelected(TSharedRef<ISubsystemTreeItem> Item);
+
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemSelectionChange, TSharedPtr<ISubsystemTreeItem> /* Item */);
+	/* delegate that is triggered when tree selection changed */
+	FOnItemSelectionChange OnSelectionChanged;
+
+	void NotifySelected(TSharedPtr<ISubsystemTreeItem> Item);
+
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemDataChanged, TSharedRef<ISubsystemTreeItem> /* Item */);
+	/* delegate that is triggered when one of subsystems in this model is changed and needs possible update */
+	FOnItemDataChanged OnDataChanged;
+
 private:
 	void EmptyModel();
 	void PopulateCategories();
@@ -92,6 +103,8 @@ private:
 
 	/* Pointer to currently browsing world */
 	TWeakObjectPtr<UWorld> CurrentWorld;
+	/* Weak pointer to last selected item */
+	TWeakPtr<ISubsystemTreeItem> LastSelectedItem;
 public:
 	TSharedPtr<SubsystemCategoryFilter>  CategoryFilter;
 	TSharedPtr<SubsystemTextFilter>		 SubsystemTextFilter;

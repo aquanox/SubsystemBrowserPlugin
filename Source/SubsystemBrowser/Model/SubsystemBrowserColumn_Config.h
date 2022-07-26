@@ -9,6 +9,8 @@
  */
 struct FSubsystemDynamicColumn_Config : public FSubsystemDynamicTextColumn
 {
+	using Super = FSubsystemDynamicTextColumn;
+
 	FSubsystemDynamicColumn_Config();
 
 	virtual bool IsVisibleByDefault() const override { return true; }

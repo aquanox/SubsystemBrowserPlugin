@@ -29,6 +29,7 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(UObject* Instance)
 	Class = InClass;
 
 	// save data needed to display so hotreload or other things won't crash editor or disaster happen
+	// maybe let each column allocate some kind of struct to hold it for own usage?
 	DisplayName = InClass->GetDisplayNameText();
 	ClassName = InClass->GetFName();
 	Package = InClass->GetOuterUPackage()->GetName();
@@ -58,6 +59,13 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(UObject* Instance)
 		PluginDisplayName = Plugin->GetFriendlyName();
 #endif
 	}
+
+	bHasViewableProperties = FSubsystemBrowserUtils::HasPropertiesToDisplay(InClass);
+}
+
+bool FSubsystemTreeSubsystemItem::IsSelected() const
+{
+	return Model.IsValid() && Model->IsItemSelected(SharedThis(const_cast<FSubsystemTreeSubsystemItem*>(this)));
 }
 
 FText FSubsystemTreeSubsystemItem::GetDisplayName() const

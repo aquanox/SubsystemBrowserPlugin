@@ -18,6 +18,7 @@ class IDetailsView;
  */
 class SSubsystemBrowserPanel : public SCompoundWidget
 {
+	friend class SSubsystemsHeaderRow;
 public:
 	SLATE_BEGIN_ARGS(SSubsystemBrowserPanel)
 		:_InWorld(nullptr)
@@ -40,7 +41,8 @@ protected:
 
 	void RefreshView() { bNeedsRefresh = true;}
 	void RefreshDetails() { bNeedRefreshDetails = true; }
-	void RefreshColumns() { bNeedsRefresh = true; bNeedListRebuild = true;  }
+	void RefreshColumns() { bNeedsRefresh = true; bNeedListRebuild = true; bNeedsColumnRefresh = true; }
+	void RequestSort() { bSortDirty = true; }
 	void FullRefresh();
 
 	// Search bar
@@ -65,11 +67,16 @@ protected:
 
 	// Tree view
 
+	void SetupColumns(SHeaderRow& HeaderRow);
 	TSharedRef<class ITableRow> GenerateTreeRow(SubsystemTreeItemPtr Item, const TSharedRef<STableViewBase>& OwnerTable);
 	void GetChildrenForTree(SubsystemTreeItemPtr Item, TArray<SubsystemTreeItemPtr>& OutChildren);
 	void OnExpansionChanged(SubsystemTreeItemPtr Item, bool bIsItemExpanded);
 	void OnSelectionChanged(const SubsystemTreeItemPtr Item, ESelectInfo::Type SelectInfo);
 	void OnTreeViewMouseButtonDoubleClick(SubsystemTreeItemPtr Item);
+
+	EColumnSortMode::Type GetColumnSortMode(FName ColumnId) const;
+	void OnColumnSortModeChanged( const EColumnSortPriority::Type SortPriority, const FName& ColumnId, const EColumnSortMode::Type InSortMode );
+	void SortItems(TArray<SubsystemTreeItemPtr>& Items) const;
 
 	void ToggleDisplayColumn(FName ColumnName);
 	void ToggleTableColoring();
@@ -123,6 +130,10 @@ protected:
 
 	void OnSettingsChanged(FName InPropertyName);
 
+	// Data tracking
+
+	void OnSubsystemDataChanged(TSharedRef<ISubsystemTreeItem> Item);
+
 private:
 	TSharedPtr<FSubsystemModel> SubsystemModel;
 
@@ -156,4 +167,12 @@ private:
 	bool bUpdatingSelection = false;
 	bool bLoadedExpansionSettings = false;
 	bool bNeedListRebuild = true; // needs initial header update to upply config
+	bool bNeedsColumnRefresh = false; // refresh header widgets?
+
+	// column to sort by
+	FName SortByColumn;
+	// sorting order
+	EColumnSortMode::Type SortMode = EColumnSortMode::None;
+	//
+	bool bSortDirty = false;
 };

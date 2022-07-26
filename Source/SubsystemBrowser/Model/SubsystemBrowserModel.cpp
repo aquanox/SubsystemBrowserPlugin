@@ -130,11 +130,6 @@ void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemPtr Category, TArra
 			}
 		}
 	}
-
-	if (OutChildren.Num() > 1)
-	{
-		OutChildren.Sort(SubsystemTreeItemSorter());
-	}
 }
 
 int32 FSubsystemModel::GetNumSubsystemsFromVisibleCategories() const
@@ -167,6 +162,21 @@ bool FSubsystemModel::ShouldShowColumn(SubsystemColumnPtr Column) const
 		return true;
 
 	return USubsystemBrowserSettings::Get()->GetTableColumnState(Column->Name);
+}
+
+bool FSubsystemModel::IsItemSelected(TSharedRef<ISubsystemTreeItem> Item)
+{
+	return LastSelectedItem == Item;
+}
+
+void FSubsystemModel::NotifySelected(TSharedPtr<ISubsystemTreeItem> Item)
+{
+	if (Item.IsValid())
+	{
+		LastSelectedItem = Item;
+	}
+
+	OnSelectionChanged.Broadcast(Item);
 }
 
 TArray<SubsystemColumnPtr> FSubsystemModel::GetSelectedTableColumns() const
@@ -222,6 +232,8 @@ void FSubsystemModel::EmptyModel()
 
 	AllSubsystems.Empty();
 	AllSubsystemsByCategory.Empty();
+
+	LastSelectedItem.Reset();
 }
 
 void FSubsystemModel::PopulateCategories()

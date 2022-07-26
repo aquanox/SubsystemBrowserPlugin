@@ -31,12 +31,14 @@ struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 	virtual TArray<SubsystemTreeItemPtr> GetChildren() const { return Children; }
 	virtual int32 GetNumChildren() const { return Children.Num(); }
 	virtual void RemoveAllChildren() { Children.Empty(); }
+	virtual bool IsSelected() const { return false; }
 
 	virtual UObject* GetObjectForDetails() const { return nullptr; }
 	virtual bool IsStale() const { return false; }
 	virtual bool IsConfigExportable() const { return false; }
 	virtual bool IsGameModule() const { return false; }
 	virtual bool IsPluginModule() const { return false; }
+	virtual bool HasViewableProperties() const { return false; }
 
 	virtual FText GetDisplayName() const = 0;
 	FString GetDisplayNameString() const { return GetDisplayName().ToString(); }
@@ -54,18 +56,11 @@ struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 	bool bExpanded = true;
 	bool bVisible = true;
 	bool bNeedsRefresh = true;
+	bool bChildrenRequireSort = false;
 
 	TSharedPtr<FSubsystemModel> Model;
 	mutable SubsystemTreeItemPtr Parent;
 	mutable TArray<SubsystemTreeItemPtr> Children;
-};
-
-struct SubsystemTreeItemSorter
-{
-	bool operator()(SubsystemTreeItemPtr Item1, SubsystemTreeItemPtr Item2) const
-	{
-		return Item1->GetDisplayNameString() < Item2->GetDisplayNameString();
-	}
 };
 
 /**
@@ -120,11 +115,13 @@ struct FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
 	bool							bConfigExportable = false;
 	bool							bIsGameModuleClass = false;
 	bool							bIsPluginClass = false;
+	bool							bHasViewableProperties = false;
 
 	FSubsystemTreeSubsystemItem() = default;
 	FSubsystemTreeSubsystemItem(UObject* Subsystem);
 
 	virtual FSubsystemTreeItemID GetID() const override { return ClassName; }
+	virtual bool IsSelected() const override;
 
 	virtual FText GetDisplayName() const override;
 	virtual FString GetShortPackageString() const override;
@@ -139,4 +136,5 @@ struct FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
 	virtual bool IsConfigExportable() const override { return bConfigExportable; }
 	virtual bool IsGameModule() const override { return bIsGameModuleClass; }
 	virtual bool IsPluginModule() const override { return bIsPluginClass; }
+	virtual bool HasViewableProperties() const override { return bHasViewableProperties; }
 };

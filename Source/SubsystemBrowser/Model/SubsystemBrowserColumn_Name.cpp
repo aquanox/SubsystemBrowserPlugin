@@ -44,8 +44,8 @@ TSharedPtr<SWidget> FSubsystemDynamicColumn_Name::GenerateColumnWidget(TSharedRe
 			.AutoWidth()
 			[
 				SNew(STextBlock)
-					.Font(this, &FSubsystemDynamicColumn_Name::ExtractFont, TableRow)
-					.ColorAndOpacity(this, &FSubsystemDynamicColumn_Name::ExtractColor, TableRow)
+					.Font(this, &FSubsystemDynamicColumn_Name::ExtractFont, Item)
+					.ColorAndOpacity(this, &FSubsystemDynamicColumn_Name::ExtractColor, Item)
 					.Text(this, &FSubsystemDynamicColumn_Name::ExtractText, Item)
 					.ToolTipText(this, &FSubsystemDynamicColumn_Name::ExtractTooltipText, Item)
 					.HighlightText(TableRow->HighlightText)
@@ -80,6 +80,15 @@ FText FSubsystemDynamicColumn_Name::ExtractText(TSharedRef<ISubsystemTreeItem> I
 FText FSubsystemDynamicColumn_Name::ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const
 {
 	return ExtractText(Item);
+}
+
+FSlateColor FSubsystemDynamicColumn_Name::ExtractColor(TSharedRef<ISubsystemTreeItem> Item) const
+{
+	/*if (Item->GetAsSubsystemDescriptor() && !Item->HasViewableProperties())
+	{
+		return FSlateColor::UseSubduedForeground();
+	}*/
+	return Super::ExtractColor(Item);
 }
 
 
