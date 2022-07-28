@@ -32,7 +32,7 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 	ShortPackage = FPackageName::GetShortName(Package);
 	LongPackage = FString::Printf(TEXT("%s.%s"), *Package, *ClassName.ToString());
 
-	if (InClass->HasAnyClassFlags(CLASS_Config))
+	if (InClass->HasAnyClassFlags(CLASS_Config) && !InClass->ClassConfigName.IsNone())
 	{
 		bConfigExportable = true;
 		ConfigName = InClass->ClassConfigName;

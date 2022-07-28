@@ -18,7 +18,7 @@ FText FSubsystemDynamicColumn_Config::ExtractText(TSharedRef<ISubsystemTreeItem>
 	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
 	{
 		FFormatNamedArguments Args;
-		Args.Add(TEXT("Config"), Item->IsConfigExportable() ? FText::GetEmpty() : FText::FromName(SubsystemItem->ConfigName));
+		Args.Add(TEXT("Config"), Item->IsConfigExportable() ? FText::FromName(SubsystemItem->ConfigName) : FText::GetEmpty());
 		return FText::Format(LOCTEXT("SubsystemItem_Config", "{Config}"), Args);
 	}
 
