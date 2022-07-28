@@ -39,7 +39,7 @@ protected:
 	void Populate();
 	void EmptyTreeItems();
 
-	void RefreshView() { bNeedsRefresh = true;}
+	void RefreshView() { bNeedsRefresh = true; }
 	void RefreshDetails() { bNeedRefreshDetails = true; }
 	void RefreshColumns() { bNeedsRefresh = true; bNeedListRebuild = true; bNeedsColumnRefresh = true; }
 	void RequestSort() { bSortDirty = true; }
@@ -132,6 +132,7 @@ protected:
 
 	// Data tracking
 
+	void OnModulesChanged(FName ModuleThatChanged, EModuleChangeReason ReasonForChange);
 	void OnSubsystemDataChanged(TSharedRef<ISubsystemTreeItem> Item);
 
 private:

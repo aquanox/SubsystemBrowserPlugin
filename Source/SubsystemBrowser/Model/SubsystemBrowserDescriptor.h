@@ -17,7 +17,7 @@ using SubsystemTreeItemRef = TSharedRef<ISubsystemTreeItem>;
 /*
  * Abstract subsystem tree item node
  */
-struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
+struct SUBSYSTEMBROWSER_API ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 {
 	virtual ~ISubsystemTreeItem()  = default;
 
@@ -41,12 +41,6 @@ struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 	virtual bool HasViewableProperties() const { return false; }
 
 	virtual FText GetDisplayName() const = 0;
-	FString GetDisplayNameString() const { return GetDisplayName().ToString(); }
-	virtual FString GetShortPackageString() const = 0;
-	virtual FString GetPackageString() const = 0;
-	virtual FString GetConfigNameString() const = 0;
-	virtual FString GetOwnerNameString() const = 0;
-	virtual FString GetPluginNameString() const = 0;
 
 	virtual FSubsystemTreeSubsystemItem* GetAsSubsystemDescriptor() const { return nullptr; }
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const { return nullptr; }
@@ -66,34 +60,26 @@ struct ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 /**
  * Category node
  */
-struct FSubsystemTreeCategoryItem final : public ISubsystemTreeItem
+struct SUBSYSTEMBROWSER_API FSubsystemTreeCategoryItem final : public ISubsystemTreeItem
 {
 	TSharedPtr<FSubsystemCategory> Data;
 
 	FSubsystemTreeCategoryItem() = default;
-	FSubsystemTreeCategoryItem(TSharedRef<FSubsystemCategory> InCategory);
+	FSubsystemTreeCategoryItem(TSharedRef<FSubsystemModel> InModel, TSharedRef<FSubsystemCategory> InCategory);
 
 	virtual FSubsystemTreeItemID GetID() const override { return Data->Name; }
 	virtual int32 GetSortOrder() const override { return Data->SortOrder; }
-
 	virtual FText GetDisplayName() const override { return Data->Label; }
-	virtual FString GetShortPackageString() const override  { return FString(); }
-	virtual FString GetPackageString() const override { return FString(); }
-	virtual FString GetConfigNameString() const override  { return FString(); }
-	virtual FString GetOwnerNameString() const override  { return FString(); }
-	virtual FString GetPluginNameString() const override  { return FString(); }
-
 	virtual bool CanHaveChildren() const override { return true; }
-
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const override { return const_cast<FSubsystemTreeCategoryItem*>(this); }
 
-	TArray<UObject*> Select(UWorld* InContext) const;
+	TArray<UObject*> Select(UWorld* InContext) const { return Data->Select(InContext); }
 };
 
 /**
  * Subsystem node
  */
-struct FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
+struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
 {
 	TWeakObjectPtr<UObject>			Subsystem;
 	TWeakObjectPtr<UClass>			Class;
@@ -118,17 +104,12 @@ struct FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
 	bool							bHasViewableProperties = false;
 
 	FSubsystemTreeSubsystemItem() = default;
-	FSubsystemTreeSubsystemItem(UObject* Subsystem);
+	FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance);
 
 	virtual FSubsystemTreeItemID GetID() const override { return ClassName; }
 	virtual bool IsSelected() const override;
 
 	virtual FText GetDisplayName() const override;
-	virtual FString GetShortPackageString() const override;
-	virtual FString GetPackageString() const override;
-	virtual FString GetConfigNameString() const override;
-	virtual FString GetOwnerNameString() const override;
-	virtual FString GetPluginNameString() const override;
 
 	virtual FSubsystemTreeSubsystemItem* GetAsSubsystemDescriptor() const override {  return const_cast<FSubsystemTreeSubsystemItem*>(this); }
 	virtual UObject* GetObjectForDetails() const override { return Subsystem.Get(); }

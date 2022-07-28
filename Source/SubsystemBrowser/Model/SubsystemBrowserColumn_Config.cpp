@@ -15,17 +15,21 @@ FSubsystemDynamicColumn_Config::FSubsystemDynamicColumn_Config()
 
 FText FSubsystemDynamicColumn_Config::ExtractText(TSharedRef<ISubsystemTreeItem> Item) const
 {
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Config"), FText::FromString(Item->GetConfigNameString()));
-	return FText::Format(LOCTEXT("SubsystemItem_Config", "{Config}"), Args);
+	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
+	{
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("Config"), Item->IsConfigExportable() ? FText::GetEmpty() : FText::FromName(SubsystemItem->ConfigName));
+		return FText::Format(LOCTEXT("SubsystemItem_Config", "{Config}"), Args);
+	}
+
+	return FText::GetEmpty();
 }
 
 void FSubsystemDynamicColumn_Config::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
 {
-	FString Value = Item.GetConfigNameString();
-	if (!Value.IsEmpty())
+	if (Item.IsConfigExportable())
 	{
-		OutSearchStrings.Add(Value);
+		OutSearchStrings.Add(Item.GetAsSubsystemDescriptor()->ConfigName.ToString());
 	}
 }
 

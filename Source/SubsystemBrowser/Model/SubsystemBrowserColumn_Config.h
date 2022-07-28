@@ -18,8 +18,3 @@ struct FSubsystemDynamicColumn_Config : public FSubsystemDynamicTextColumn
 	virtual FText ExtractText(TSharedRef<ISubsystemTreeItem> Item) const override;
 	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override;
 };
-
-namespace SubsystemColumns
-{
-	static const FName ColumnID_Config("Config");
-}

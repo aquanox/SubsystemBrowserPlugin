@@ -52,43 +52,67 @@ TSharedPtr<SWidget> FSubsystemDynamicColumn_Name::GenerateColumnWidget(TSharedRe
 			];
 }
 
-void FSubsystemDynamicColumn_Name::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
-{
-	OutSearchStrings.Add(Item.GetDisplayNameString());
-}
-
 FText FSubsystemDynamicColumn_Name::ExtractText(TSharedRef<ISubsystemTreeItem> Item) const
 {
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("DisplayText"), Item->GetDisplayName());
-	Args.Add(TEXT("Stale"), (Item->IsStale() ? LOCTEXT("SubsystemItem_Stale", " (Stale)") : FText::GetEmpty()));
-	Args.Add(TEXT("Module"), FText::FromString(Item->GetShortPackageString()));
-	Args.Add(TEXT("Plugin"), FText::FromString(Item->GetPluginNameString()));
-
-	FString OwnerNameString = Item->GetOwnerNameString();
-	if (OwnerNameString.IsEmpty())
+	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
 	{
-		return FText::Format(LOCTEXT("SubsystemItem_Name", "{DisplayText}{Stale}"), Args);
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("DisplayText"), Item->GetDisplayName());
+		Args.Add(TEXT("Stale"), (Item->IsStale() ? LOCTEXT("SubsystemItem_Stale", " (Stale)") : FText::GetEmpty()));
+
+		if (SubsystemItem->OwnerName.IsEmpty())
+		{
+			return FText::Format(LOCTEXT("SubsystemItem_Name", "{DisplayText}{Stale}"), Args);
+		}
+		else
+		{
+			Args.Add(TEXT("OwnedBy"), FText::FromString(SubsystemItem->OwnerName));
+			return FText::Format(LOCTEXT("SubsystemItem_NameOwned", "{DisplayText} ({OwnedBy}){Stale}"), Args);
+		}
 	}
 	else
 	{
-		Args.Add(TEXT("OwnedBy"), FText::FromString(OwnerNameString));
-		return FText::Format(LOCTEXT("SubsystemItem_NameOwned", "{DisplayText} ({OwnedBy}){Stale}"), Args);
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("DisplayText"), Item->GetDisplayName());
+		return FText::Format(LOCTEXT("SubsystemItem_Name", "{DisplayText}"), Args);
 	}
 }
 
 FText FSubsystemDynamicColumn_Name::ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const
 {
-	return ExtractText(Item);
+	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
+	{
+		auto ToText = [](const FString& InString)
+		{
+			return InString.IsEmpty() ? INVTEXT("None") : FText::FromString(InString);
+		};
+
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("Name"), Item->GetDisplayName());
+		Args.Add(TEXT("OwnedBy"), ToText(SubsystemItem->OwnerName));
+		Args.Add(TEXT("Module"), ToText(SubsystemItem->ShortPackage));
+		Args.Add(TEXT("Plugin"), ToText(SubsystemItem->PluginName));
+
+		return FText::Format(LOCTEXT("SubsystemItem_Name_Tooltip", "{Name}\nModule: {Module}\nPlugin: {Plugin}\nOwned by: {OwnedBy}"), Args);
+	}
+	else
+	{
+		return ExtractText(Item);
+	}
 }
 
 FSlateColor FSubsystemDynamicColumn_Name::ExtractColor(TSharedRef<ISubsystemTreeItem> Item) const
 {
-	/*if (Item->GetAsSubsystemDescriptor() && !Item->HasViewableProperties())
+	if (Item->IsStale())
 	{
 		return FSlateColor::UseSubduedForeground();
-	}*/
+	}
 	return Super::ExtractColor(Item);
+}
+
+void FSubsystemDynamicColumn_Name::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
+{
+	OutSearchStrings.Add(Item.GetDisplayName().ToString());
 }
 
 

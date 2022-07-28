@@ -2,7 +2,6 @@
 
 #include "Model/SubsystemBrowserModel.h"
 
-#include "SubsystemBrowserColumn_Name.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
 
@@ -40,7 +39,7 @@ bool SubsystemCategoryFilter::IsCategoryVisible(FSubsystemTreeItemID InCategory)
 
 FSubsystemModel::FSubsystemModel()
 {
-	PermanentColumns.Add(MakeShared<FSubsystemDynamicColumn_Name>());
+	FSubsystemBrowserModule::AddPermanentColumns(PermanentColumns);
 }
 
 TWeakObjectPtr<UWorld> FSubsystemModel::GetCurrentWorld() const
@@ -241,8 +240,8 @@ void FSubsystemModel::PopulateCategories()
 	FSubsystemBrowserModule& BrowserModule = FSubsystemBrowserModule::Get();
 	for (auto& SubsystemCategory : BrowserModule.GetCategories())
 	{
-		auto Category = MakeShared<FSubsystemTreeCategoryItem>(SubsystemCategory.ToSharedRef());
-		Category->Model = AsShared();
+		auto Category = MakeShared<FSubsystemTreeCategoryItem>(SharedThis(this), SubsystemCategory.ToSharedRef());
+
 		AllCategories.Add(MoveTemp(Category));
 	}
 
@@ -263,9 +262,7 @@ void FSubsystemModel::PopulateSubsystems()
 
 		for (UObject* Impl : AsCategory->Select(LocalWorld))
 		{
-			auto Descriptor = MakeShared<FSubsystemTreeSubsystemItem>(Impl);
-			Descriptor->Model = AsShared();
-			Descriptor->Parent = Category;
+			auto Descriptor = MakeShared<FSubsystemTreeSubsystemItem>(SharedThis(this), Category, Impl);
 
 			AllSubsystems.Add(Descriptor);
 			AllSubsystemsByCategory.FindOrAdd(AsCategory->GetID()).Add(Descriptor);

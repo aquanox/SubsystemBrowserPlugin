@@ -14,6 +14,11 @@
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
+void FSubsystemBrowserModule::AddPermanentColumns(TArray<SubsystemColumnPtr>& Columns)
+{
+	Columns.Add(MakeShared<FSubsystemDynamicColumn_Name>());
+}
+
 void FSubsystemBrowserModule::RegisterDefaultDynamicColumns()
 {
 	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Module>());
@@ -46,7 +51,8 @@ SHeaderRow::FColumn::FArguments FSubsystemDynamicColumn::GenerateHeaderColumnWid
 
 bool FSubsystemDynamicColumn::IsValidColumnName(FName InName)
 {
-	return !InName.IsNone() && InName != SubsystemColumns::ColumnID_Name;
+	static const FName ColumnID_Name("Name");
+	return !InName.IsNone() && InName != ColumnID_Name;
 }
 
 TSharedPtr<SWidget> FSubsystemDynamicTextColumn::GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
@@ -101,7 +107,7 @@ FSlateFontInfo FSubsystemDynamicTextColumn::ExtractFont(TSharedRef<ISubsystemTre
 
 void FSubsystemDynamicTextColumn::SortItems(TArray<SubsystemTreeItemPtr>& RootItems, const EColumnSortMode::Type SortMode) const
 {
-	SubsystemBrowser::FSortHelper<FString>()
+	SubsystemBrowser::FSortHelper<SubsystemTreeItemPtr, FString>()
 		.Primary([this](TSharedPtr<ISubsystemTreeItem> Item) { return ExtractText(Item.ToSharedRef()).ToString(); }, SortMode)
 		.Sort(RootItems);
 }

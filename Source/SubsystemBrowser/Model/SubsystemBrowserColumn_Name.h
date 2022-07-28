@@ -20,8 +20,3 @@ struct FSubsystemDynamicColumn_Name : public FSubsystemDynamicTextColumn
 	virtual FText ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const override;
 	virtual FSlateColor ExtractColor(TSharedRef<ISubsystemTreeItem> Item) const override;
 };
-
-namespace SubsystemColumns
-{
-	static const FName ColumnID_Name("Name");
-}

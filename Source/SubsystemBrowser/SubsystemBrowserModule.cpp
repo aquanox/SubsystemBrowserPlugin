@@ -130,9 +130,7 @@ const TArray<SubsystemColumnPtr>& FSubsystemBrowserModule::GetDynamicColumns() c
 
 void FSubsystemBrowserModule::RegisterCategory(TSharedRef<FSubsystemCategory> InCategory)
 {
-	if (InCategory->Name.IsNone()
-		|| !InCategory->SubsystemClass.IsValid()
-		|| !InCategory->Selector.IsBound())
+	if (InCategory->Name.IsNone())
 	{
 		UE_LOG(LogSubsystemBrowser, Error, TEXT("Invalid category being registered"));
 		return;

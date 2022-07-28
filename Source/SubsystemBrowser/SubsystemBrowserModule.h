@@ -62,6 +62,10 @@ public:
 	 * Register a new custom dynamic column
 	 */
 	SUBSYSTEMBROWSER_API void RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn);
+	/**
+	 * Populate permanent columns
+	 */
+	static void AddPermanentColumns(TArray<SubsystemColumnPtr>& Columns);
 
 	/**
 	 * Open editor settings tab with plugin settings pre-selected

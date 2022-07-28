@@ -52,6 +52,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 
 	// Automatically handle settings change
 	USubsystemBrowserSettings::OnSettingChanged().AddSP(this, &SSubsystemBrowserPanel::OnSettingsChanged);
+	FModuleManager::Get().OnModulesChanged().AddSP(this, &SSubsystemBrowserPanel::OnModulesChanged);
 
 	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
 
@@ -1213,7 +1214,7 @@ void SSubsystemBrowserPanel::ContextMenu_ConfigExport(bool bModifiedOnly) const
 	{
 		FString ClipboardText;
 
-		ClipboardText += FString::Printf(TEXT("; Should be in Default%s.ini"), *SelectedSubsystem->GetConfigNameString());
+		ClipboardText += FString::Printf(TEXT("; Should be in Default%s.ini"), *SelectedSubsystem->ConfigName.ToString());
 		ClipboardText += LINE_TERMINATOR;
 		ClipboardText += FString::Printf(TEXT("[%s.%s]"), *SelectedSubsystem->Package, *SelectedSubsystem->ClassName.ToString());
 		ClipboardText += LINE_TERMINATOR;
@@ -1324,6 +1325,11 @@ void SSubsystemBrowserPanel::OnSettingsChanged(FName InPropertyName)
 			RefreshDetails();
 		}
 	}
+}
+
+void SSubsystemBrowserPanel::OnModulesChanged(FName ModuleThatChanged, EModuleChangeReason ReasonForChange)
+{
+	RefreshView();
 }
 
 void SSubsystemBrowserPanel::OnSubsystemDataChanged(TSharedRef<ISubsystemTreeItem> Item)

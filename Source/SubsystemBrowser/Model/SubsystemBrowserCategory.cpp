@@ -27,7 +27,6 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	auto CategoryEngine = MakeShared<FSubsystemCategory>();
 	CategoryEngine->Name = TEXT("EngineSubsystemCategory");
 	CategoryEngine->Label = LOCTEXT("SubsystemBrowser_Engine", "Engine Subsystems");
-	CategoryEngine->SubsystemClass = UEngineSubsystem::StaticClass();
 	CategoryEngine->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectEngineSubsystems);
 	CategoryEngine->SortOrder = 100;
 	RegisterCategory(CategoryEngine);
@@ -35,7 +34,6 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	auto CategoryEditor = MakeShared<FSubsystemCategory>();
 	CategoryEditor->Name = TEXT("EditorSubsystemCategory");
 	CategoryEditor->Label = LOCTEXT("SubsystemBrowser_Editor", "Editor Subsystems");
-	CategoryEditor->SubsystemClass = UEditorSubsystem::StaticClass();
 	CategoryEditor->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectEditorSubsystems);
 	CategoryEditor->SortOrder = 200;
 	RegisterCategory(CategoryEditor);
@@ -43,7 +41,6 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	auto CategoryGameInstance = MakeShared<FSubsystemCategory>();
 	CategoryGameInstance->Name = TEXT("GameInstanceCategory");
 	CategoryGameInstance->Label = LOCTEXT("SubsystemBrowser_GameInstance", "Game Instance Subsystems");
-	CategoryGameInstance->SubsystemClass = UGameInstanceSubsystem::StaticClass();
 	CategoryGameInstance->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectGameInstanceSubsystems);
 	CategoryGameInstance->SortOrder = 300;
 	RegisterCategory(CategoryGameInstance);
@@ -51,7 +48,6 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	auto CategoryWorld = MakeShared<FSubsystemCategory>();
 	CategoryWorld->Name = TEXT("WorldSubsystemCategory");
 	CategoryWorld->Label = LOCTEXT("SubsystemBrowser_World", "World Subsystems");
-	CategoryWorld->SubsystemClass = UWorldSubsystem::StaticClass();
 	CategoryWorld->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectWorldSubsystems);
 	CategoryWorld->SortOrder = 400;
 	RegisterCategory(CategoryWorld);
@@ -59,7 +55,6 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	auto CategoryPlayer = MakeShared<FSubsystemCategory>();
 	CategoryPlayer->Name = TEXT("PlayerCategory");
 	CategoryPlayer->Label = LOCTEXT("SubsystemBrowser_Player", "Player Subsystems");
-	CategoryPlayer->SubsystemClass = ULocalPlayerSubsystem::StaticClass();
 	CategoryPlayer->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectPlayerSubsystems);
 	CategoryPlayer->SortOrder = 500;
 	RegisterCategory(CategoryPlayer);
@@ -67,12 +62,18 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 
 void SubsystemCategoryHelpers::SelectEngineSubsystems(UWorld* CurrentWorld, TArray<UObject*>& OutData)
 {
-	OutData.Append(GEngine->GetEngineSubsystemArray<UEngineSubsystem>());
+	if (GEngine)
+	{
+		OutData.Append(GEngine->GetEngineSubsystemArray<UEngineSubsystem>());
+	}
 }
 
 void SubsystemCategoryHelpers::SelectEditorSubsystems(UWorld* CurrentWorld, TArray<UObject*>& OutData)
 {
-	OutData.Append(GEditor->GetEditorSubsystemArray<UEditorSubsystem>());
+	if (GEditor)
+	{
+		OutData.Append(GEditor->GetEditorSubsystemArray<UEditorSubsystem>());
+	}
 }
 
 void SubsystemCategoryHelpers::SelectGameInstanceSubsystems(UWorld* CurrentWorld, TArray<UObject*>& OutData)
@@ -102,6 +103,20 @@ void SubsystemCategoryHelpers::SelectPlayerSubsystems(UWorld* CurrentWorld, TArr
 	}
 }
 
+FSubsystemCategory::FSubsystemCategory(const FName& Name, const FText& Label, const FEnumSubsystemsDelegate& Selector, int32 SortOrder): Name(Name),
+	Label(Label),
+	Selector(Selector),
+	SortOrder(SortOrder)
+{
+}
+
+TArray<UObject*> FSubsystemCategory::Select(UWorld* InContext) const
+{
+	TArray<UObject*> OutResult;
+	Selector.Execute(InContext, OutResult);
+	return OutResult;
+}
+
 #undef LOCTEXT_NAMESPACE
 
 #if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES
@@ -121,7 +136,6 @@ void RegisterCategoryExample()
 	auto SampleCategory = MakeShared<FSubsystemCategory>();
 	SampleCategory->Name = TEXT("Sample");
 	SampleCategory->Label = INVTEXT("Sample Subsystems");
-	SampleCategory->SubsystemClass = USubsystem::StaticClass();
 	SampleCategory->Selector = FEnumSubsystemsDelegate::CreateStatic(&SelectCustomSubsystems);
 	SampleCategory->SortOrder = 50;
 	// Register category in module
@@ -129,3 +143,4 @@ void RegisterCategoryExample()
 }
 
 #endif
+

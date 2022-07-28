@@ -20,8 +20,3 @@ struct FSubsystemDynamicColumn_Module : public FSubsystemDynamicTextColumn
 	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override;
 
 };
-
-namespace SubsystemColumns
-{
-	static const FName ColumnID_Module("Module");
-}

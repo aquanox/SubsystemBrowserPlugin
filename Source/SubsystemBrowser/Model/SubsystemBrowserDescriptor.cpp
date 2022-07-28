@@ -7,21 +7,17 @@
 #include "Interfaces/IPluginManager.h"
 #include "Model/SubsystemBrowserModel.h"
 
-FSubsystemTreeCategoryItem::FSubsystemTreeCategoryItem(TSharedRef<FSubsystemCategory> InCategory)
+FSubsystemTreeCategoryItem::FSubsystemTreeCategoryItem(TSharedRef<FSubsystemModel> InModel, TSharedRef<FSubsystemCategory> InCategory)
 	: Data(InCategory)
 {
-
+	Model = InModel;
 }
 
-TArray<UObject*> FSubsystemTreeCategoryItem::Select(UWorld* InContext) const
+FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)
 {
-	TArray<UObject*> OutResult;
-	Data->Selector.Execute(InContext, OutResult);
-	return OutResult;
-}
+	Model = InModel;
+	Parent = InParent;
 
-FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(UObject* Instance)
-{
 	check(Instance);
 	Subsystem = Instance;
 
@@ -71,29 +67,4 @@ bool FSubsystemTreeSubsystemItem::IsSelected() const
 FText FSubsystemTreeSubsystemItem::GetDisplayName() const
 {
 	return DisplayName;
-}
-
-FString FSubsystemTreeSubsystemItem::GetShortPackageString() const
-{
-	return ShortPackage;
-}
-
-FString FSubsystemTreeSubsystemItem::GetPackageString() const
-{
-	return Package;
-}
-
-FString FSubsystemTreeSubsystemItem::GetConfigNameString() const
-{
-	return ConfigName.IsNone() ? FString() : ConfigName.ToString();
-}
-
-FString FSubsystemTreeSubsystemItem::GetOwnerNameString() const
-{
-	return OwnerName;
-}
-
-FString FSubsystemTreeSubsystemItem::GetPluginNameString() const
-{
-	return PluginName;
 }

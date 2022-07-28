@@ -15,30 +15,43 @@ FSubsystemDynamicColumn_Module::FSubsystemDynamicColumn_Module()
 
 FText FSubsystemDynamicColumn_Module::ExtractText(TSharedRef<ISubsystemTreeItem> Item) const
 {
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Module"), FText::FromString(Item->GetShortPackageString()));
-	return FText::Format(LOCTEXT("SubsystemItem_Module", "{Module}"), Args);
+	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
+	{
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("Module"), FText::FromString(SubsystemItem->ShortPackage));
+		return FText::Format(LOCTEXT("SubsystemItem_Module", "{Module}"), Args);
+	}
+
+	return FText::GetEmpty();
 }
 
 FText FSubsystemDynamicColumn_Module::ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const
 {
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Module"), FText::FromString(Item->GetPackageString()));
-	Args.Add(TEXT("Plugin"), FText::FromString(Item->GetPluginNameString()));
+	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
+	{
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("Module"), FText::FromString(SubsystemItem->ShortPackage));
+		Args.Add(TEXT("Plugin"), FText::FromString(SubsystemItem->PluginName));
 
-	if (!Item->IsPluginModule())
-	{
-		return FText::Format(LOCTEXT("SubsystemItem_Module_Tooltip", "Package: {Module}"), Args);
+		if (!Item->IsPluginModule())
+		{
+			return FText::Format(LOCTEXT("SubsystemItem_Module_Tooltip", "Package: {Module}"), Args);
+		}
+		else
+		{
+			return FText::Format(LOCTEXT("SubsystemItem_ModuleInPlugin_Tooltip", "Package: {Module}\nPlugin: {Plugin}"), Args);
+		}
 	}
-	else
-	{
-		return FText::Format(LOCTEXT("SubsystemItem_ModuleInPlugin_Tooltip", "Package: {Module}\nPlugin: {Plugin}"), Args);
-	}
+
+	return FText::GetEmpty();
 }
 
 void FSubsystemDynamicColumn_Module::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
 {
-	OutSearchStrings.Add(Item.GetShortPackageString());
+	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item.GetAsSubsystemDescriptor())
+	{
+		OutSearchStrings.Add(SubsystemItem->ShortPackage);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
