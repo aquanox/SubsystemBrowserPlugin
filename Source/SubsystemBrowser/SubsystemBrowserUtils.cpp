@@ -2,6 +2,7 @@
 
 #include "SubsystemBrowserUtils.h"
 
+#include "SubsystemBrowserFlags.h"
 #include "SourceCodeNavigation.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Engine/LocalPlayer.h"
@@ -130,7 +131,11 @@ void FSubsystemBrowserUtils::CollectSourceFiles(UClass* InClass, TArray<FString>
 
 bool FSubsystemBrowserUtils::HasPropertiesToDisplay(UClass* InClass)
 {
+#if UE_VERSION_OLDER_THAN(5,0,0)
+	for (TFieldIterator<FProperty> It(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::IncludeDeprecated); It; ++It)
+#else
 	for (TFieldIterator<FProperty> It(InClass, EFieldIterationFlags::IncludeSuper|EFieldIterationFlags::IncludeDeprecated); It; ++It)
+#endif
 	{
 		FProperty* const Property = *It;
 		if (Property->HasAnyPropertyFlags(CPF_BlueprintVisible|CPF_Edit|CPF_AdvancedDisplay))
