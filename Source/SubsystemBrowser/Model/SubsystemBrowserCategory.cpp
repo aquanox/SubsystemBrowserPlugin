@@ -86,7 +86,7 @@ void SubsystemCategoryHelpers::SelectGameInstanceSubsystems(UWorld* CurrentWorld
 
 void SubsystemCategoryHelpers::SelectWorldSubsystems(UWorld* CurrentWorld, TArray<UObject*>& OutData)
 {
-	if (IsValid(CurrentWorld) && CurrentWorld->GetGameInstance())
+	if (IsValid(CurrentWorld))
 	{
 		OutData.Append(CurrentWorld->GetSubsystemArray<UWorldSubsystem>());
 	}
