@@ -73,7 +73,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeCategoryItem final : public ISubsystem
 	virtual bool CanHaveChildren() const override { return true; }
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const override { return const_cast<FSubsystemTreeCategoryItem*>(this); }
 
-	TArray<UObject*> Select(UWorld* InContext) const { return Data->Select(InContext); }
+	TArray<UObject*> Select(UWorld* InContext) const;
 };
 
 /**

@@ -24,6 +24,12 @@ bool USubsystemBrowserSettings::OnSettingsModified()
 	return true;
 }
 
+bool USubsystemBrowserSettings::OnSettingsReset()
+{
+	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being reset"));
+	return true;
+}
+
 // Sync category settings with categories we have in module
 void USubsystemBrowserSettings::SyncCategorySettings()
 {
@@ -36,7 +42,7 @@ void USubsystemBrowserSettings::SyncCategorySettings()
 	{
 		if (!CurrentSettings.Contains(Category->Name))
 		{
-			CurrentSettings.Emplace(Category->Name, true);
+			CurrentSettings.Emplace(Category->Name, Category->IsVisibleByDefault());
 		}
 	}
 

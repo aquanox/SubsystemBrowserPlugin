@@ -13,6 +13,13 @@ FSubsystemTreeCategoryItem::FSubsystemTreeCategoryItem(TSharedRef<FSubsystemMode
 	Model = InModel;
 }
 
+TArray<UObject*> FSubsystemTreeCategoryItem::Select(UWorld* InContext) const
+{
+	TArray<UObject*> Result;
+	Data->Select(InContext,Result);
+	return Result;
+}
+
 FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)
 {
 	Model = InModel;

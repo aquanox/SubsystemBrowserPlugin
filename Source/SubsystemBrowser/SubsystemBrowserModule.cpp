@@ -8,6 +8,11 @@
 #include "Model/Column/SubsystemBrowserColumn_Config.h"
 #include "Model/Column/SubsystemBrowserColumn_Module.h"
 #include "Model/Column/SubsystemBrowserColumn_Plugin.h"
+#include "Model/Category/SubsystemBrowserCategory_Editor.h"
+#include "Model/Category/SubsystemBrowserCategory_Engine.h"
+#include "Model/Category/SubsystemBrowserCategory_GameInstance.h"
+#include "Model/Category/SubsystemBrowserCategory_Player.h"
+#include "Model/Category/SubsystemBrowserCategory_World.h"
 #include "UI/SubsystemBrowserPanel.h"
 #include "ISettingsModule.h"
 #include "ISettingsSection.h"
@@ -46,6 +51,7 @@ void FSubsystemBrowserModule::StartupModule()
 			SettingsObject
 		);
 		SettingsSection->OnSelect().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsSelected);
+		//SettingsSection->OnResetDefaults().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsReset);
 
 		FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 		LevelEditorModule.OnTabManagerChanged().AddLambda([ &LevelEditorModule ]()
@@ -124,6 +130,16 @@ void FSubsystemBrowserModule::SummonPluginSettingsTab()
 const TArray<SubsystemCategoryPtr>& FSubsystemBrowserModule::GetCategories() const
 {
 	return Categories;
+}
+
+void FSubsystemBrowserModule::RegisterDefaultCategories()
+{
+	RegisterCategory<FSubsystemCategory_Engine>();
+	RegisterCategory<FSubsystemCategory_Editor>();
+	RegisterCategory<FSubsystemCategory_GameInstance>();
+	RegisterCategory<FSubsystemCategory_World>();
+	// RegisterCategory<FSubsystemCategory_Game>();
+	RegisterCategory<FSubsystemCategory_Player>();
 }
 
 const TArray<SubsystemColumnPtr>& FSubsystemBrowserModule::GetDynamicColumns() const

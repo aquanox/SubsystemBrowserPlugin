@@ -42,6 +42,8 @@ public:
 	void OnSettingsSelected();
 	// Called when browser settings were modified
 	bool OnSettingsModified();
+	// Called when settings reset is requested
+	bool OnSettingsReset();
 
 	DECLARE_EVENT_OneParam(USubsystemBrowserSettings, FSettingChangedEvent, FName /*PropertyName*/);
 	static FSettingChangedEvent& OnSettingChanged() { return SettingChangedEvent; }

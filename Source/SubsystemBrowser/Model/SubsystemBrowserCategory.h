@@ -29,8 +29,10 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory : public TSharedFromThis<FSubsyst
 	const FText& GetDisplayName() const { return Label; }
 	int32 GetSortOrder() const { return SortOrder; }
 
+	virtual bool IsVisibleByDefault() const { return true; }
+
 	/* Select subsystems for the respected category */
-	virtual TArray<UObject*> Select(UWorld* InContext) const = 0;
+	virtual void Select(UWorld* InContext, TArray<UObject*>& OutData) const = 0;
 };
 
 using SubsystemCategoryPtr = TSharedPtr<FSubsystemCategory>;
@@ -46,5 +48,5 @@ struct SUBSYSTEMBROWSER_API FSimpleSubsystemCategory : public FSubsystemCategory
 	FSimpleSubsystemCategory() = default;
 	FSimpleSubsystemCategory(const FName& Name, const FText& Label, const FEnumSubsystemsDelegate& Selector, int32 SortOrder);
 
-	virtual TArray<UObject*> Select(UWorld* InContext) const override;
+	virtual void Select(UWorld* InContext, TArray<UObject*>& OutData) const override;
 };
