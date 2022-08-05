@@ -1,6 +1,6 @@
 ﻿// Copyright 2022, Aquanox.
 
-#include "Model/SubsystemBrowserColumn_Module.h"
+#include "Model/Column/SubsystemBrowserColumn_Module.h"
 #include "UI/SubsystemTableItem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
@@ -17,9 +17,7 @@ FText FSubsystemDynamicColumn_Module::ExtractText(TSharedRef<ISubsystemTreeItem>
 {
 	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
 	{
-		FFormatNamedArguments Args;
-		Args.Add(TEXT("Module"), FText::FromString(SubsystemItem->ShortPackage));
-		return FText::Format(LOCTEXT("SubsystemItem_Module", "{Module}"), Args);
+		return FText::FromString(SubsystemItem->ShortPackage);
 	}
 
 	return FText::GetEmpty();

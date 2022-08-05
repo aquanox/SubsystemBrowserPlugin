@@ -24,35 +24,35 @@ namespace SubsystemCategoryHelpers
 
 void FSubsystemBrowserModule::RegisterDefaultCategories()
 {
-	auto CategoryEngine = MakeShared<FSubsystemCategory>();
+	auto CategoryEngine = MakeShared<FSimpleSubsystemCategory>();
 	CategoryEngine->Name = TEXT("EngineSubsystemCategory");
 	CategoryEngine->Label = LOCTEXT("SubsystemBrowser_Engine", "Engine Subsystems");
 	CategoryEngine->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectEngineSubsystems);
 	CategoryEngine->SortOrder = 100;
 	RegisterCategory(CategoryEngine);
 
-	auto CategoryEditor = MakeShared<FSubsystemCategory>();
+	auto CategoryEditor = MakeShared<FSimpleSubsystemCategory>();
 	CategoryEditor->Name = TEXT("EditorSubsystemCategory");
 	CategoryEditor->Label = LOCTEXT("SubsystemBrowser_Editor", "Editor Subsystems");
 	CategoryEditor->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectEditorSubsystems);
 	CategoryEditor->SortOrder = 200;
 	RegisterCategory(CategoryEditor);
 
-	auto CategoryGameInstance = MakeShared<FSubsystemCategory>();
+	auto CategoryGameInstance = MakeShared<FSimpleSubsystemCategory>();
 	CategoryGameInstance->Name = TEXT("GameInstanceCategory");
 	CategoryGameInstance->Label = LOCTEXT("SubsystemBrowser_GameInstance", "Game Instance Subsystems");
 	CategoryGameInstance->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectGameInstanceSubsystems);
 	CategoryGameInstance->SortOrder = 300;
 	RegisterCategory(CategoryGameInstance);
 
-	auto CategoryWorld = MakeShared<FSubsystemCategory>();
+	auto CategoryWorld = MakeShared<FSimpleSubsystemCategory>();
 	CategoryWorld->Name = TEXT("WorldSubsystemCategory");
 	CategoryWorld->Label = LOCTEXT("SubsystemBrowser_World", "World Subsystems");
 	CategoryWorld->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectWorldSubsystems);
 	CategoryWorld->SortOrder = 400;
 	RegisterCategory(CategoryWorld);
 
-	auto CategoryPlayer = MakeShared<FSubsystemCategory>();
+	auto CategoryPlayer = MakeShared<FSimpleSubsystemCategory>();
 	CategoryPlayer->Name = TEXT("PlayerCategory");
 	CategoryPlayer->Label = LOCTEXT("SubsystemBrowser_Player", "Player Subsystems");
 	CategoryPlayer->Selector = FEnumSubsystemsDelegate::CreateStatic(&SubsystemCategoryHelpers::SelectPlayerSubsystems);
@@ -103,14 +103,18 @@ void SubsystemCategoryHelpers::SelectPlayerSubsystems(UWorld* CurrentWorld, TArr
 	}
 }
 
-FSubsystemCategory::FSubsystemCategory(const FName& Name, const FText& Label, const FEnumSubsystemsDelegate& Selector, int32 SortOrder): Name(Name),
-	Label(Label),
-	Selector(Selector),
-	SortOrder(SortOrder)
+FSubsystemCategory::FSubsystemCategory(const FName& Name, const FText& Label, int32 SortOrder)
+	: Name(Name), Label(Label), SortOrder(SortOrder)
 {
 }
 
-TArray<UObject*> FSubsystemCategory::Select(UWorld* InContext) const
+FSimpleSubsystemCategory::FSimpleSubsystemCategory(const FName& Name, const FText& Label, const FEnumSubsystemsDelegate& Selector, int32 SortOrder)
+	: FSubsystemCategory(Name, Label, SortOrder), Selector(Selector)
+{
+	ensure(Selector.IsBound());
+}
+
+TArray<UObject*> FSimpleSubsystemCategory::Select(UWorld* InContext) const
 {
 	TArray<UObject*> OutResult;
 	Selector.Execute(InContext, OutResult);
@@ -121,23 +125,20 @@ TArray<UObject*> FSubsystemCategory::Select(UWorld* InContext) const
 
 #if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES
 
-// 1. Define a function to select subsystems
-void SelectCustomSubsystems(UWorld* InContext, TArray<UObject*>& OutData)
-{
-	// Your code here to select subsystems and add them to OutData
-}
-
 // 2. Call this in your editor modules StartupModule to register a new category
 void RegisterCategoryExample()
 {
 	// Get a reference to Subsystem Browser module instance or load it
 	FSubsystemBrowserModule& Module = FModuleManager::LoadModuleChecked<FSubsystemBrowserModule>(TEXT("SubsystemBrowser"));
 	// Construct category
-	auto SampleCategory = MakeShared<FSubsystemCategory>();
+	auto SampleCategory = MakeShared<FSimpleSubsystemCategory>();
 	SampleCategory->Name = TEXT("Sample");
 	SampleCategory->Label = INVTEXT("Sample Subsystems");
-	SampleCategory->Selector = FEnumSubsystemsDelegate::CreateStatic(&SelectCustomSubsystems);
 	SampleCategory->SortOrder = 50;
+	SampleCategory->Selector = FEnumSubsystemsDelegate::CreateLambda([](UWorld* InContext, TArray<UObject*>& OutData)
+	{
+		// Fill Data
+	});
 	// Register category in module
 	Module.RegisterCategory(SampleCategory);
 }

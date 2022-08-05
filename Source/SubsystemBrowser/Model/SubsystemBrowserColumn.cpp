@@ -6,24 +6,10 @@
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
 #include "Model/SubsystemBrowserDescriptor.h"
-#include "Model/SubsystemBrowserColumn_Name.h"
-#include "Model/SubsystemBrowserColumn_Config.h"
-#include "Model/SubsystemBrowserColumn_Module.h"
 #include "SubsystemBrowserSorting.h"
 #include "UI/SubsystemTableItem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
-
-void FSubsystemBrowserModule::AddPermanentColumns(TArray<SubsystemColumnPtr>& Columns)
-{
-	Columns.Add(MakeShared<FSubsystemDynamicColumn_Name>());
-}
-
-void FSubsystemBrowserModule::RegisterDefaultDynamicColumns()
-{
-	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Module>());
-	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Config>());
-}
 
 FSubsystemDynamicColumn::FSubsystemDynamicColumn()
 {

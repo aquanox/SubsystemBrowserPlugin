@@ -13,7 +13,7 @@ struct FSubsystemDynamicColumn_Config : public FSubsystemDynamicTextColumn
 
 	FSubsystemDynamicColumn_Config();
 
-	virtual bool IsVisibleByDefault() const override { return true; }
+	virtual bool IsVisibleByDefault() const override { return false; }
 
 	virtual FText ExtractText(TSharedRef<ISubsystemTreeItem> Item) const override;
 	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override;

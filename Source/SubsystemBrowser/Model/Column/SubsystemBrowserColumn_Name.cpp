@@ -1,6 +1,6 @@
 ﻿// Copyright 2022, Aquanox.
 
-#include "Model/SubsystemBrowserColumn_Name.h"
+#include "Model/Column/SubsystemBrowserColumn_Name.h"
 #include "UI/SubsystemTableItem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"

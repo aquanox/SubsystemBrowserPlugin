@@ -21,6 +21,9 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSu
 	FSubsystemDynamicColumn();
 	virtual ~FSubsystemDynamicColumn() = default;
 
+	const FName& GetID() const { return Name; }
+	int32 GetSortOrder() const { return SortOrder; }
+
 	/**
 	 * Generate visual representation of column in header row
 	 */

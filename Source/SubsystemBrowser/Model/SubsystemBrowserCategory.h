@@ -18,23 +18,33 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory : public TSharedFromThis<FSubsyst
 	FName Name;
 	/* Category display title */
 	FText Label;
-	/* Data supplier function */
-	FEnumSubsystemsDelegate Selector;
 	/* Sort weight for the category (with 0 being topmost, 1000 bottom last) */
 	int32 SortOrder = 0;
 
 	FSubsystemCategory() = default;
-	FSubsystemCategory(const FName& Name, const FText& Label, const FEnumSubsystemsDelegate& Selector, int32 SortOrder = 0);
+	FSubsystemCategory(const FName& Name, const FText& Label, int32 SortOrder);
 	virtual ~FSubsystemCategory() = default;
 
-	/* Select subsystems for the respected category */
-	virtual TArray<UObject*> Select(UWorld* InContext) const;
+	const FName& GetID() const { return Name; }
+	const FText& GetDisplayName() const { return Label; }
+	int32 GetSortOrder() const { return SortOrder; }
 
-	/* Event that fires when subsystems of this category need to be refreshed
-	 * Common case: engine and editor subsystems that dynamically load with modules
-	 */
-	/* FOnSubsystemsModified& OnSubsystemsModified(); */
+	/* Select subsystems for the respected category */
+	virtual TArray<UObject*> Select(UWorld* InContext) const = 0;
 };
 
 using SubsystemCategoryPtr = TSharedPtr<FSubsystemCategory>;
 
+/**
+ * Basic implementation of category that take in delegate selector
+ */
+struct SUBSYSTEMBROWSER_API FSimpleSubsystemCategory : public FSubsystemCategory
+{
+	/* Data supplier function */
+	FEnumSubsystemsDelegate Selector;
+
+	FSimpleSubsystemCategory() = default;
+	FSimpleSubsystemCategory(const FName& Name, const FText& Label, const FEnumSubsystemsDelegate& Selector, int32 SortOrder);
+
+	virtual TArray<UObject*> Select(UWorld* InContext) const override;
+};

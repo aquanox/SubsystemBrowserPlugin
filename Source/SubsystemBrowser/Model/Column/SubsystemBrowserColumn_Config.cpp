@@ -1,6 +1,6 @@
 ﻿// Copyright 2022, Aquanox.
 
-#include "Model/SubsystemBrowserColumn_Config.h"
+#include "Model/Column/SubsystemBrowserColumn_Config.h"
 #include "UI/SubsystemTableItem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
@@ -17,9 +17,7 @@ FText FSubsystemDynamicColumn_Config::ExtractText(TSharedRef<ISubsystemTreeItem>
 {
 	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
 	{
-		FFormatNamedArguments Args;
-		Args.Add(TEXT("Config"), Item->IsConfigExportable() ? FText::FromName(SubsystemItem->ConfigName) : FText::GetEmpty());
-		return FText::Format(LOCTEXT("SubsystemItem_Config", "{Config}"), Args);
+		return Item->IsConfigExportable() ? FText::FromName(SubsystemItem->ConfigName) : FText::GetEmpty();
 	}
 
 	return FText::GetEmpty();
@@ -27,9 +25,12 @@ FText FSubsystemDynamicColumn_Config::ExtractText(TSharedRef<ISubsystemTreeItem>
 
 void FSubsystemDynamicColumn_Config::PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const
 {
-	if (Item.IsConfigExportable())
+	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item.GetAsSubsystemDescriptor())
 	{
-		OutSearchStrings.Add(Item.GetAsSubsystemDescriptor()->ConfigName.ToString());
+		if (SubsystemItem->IsConfigExportable())
+		{
+			OutSearchStrings.Add(SubsystemItem->ConfigName.ToString());
+		}
 	}
 }
 

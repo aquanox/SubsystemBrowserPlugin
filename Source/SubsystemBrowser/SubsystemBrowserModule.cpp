@@ -1,15 +1,18 @@
 // Copyright 2022, Aquanox.
 
 #include "SubsystemBrowserModule.h"
-
-#include "ISettingsModule.h"
-#include "ISettingsSection.h"
-#include "UI/SubsystemBrowserPanel.h"
-#include "Widgets/Docking/SDockTab.h"
-#include "LevelEditor.h"
+#include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
-#include "SubsystemBrowserFlags.h"
+#include "Model/Column/SubsystemBrowserColumn_Name.h"
+#include "Model/Column/SubsystemBrowserColumn_Config.h"
+#include "Model/Column/SubsystemBrowserColumn_Module.h"
+#include "Model/Column/SubsystemBrowserColumn_Plugin.h"
+#include "UI/SubsystemBrowserPanel.h"
+#include "ISettingsModule.h"
+#include "ISettingsSection.h"
+#include "Widgets/Docking/SDockTab.h"
+#include "LevelEditor.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
@@ -126,6 +129,18 @@ const TArray<SubsystemCategoryPtr>& FSubsystemBrowserModule::GetCategories() con
 const TArray<SubsystemColumnPtr>& FSubsystemBrowserModule::GetDynamicColumns() const
 {
 	return DynamicColumns;
+}
+
+void FSubsystemBrowserModule::AddPermanentColumns(TArray<SubsystemColumnPtr>& Columns)
+{
+	Columns.Add(MakeShared<FSubsystemDynamicColumn_Name>());
+}
+
+void FSubsystemBrowserModule::RegisterDefaultDynamicColumns()
+{
+	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Module>());
+	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Config>());
+	RegisterDynamicColumn(MakeShared<FSubsystemDynamicColumn_Plugin>());
 }
 
 void FSubsystemBrowserModule::RegisterCategory(TSharedRef<FSubsystemCategory> InCategory)
