@@ -50,11 +50,14 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 	FEditorDelegates::PostPIEStarted.AddSP(this, &SSubsystemBrowserPanel::HandlePIEStart);
 	FEditorDelegates::PrePIEEnded.AddSP(this, &SSubsystemBrowserPanel::HandlePIEEnd);
 
+	// Update initial settings to apply custom category registrations
+	USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+	Settings->SyncCategorySettings();
+	Settings->SyncColumnSettings();
+
 	// Automatically handle settings change
 	USubsystemBrowserSettings::OnSettingChanged().AddSP(this, &SSubsystemBrowserPanel::OnSettingsChanged);
 	FModuleManager::Get().OnModulesChanged().AddSP(this, &SSubsystemBrowserPanel::OnModulesChanged);
-
-	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
 
 	SubsystemModel = MakeShared<FSubsystemModel>();
 	SubsystemModel->SetCurrentWorld(InArgs._InWorld);
