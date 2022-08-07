@@ -14,9 +14,9 @@ struct FSubsystemDynamicColumn_Name : public FSubsystemDynamicTextColumn
 	FSubsystemDynamicColumn_Name();
 
 	virtual bool IsVisibleByDefault() const override { return true; }
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const override;
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<const ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const override;
 	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override;
-	virtual FText ExtractText(TSharedRef<ISubsystemTreeItem> Item) const override;
-	virtual FText ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const override;
-	virtual FSlateColor ExtractColor(TSharedRef<ISubsystemTreeItem> Item) const override;
+	virtual FText ExtractText(TSharedRef<const ISubsystemTreeItem> Item) const override;
+	virtual FText ExtractTooltipText(TSharedRef<const ISubsystemTreeItem> Item) const override { return FText::GetEmpty(); }
+	virtual FSlateColor ExtractColor(TSharedRef<const ISubsystemTreeItem> Item) const override;
 };

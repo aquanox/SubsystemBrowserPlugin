@@ -163,7 +163,7 @@ bool FSubsystemModel::ShouldShowColumn(SubsystemColumnPtr Column) const
 	return USubsystemBrowserSettings::Get()->GetTableColumnState(Column->Name);
 }
 
-bool FSubsystemModel::IsItemSelected(TSharedRef<ISubsystemTreeItem> Item)
+bool FSubsystemModel::IsItemSelected(TSharedRef<const ISubsystemTreeItem> Item)
 {
 	return LastSelectedItem == Item;
 }

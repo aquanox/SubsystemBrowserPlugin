@@ -75,7 +75,7 @@ public:
 	/* check if dynamic column is enabled by settings */
 	bool ShouldShowColumn(SubsystemColumnPtr Column) const;
 
-	bool IsItemSelected(TSharedRef<ISubsystemTreeItem> Item);
+	bool IsItemSelected(TSharedRef<const ISubsystemTreeItem> Item);
 
 	DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemSelectionChange, TSharedPtr<ISubsystemTreeItem> /* Item */);
 	/* delegate that is triggered when tree selection changed */

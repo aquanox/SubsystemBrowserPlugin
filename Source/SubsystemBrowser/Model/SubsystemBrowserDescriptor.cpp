@@ -6,6 +6,9 @@
 #include "SubsystemBrowserUtils.h"
 #include "Interfaces/IPluginManager.h"
 #include "Model/SubsystemBrowserModel.h"
+#include "UI/SubsystemTableItemTooltip.h"
+
+#define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
 FSubsystemTreeCategoryItem::FSubsystemTreeCategoryItem(TSharedRef<FSubsystemModel> InModel, TSharedRef<FSubsystemCategory> InCategory)
 	: Data(InCategory)
@@ -18,6 +21,11 @@ TArray<UObject*> FSubsystemTreeCategoryItem::Select(UWorld* InContext) const
 	TArray<UObject*> Result;
 	Data->Select(InContext,Result);
 	return Result;
+}
+
+void FSubsystemTreeCategoryItem::GenerateTooltip(FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
+{
+	// Data->GenerateTooltip(SharedThis(this), TooltipBuilder);
 }
 
 FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)
@@ -68,10 +76,39 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 
 bool FSubsystemTreeSubsystemItem::IsSelected() const
 {
-	return Model.IsValid() && Model->IsItemSelected(SharedThis(const_cast<FSubsystemTreeSubsystemItem*>(this)));
+	return Model.IsValid() && Model->IsItemSelected(SharedThis(this));
 }
 
 FText FSubsystemTreeSubsystemItem::GetDisplayName() const
 {
 	return DisplayName;
 }
+
+void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
+{
+	//TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Path", "Path"), FText::FromString(LongPackage));
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Class", "Class"), FText::FromName(ClassName));
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Module", "Module"), FText::FromString(ShortPackage));
+	if (IsPluginModule())
+	{
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Plugin", "Plugin"), FText::FromString(PluginDisplayName));
+	}
+	if (IsConfigExportable())
+	{
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Config", "Config"), FText::FromName(ConfigName));
+	}
+	if (!OwnerName.IsEmpty())
+	{
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Owner", "Owner"), FText::FromString(OwnerName), FSubsystemTableItemTooltipBuilder::DF_IMPORTANT);
+	}
+
+	if (Model.IsValid())
+	{
+		for (const SubsystemColumnPtr& Column : Model->GetDynamicTableColumns())
+		{
+			Column->GenerateTooltip(SharedThis(this), TooltipBuilder);
+		}
+	}
+}
+
+#undef LOCTEXT_NAMESPACE

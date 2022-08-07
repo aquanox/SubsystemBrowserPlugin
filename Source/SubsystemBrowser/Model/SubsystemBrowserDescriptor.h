@@ -45,6 +45,7 @@ struct SUBSYSTEMBROWSER_API ISubsystemTreeItem : public TSharedFromThis<ISubsyst
 	virtual FSubsystemTreeSubsystemItem* GetAsSubsystemDescriptor() const { return nullptr; }
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const { return nullptr; }
 
+	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const {}
 	virtual void GenerateContextMenu(class UToolMenu* MenuBuilder, class SSubsystemBrowserPanel& Browser) const { }
 
 	bool bExpanded = true;
@@ -74,6 +75,8 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeCategoryItem final : public ISubsystem
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const override { return const_cast<FSubsystemTreeCategoryItem*>(this); }
 
 	TArray<UObject*> Select(UWorld* InContext) const;
+
+	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
 };
 
 /**
@@ -118,4 +121,6 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	virtual bool IsGameModule() const override { return bIsGameModuleClass; }
 	virtual bool IsPluginModule() const override { return bIsPluginClass; }
 	virtual bool HasViewableProperties() const override { return bHasViewableProperties; }
+
+	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
 };

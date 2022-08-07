@@ -3,6 +3,7 @@
 #include "UI/SubsystemTableItem.h"
 #include "Model/SubsystemBrowserModel.h"
 #include "UI/SubsystemBrowserPanel.h"
+#include "UI/SubsystemTableItemTooltip.h"
 #include "SlateOptMacros.h"
 #include "EditorStyleSet.h"
 #include "SubsystemBrowserFlags.h"
@@ -18,8 +19,10 @@ void SSubsystemTableItem::Construct(const FArguments& InArgs, TSharedRef<STableV
 	IsItemExpanded = InArgs._IsItemExpanded;
 	HighlightText = InArgs._HighlightText;
 
+	SetToolTip(SNew(SSubsystemTableItemTooltip).SubsystemTableItem(SharedThis(this)));
+
 	FSuperRowType::FArguments Args = FSuperRowType::FArguments();
-	SMultiColumnTableRow<SubsystemTreeItemPtr>::Construct(Args, OwnerTableView);
+	Super::Construct(Args, OwnerTableView);
 }
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION

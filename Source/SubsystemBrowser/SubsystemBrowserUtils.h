@@ -42,5 +42,10 @@ struct FSubsystemBrowserUtils
 	/**
 	 * Test if class has usable properties to be displayed in details panel
 	 */
-	 static bool HasPropertiesToDisplay(UClass* InClass);
+	static bool HasPropertiesToDisplay(UClass* InClass);
+
+	/**
+	 *
+	 */
+	static FString GenerateConfigExport(const struct FSubsystemTreeSubsystemItem* Item, bool bModifiedOnly);
 };

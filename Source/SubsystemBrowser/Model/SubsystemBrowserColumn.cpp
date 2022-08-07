@@ -41,7 +41,7 @@ bool FSubsystemDynamicColumn::IsValidColumnName(FName InName)
 	return !InName.IsNone() && InName != ColumnID_Name;
 }
 
-TSharedPtr<SWidget> FSubsystemDynamicTextColumn::GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
+TSharedPtr<SWidget> FSubsystemDynamicTextColumn::GenerateColumnWidget(TSharedRef<const ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
 {
 	return SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
@@ -58,12 +58,12 @@ TSharedPtr<SWidget> FSubsystemDynamicTextColumn::GenerateColumnWidget(TSharedRef
 		];
 }
 
-FText FSubsystemDynamicTextColumn::ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const
+FText FSubsystemDynamicTextColumn::ExtractTooltipText(TSharedRef<const ISubsystemTreeItem> Item) const
 {
 	return ExtractText(Item);
 }
 
-FSlateColor FSubsystemDynamicTextColumn::ExtractColor(TSharedRef<ISubsystemTreeItem> Item) const
+FSlateColor FSubsystemDynamicTextColumn::ExtractColor(TSharedRef<const ISubsystemTreeItem> Item) const
 {
 	if (Item->IsStale())
 	{
@@ -77,7 +77,7 @@ FSlateColor FSubsystemDynamicTextColumn::ExtractColor(TSharedRef<ISubsystemTreeI
 	return FSlateColor::UseForeground();
 }
 
-FSlateColor FSubsystemDynamicTextColumn::ExtractColorIfEnabled(TSharedRef<ISubsystemTreeItem> Item) const
+FSlateColor FSubsystemDynamicTextColumn::ExtractColorIfEnabled(TSharedRef<const ISubsystemTreeItem> Item) const
 {
 	if (USubsystemBrowserSettings::Get()->IsColoringEnabled())
 	{
@@ -86,7 +86,7 @@ FSlateColor FSubsystemDynamicTextColumn::ExtractColorIfEnabled(TSharedRef<ISubsy
 	return Item->IsStale() ? FSlateColor::UseSubduedForeground() : FSlateColor::UseForeground();
 }
 
-FSlateFontInfo FSubsystemDynamicTextColumn::ExtractFont(TSharedRef<ISubsystemTreeItem> Item) const
+FSlateFontInfo FSubsystemDynamicTextColumn::ExtractFont(TSharedRef<const ISubsystemTreeItem> Item) const
 {
 	return FEditorStyle::GetFontStyle("WorldBrowser.LabelFont");
 }
@@ -115,7 +115,7 @@ struct FSubsystemDynamicColumn_Tick : public FSubsystemDynamicColumn
 		PreferredWidthRatio = 0.05f;
 	}
 
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<struct ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const override
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<const ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const override
 	{
 		// Build a widget to represent value
 		return SNew(SHorizontalBox)
@@ -126,11 +126,11 @@ struct FSubsystemDynamicColumn_Tick : public FSubsystemDynamicColumn
 				.ColorAndOpacity(FSlateColor::UseForeground())
 				.Image(FEditorStyle::GetBrush(TEXT("GraphEditor.Conduit_16x")))
 				.DesiredSizeOverride(FVector2d{16,16})
-				.Visibility(this, &FSubsystemDynamicColumn_Tick::ExtractIsTickable, TableRow->Item)
+				.Visibility(this, &FSubsystemDynamicColumn_Tick::ExtractIsTickable, Item)
 			];
 	}
 private:
-	EVisibility ExtractIsTickable(TSharedPtr<ISubsystemTreeItem> Item) const
+	EVisibility ExtractIsTickable(TSharedRef<const ISubsystemTreeItem> Item) const
 	{
 		auto* Subsystem = Item->GetAsSubsystemDescriptor();
 		return Subsystem && Subsystem->Class.IsValid() && Subsystem->Class->IsChildOf(UTickableWorldSubsystem::StaticClass())

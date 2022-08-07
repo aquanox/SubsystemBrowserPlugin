@@ -32,7 +32,14 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSu
 	/**
 	 * Generate visual representation of column in table row
 	 */
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const = 0;
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<const ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const = 0;
+
+	/**
+	 * Generate additional tooltip entries for item
+	 * @param Item Item to generate tooltip for
+	 * @param TooltipBuilder Tooltip builder helper
+	 */
+	virtual void GenerateTooltip(TSharedRef<const ISubsystemTreeItem> Item, class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const {}
 
 	/**
 	 * Gather searchable strings for column
@@ -77,19 +84,19 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicTextColumn : public FSubsystemDynam
 {
 	using Super = FSubsystemDynamicTextColumn;
 
-	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const override;
+	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<const ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const override;
 	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const override { }
 protected:
 	/* get text to display for specified item */
-	virtual FText ExtractText(TSharedRef<ISubsystemTreeItem> Item) const = 0;
+	virtual FText ExtractText(TSharedRef<const ISubsystemTreeItem> Item) const = 0;
 	/* get tooltip text to display for specified item */
-	virtual FText ExtractTooltipText(TSharedRef<ISubsystemTreeItem> Item) const;
+	virtual FText ExtractTooltipText(TSharedRef<const ISubsystemTreeItem> Item) const;
 	/* get color and opacity of text for specified item */
-	virtual FSlateColor ExtractColor(TSharedRef<ISubsystemTreeItem> Item) const;
+	virtual FSlateColor ExtractColor(TSharedRef<const ISubsystemTreeItem> Item) const;
 	/* internal */
-	FSlateColor ExtractColorIfEnabled(TSharedRef<ISubsystemTreeItem> Item) const;
+	FSlateColor ExtractColorIfEnabled(TSharedRef<const ISubsystemTreeItem> Item) const;
 	/* get font of text for specified item */
-	virtual FSlateFontInfo ExtractFont(TSharedRef<ISubsystemTreeItem> Item) const;
+	virtual FSlateFontInfo ExtractFont(TSharedRef<const ISubsystemTreeItem> Item) const;
 	/* text columns support sorting by default */
 	virtual bool SupportsSorting() const override { return true; }
 	virtual void SortItems(TArray<SubsystemTreeItemPtr>& RootItems, const EColumnSortMode::Type SortMode) const override;

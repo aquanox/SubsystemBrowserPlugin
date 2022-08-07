@@ -19,6 +19,7 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "IDetailsView.h"
+#include "SubsystemBrowserUtils.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -1202,9 +1203,7 @@ void SSubsystemBrowserPanel::ContextMenu_CopyScriptName() const
 	if (SelectedSubsystem)
 	{
 		FString ClipboardText;
-		ClipboardText +=  SelectedSubsystem->Package;
-		ClipboardText += TEXT(".");
-		ClipboardText +=  SelectedSubsystem->ClassName.ToString();
+		ClipboardText +=  SelectedSubsystem->LongPackage;
 		SetClipboardText(ClipboardText);
 	}
 }
@@ -1216,79 +1215,7 @@ void SSubsystemBrowserPanel::ContextMenu_ConfigExport(bool bModifiedOnly) const
 	if (SelectedSubsystem)
 	{
 		FString ClipboardText;
-
-		ClipboardText += FString::Printf(TEXT("; Should be in Default%s.ini"), *SelectedSubsystem->ConfigName.ToString());
-		ClipboardText += LINE_TERMINATOR;
-		ClipboardText += FString::Printf(TEXT("[%s.%s]"), *SelectedSubsystem->Package, *SelectedSubsystem->ClassName.ToString());
-		ClipboardText += LINE_TERMINATOR;
-
-		UObject* const Subsystem  = SelectedSubsystem->Subsystem.Get();
-		UClass* const Class = SelectedSubsystem->Class.Get();
-		UObject* const SubsystemDefaults  = Class ? Class->GetDefaultObject() : nullptr;
-
-		if (Subsystem && SubsystemDefaults && Class)
-		{
-			TArray<FProperty*> ModifiedProperties;
-
-			for (TFieldIterator<FProperty> It(Class); It; ++It)
-			{
-				FProperty* Property = *It;
-				if (Property->HasAnyPropertyFlags(CPF_Transient | CPF_DuplicateTransient | CPF_NonPIEDuplicateTransient | CPF_Deprecated | CPF_SkipSerialization))
-					continue;
-
-				if( Property->HasAnyPropertyFlags(CPF_Config) )
-				{
-					for( int32 Idx=0; Idx<Property->ArrayDim; Idx++ )
-					{
-						uint8* DataPtr      = Property->ContainerPtrToValuePtr           <uint8>((uint8*)Subsystem, Idx);
-						uint8* DefaultValue = Property->ContainerPtrToValuePtrForDefaults<uint8>(Class, (uint8*)SubsystemDefaults, Idx);
-						if (bModifiedOnly == false || !Property->Identical( DataPtr, DefaultValue, PPF_DeepCompareInstances))
-						{
-							ModifiedProperties.Add(Property);
-							break;
-						}
-					}
-				}
-			}
-
-			for (FProperty* Property : ModifiedProperties)
-			{
-				const TCHAR* Prefix = TEXT("");
-
-				if (FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
-				{
-					ClipboardText += FString::Printf(TEXT("!%s=ClearArray"), *Property->GetName());
-					ClipboardText += LINE_TERMINATOR;
-					Prefix = TEXT("+");
-
-					FScriptArrayHelper ArrayHelper(ArrayProperty, Subsystem);
-					if (!ArrayHelper.Num())
-					{
-						continue;
-					}
-				}
-
-				for( int32 Idx=0; Idx< Property->ArrayDim; Idx++ )
-				{
-					uint8* DataPtr      = Property->ContainerPtrToValuePtr           <uint8>(Subsystem, Idx);
-					uint8* DefaultValue = Property->ContainerPtrToValuePtrForDefaults<uint8>(Class, SubsystemDefaults, Idx);
-
-					FString ExportValue;
-					Property->ExportTextItem(ExportValue, DataPtr, DefaultValue, nullptr, 0);
-
-					if (ExportValue.IsEmpty())
-					{
-						ClipboardText += FString::Printf(TEXT("%s="), *Property->GetName());
-					}
-					else
-					{
-						ClipboardText += FString::Printf(TEXT("%s%s=%s"), Prefix, *Property->GetName(), *ExportValue);
-					}
-					ClipboardText += LINE_TERMINATOR;
-				}
-			}
-		}
-
+		FSubsystemBrowserUtils::GenerateConfigExport(SelectedSubsystem, bModifiedOnly);
 		SetClipboardText(ClipboardText);
 	}
 }

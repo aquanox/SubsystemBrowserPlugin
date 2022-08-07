@@ -1,6 +1,7 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "Model/Column/SubsystemBrowserColumn_Config.h"
+
 #include "UI/SubsystemTableItem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
@@ -13,7 +14,7 @@ FSubsystemDynamicColumn_Config::FSubsystemDynamicColumn_Config()
 	PreferredWidthRatio = 0.15f;
 }
 
-FText FSubsystemDynamicColumn_Config::ExtractText(TSharedRef<ISubsystemTreeItem> Item) const
+FText FSubsystemDynamicColumn_Config::ExtractText(TSharedRef<const ISubsystemTreeItem> Item) const
 {
 	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
 	{

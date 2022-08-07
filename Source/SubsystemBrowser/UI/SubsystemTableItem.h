@@ -10,6 +10,7 @@ class SSubsystemBrowserPanel;
 
 class SSubsystemTableItem : public SMultiColumnTableRow<SubsystemTreeItemPtr>
 {
+	using Super = SMultiColumnTableRow<SubsystemTreeItemPtr>;
 public:
 	SLATE_BEGIN_ARGS( SSubsystemTableItem )
 		: _IsItemExpanded( false )
