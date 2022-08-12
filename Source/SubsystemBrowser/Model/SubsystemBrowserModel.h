@@ -56,9 +56,9 @@ public:
 	void GetFilteredCategories(TArray<SubsystemTreeItemPtr>& OutCategories) const;
 
 	const TArray<SubsystemTreeItemPtr>& GetAllSubsystems() const;
-	void GetAllSubsystemsInCategory(SubsystemTreeItemPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const;
+	void GetAllSubsystemsInCategory(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const;
 
-	void GetFilteredSubsystems(SubsystemTreeItemPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const;
+	void GetFilteredSubsystems(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const;
 
 	/* get total number of subsystems in visible categories */
 	int32 GetNumSubsystemsFromVisibleCategories() const;

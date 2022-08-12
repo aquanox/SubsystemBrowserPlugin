@@ -1,5 +1,6 @@
 ﻿#include "UI/SubsystemTableItemTooltip.h"
 #include "SubsystemBrowserFlags.h"
+#include "SubsystemBrowserModule.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -36,6 +37,12 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 {
 	if (TableItem->Item.IsValid())
 	{
+		FSubsystemTableItemTooltipBuilder TooltipBuilder(TableItem);
+		TableItem->Item->GenerateTooltip(TooltipBuilder);
+
+		// Apply external customizations for tooltips
+		FSubsystemBrowserModule::OnGenerateTooltip.Broadcast(TableItem->Item.ToSharedRef(), TooltipBuilder);
+
 		TSharedRef<SVerticalBox> OverallTooltipVBox = SNew(SVerticalBox);
 
 		// Top section (asset name, type, is checked out)
@@ -68,9 +75,7 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 			]
 		];
 
-		FSubsystemTableItemTooltipBuilder Builder(TableItem);
-		TableItem->Item->GenerateTooltip(Builder);
-		if (Builder.Primary.IsValid())
+		if (TooltipBuilder.Primary.IsValid())
 		{
 			OverallTooltipVBox->AddSlot()
 							  .AutoHeight()
@@ -79,12 +84,12 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 					.Padding(6)
 					.BorderImage(FEditorStyle::GetBrush("ContentBrowser.TileViewTooltip.ContentBorder"))
 				[
-					Builder.Primary.ToSharedRef()
+					TooltipBuilder.Primary.ToSharedRef()
 				]
 			];
 		}
 
-		if (Builder.Secondary.IsValid())
+		if (TooltipBuilder.Secondary.IsValid())
 		{
 			OverallTooltipVBox->AddSlot()
 							  .AutoHeight()
@@ -93,7 +98,7 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 					.Padding(6)
 					.BorderImage(FEditorStyle::GetBrush("ContentBrowser.TileViewTooltip.ContentBorder"))
 				[
-					Builder.Secondary.ToSharedRef()
+					TooltipBuilder.Secondary.ToSharedRef()
 				]
 			];
 		}

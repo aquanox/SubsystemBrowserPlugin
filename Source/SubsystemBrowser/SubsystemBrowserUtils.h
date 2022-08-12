@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 
-struct FSubsystemBrowserUtils
+/**
+ * Collection of various helpers to use
+ */
+struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 {
-	DECLARE_DELEGATE_RetVal_OneParam(FString, FOnGetSubsystemOwnerName, UObject*);
-	static SUBSYSTEMBROWSER_API FOnGetSubsystemOwnerName OnGetSubsystemOwnerName;
-
 	/**
 	 * Get info about subsystem "Owner"
 	 */
-	static FString GetSubsystemOwnerName(UObject* InObject);
+	static FString GetDefaultSubsystemOwnerName(UObject* InObject);
 
 	/**
 	 * Finds the base directory for a given module.
@@ -40,9 +40,9 @@ struct FSubsystemBrowserUtils
 	static void CollectSourceFiles(UClass* InClass, TArray<FString>& OutSourceFiles);
 
 	/**
-	 * Test if class has usable properties to be displayed in details panel
+	 * Collect property display info for tooltip
 	 */
-	static bool HasPropertiesToDisplay(UClass* InClass);
+	static void GetClassPropertyCounts(UClass* InClass, int32& NumTotal, int32& NumVisible);
 
 	/**
 	 *

@@ -91,11 +91,11 @@ const TArray<SubsystemTreeItemPtr>& FSubsystemModel::GetAllSubsystems() const
 	return AllSubsystems;
 }
 
-void FSubsystemModel::GetAllSubsystemsInCategory(SubsystemTreeItemPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const
+void FSubsystemModel::GetAllSubsystemsInCategory(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const
 {
 	check(Category->GetAsCategoryDescriptor());
-	OutChildren.Empty();
 
+	OutChildren.Empty();
 	if (AllSubsystemsByCategory.Contains(Category->GetID()))
 	{
 		for (const SubsystemTreeItemPtr& Item : AllSubsystemsByCategory.FindChecked(Category->GetID()))
@@ -105,7 +105,7 @@ void FSubsystemModel::GetAllSubsystemsInCategory(SubsystemTreeItemPtr Category, 
 	}
 }
 
-void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const
+void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const
 {
 	FSubsystemTreeCategoryItem* AsCategory = Category->GetAsCategoryDescriptor();
 	check(AsCategory);
@@ -130,6 +130,7 @@ void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemPtr Category, TArra
 		}
 	}
 }
+
 
 int32 FSubsystemModel::GetNumSubsystemsFromVisibleCategories() const
 {

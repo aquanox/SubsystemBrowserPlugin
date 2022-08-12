@@ -77,6 +77,18 @@ public:
 	 */
 	void SummonSubsystemTab();
 
+	/**
+	 * Callback that is called whenever an owner name is needed to be obtained for the subsystem
+	 */
+	DECLARE_DELEGATE_RetVal_OneParam(FString, FOnGetSubsystemOwnerName, UObject*);
+	static SUBSYSTEMBROWSER_API FOnGetSubsystemOwnerName OnGetSubsystemOwnerName;
+
+	/**
+	 * Callback that is called whenever a tooltip for item needs to be generated
+	 */
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateTooltip, TSharedRef<const struct ISubsystemTreeItem>, class FSubsystemTableItemTooltipBuilder&);
+	static SUBSYSTEMBROWSER_API FOnGenerateTooltip OnGenerateTooltip;
+
 private:
 	static TSharedRef<class SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args);
 	static TSharedRef<class SWidget> CreateSubsystemBrowser(const FSpawnTabArgs& Args);

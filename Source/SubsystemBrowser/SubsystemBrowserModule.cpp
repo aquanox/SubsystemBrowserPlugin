@@ -29,6 +29,9 @@ DEFINE_LOG_CATEGORY(LogSubsystemBrowser);
 
 const FName FSubsystemBrowserModule::SubsystemBrowserTabName = TEXT("SubsystemBrowserTab");
 
+FSubsystemBrowserModule::FOnGetSubsystemOwnerName FSubsystemBrowserModule::OnGetSubsystemOwnerName;
+FSubsystemBrowserModule::FOnGenerateTooltip FSubsystemBrowserModule::OnGenerateTooltip;
+
 #if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
 static const FName PanelIconName(TEXT("Icons.Settings"));
 #else

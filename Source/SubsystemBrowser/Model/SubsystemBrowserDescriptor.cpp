@@ -3,6 +3,7 @@
 #include "Model/SubsystemBrowserDescriptor.h"
 
 #include "SubsystemBrowserFlags.h"
+#include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserUtils.h"
 #include "Interfaces/IPluginManager.h"
 #include "Model/SubsystemBrowserModel.h"
@@ -25,7 +26,9 @@ TArray<UObject*> FSubsystemTreeCategoryItem::Select(UWorld* InContext) const
 
 void FSubsystemTreeCategoryItem::GenerateTooltip(FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
 {
-	// Data->GenerateTooltip(SharedThis(this), TooltipBuilder);
+	TArray<SubsystemTreeItemPtr> Subsystems;
+	Model->GetAllSubsystemsInCategory(SharedThis(this), Subsystems);
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_NumSub", "Num Subsystems"), FText::AsNumber(Subsystems.Num()));
 }
 
 FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)
@@ -57,7 +60,14 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 
 	FSubsystemBrowserUtils::CollectSourceFiles(InClass, SourceFilePaths);
 
-	OwnerName = FSubsystemBrowserUtils::GetSubsystemOwnerName(Instance);
+	if (FSubsystemBrowserModule::OnGetSubsystemOwnerName.IsBound())
+	{
+		OwnerName = FSubsystemBrowserModule::OnGetSubsystemOwnerName.Execute(Instance);
+	}
+	else
+	{
+		OwnerName = FSubsystemBrowserUtils::GetDefaultSubsystemOwnerName(Instance);
+	}
 
 	TSharedPtr<IPlugin> Plugin = FSubsystemBrowserUtils::GetPluginForClass(InClass);
 	if (Plugin.IsValid())
@@ -71,7 +81,7 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 #endif
 	}
 
-	bHasViewableProperties = FSubsystemBrowserUtils::HasPropertiesToDisplay(InClass);
+	FSubsystemBrowserUtils::GetClassPropertyCounts(InClass, NumProperties, NumViewableProperties);
 }
 
 bool FSubsystemTreeSubsystemItem::IsSelected() const
@@ -99,16 +109,12 @@ void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuil
 	}
 	if (!OwnerName.IsEmpty())
 	{
-		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Owner", "Owner"), FText::FromString(OwnerName), FSubsystemTableItemTooltipBuilder::DF_IMPORTANT);
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Owner", "Owned by"), FText::FromString(OwnerName));
 	}
 
-	if (Model.IsValid())
-	{
-		for (const SubsystemColumnPtr& Column : Model->GetDynamicTableColumns())
-		{
-			Column->GenerateTooltip(SharedThis(this), TooltipBuilder);
-		}
-	}
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Props", "Num Properties"), FText::AsNumber(NumProperties));
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsVisible", "Num Visible Properties"), FText::AsNumber(NumViewableProperties));
+
 }
 
 #undef LOCTEXT_NAMESPACE

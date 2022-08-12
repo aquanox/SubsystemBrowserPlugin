@@ -9,21 +9,18 @@
 #include "Interfaces/IPluginManager.h"
 #include "Model/SubsystemBrowserDescriptor.h"
 
-FSubsystemBrowserUtils::FOnGetSubsystemOwnerName FSubsystemBrowserUtils::OnGetSubsystemOwnerName;
-
-FString FSubsystemBrowserUtils::GetSubsystemOwnerName(UObject* Instance)
+FString FSubsystemBrowserUtils::GetDefaultSubsystemOwnerName(UObject* Instance)
 {
-	if (OnGetSubsystemOwnerName.IsBound())
+	if (ULocalPlayerSubsystem* PlayerSubsystem = Cast<ULocalPlayerSubsystem>(Instance))
 	{
-		return OnGetSubsystemOwnerName.Execute(Instance);
-	}
-
-	if (auto PlayerSubsystem = Cast<ULocalPlayerSubsystem>(Instance))
-	{
-		if (auto LocalPlayer = PlayerSubsystem->GetLocalPlayer<ULocalPlayer>())
+		if (ULocalPlayer* LocalPlayer = PlayerSubsystem->GetLocalPlayer<ULocalPlayer>())
 		{
 			return LocalPlayer->GetName();
 		}
+	}
+	else if (UObject* Outer = Instance->GetOuter())
+	{
+		return Outer->GetName();
 	}
 
 	return FString();
@@ -130,21 +127,25 @@ void FSubsystemBrowserUtils::CollectSourceFiles(UClass* InClass, TArray<FString>
 	}
 }
 
-bool FSubsystemBrowserUtils::HasPropertiesToDisplay(UClass* InClass)
+void FSubsystemBrowserUtils::GetClassPropertyCounts(UClass* InClass, int32& NumTotal, int32& NumVisible)
 {
+	NumTotal = 0;
+	NumVisible = 0;
+
 #if UE_VERSION_OLDER_THAN(5,0,0)
 	for (TFieldIterator<FProperty> It(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::IncludeDeprecated); It; ++It)
 #else
 	for (TFieldIterator<FProperty> It(InClass, EFieldIterationFlags::IncludeSuper|EFieldIterationFlags::IncludeDeprecated); It; ++It)
 #endif
 	{
+		NumTotal++;
+
 		FProperty* const Property = *It;
 		if (Property->HasAnyPropertyFlags(CPF_BlueprintVisible|CPF_Edit|CPF_AdvancedDisplay))
 		{
-			return true;
+			NumVisible ++;
 		}
 	}
-	return false;
 }
 
 FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsystemItem* SelectedSubsystem, bool bModifiedOnly)

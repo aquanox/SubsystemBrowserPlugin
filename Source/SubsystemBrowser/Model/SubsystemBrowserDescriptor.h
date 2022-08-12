@@ -12,7 +12,7 @@ struct FSubsystemTreeCategoryItem;
 
 using FSubsystemTreeItemID = FName;
 using SubsystemTreeItemPtr = TSharedPtr<ISubsystemTreeItem>;
-using SubsystemTreeItemRef = TSharedRef<ISubsystemTreeItem>;
+using SubsystemTreeItemConstPtr = TSharedPtr<const ISubsystemTreeItem>;
 
 /*
  * Abstract subsystem tree item node
@@ -38,7 +38,6 @@ struct SUBSYSTEMBROWSER_API ISubsystemTreeItem : public TSharedFromThis<ISubsyst
 	virtual bool IsConfigExportable() const { return false; }
 	virtual bool IsGameModule() const { return false; }
 	virtual bool IsPluginModule() const { return false; }
-	virtual bool HasViewableProperties() const { return false; }
 
 	virtual FText GetDisplayName() const = 0;
 
@@ -101,10 +100,12 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	FString							PluginName;
 	FString							PluginDisplayName;
 
+	int32							NumViewableProperties = 0;
+	int32							NumProperties = 0;
+
 	bool							bConfigExportable = false;
 	bool							bIsGameModuleClass = false;
 	bool							bIsPluginClass = false;
-	bool							bHasViewableProperties = false;
 
 	FSubsystemTreeSubsystemItem() = default;
 	FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance);
@@ -120,7 +121,6 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	virtual bool IsConfigExportable() const override { return bConfigExportable; }
 	virtual bool IsGameModule() const override { return bIsGameModuleClass; }
 	virtual bool IsPluginModule() const override { return bIsPluginClass; }
-	virtual bool HasViewableProperties() const override { return bHasViewableProperties; }
 
 	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
 };

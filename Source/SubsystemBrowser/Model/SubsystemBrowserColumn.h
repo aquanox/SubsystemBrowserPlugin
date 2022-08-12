@@ -35,13 +35,6 @@ struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSu
 	virtual TSharedPtr<SWidget> GenerateColumnWidget(TSharedRef<const ISubsystemTreeItem> Item, TSharedRef<class SSubsystemTableItem> TableRow) const = 0;
 
 	/**
-	 * Generate additional tooltip entries for item
-	 * @param Item Item to generate tooltip for
-	 * @param TooltipBuilder Tooltip builder helper
-	 */
-	virtual void GenerateTooltip(TSharedRef<const ISubsystemTreeItem> Item, class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const {}
-
-	/**
 	 * Gather searchable strings for column
 	 */
 	virtual void PopulateSearchStrings(const ISubsystemTreeItem& Item, TArray<FString>& OutSearchStrings) const {}

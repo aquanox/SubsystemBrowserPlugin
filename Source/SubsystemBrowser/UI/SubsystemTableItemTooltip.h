@@ -31,7 +31,7 @@ private:
 	TWeakPtr<SSubsystemTableItem> SubsystemTableItem;
 };
 
-class FSubsystemTableItemTooltipBuilder
+class SUBSYSTEMBROWSER_API FSubsystemTableItemTooltipBuilder
 {
 	friend SSubsystemTableItemTooltip;
 
@@ -50,7 +50,7 @@ public:
 
 	void AddPrimary(const FText& Key, const FText& Value, uint32 DisplayFlags = DF_NONE);
 	void AddSecondary(const FText& Key, const FText& Value, uint32 DisplayFlags = DF_NONE);
-
+	bool HasAnyData() const { return Primary.IsValid() || Secondary.IsValid(); }
 private:
 	void AddBox(TSharedRef<SVerticalBox> Target, const FText& Key, const FText& Value, uint32 DisplayFlags);
 };
