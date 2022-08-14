@@ -16,23 +16,13 @@
 #include "Editor.h"
 #include "Engine/MemberReference.h"
 #include "HAL/PlatformApplicationMisc.h"
-#include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "IDetailsView.h"
 #include "SubsystemBrowserUtils.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
-static void ShowBrowserInfoMessage(FText InText, SNotificationItem::ECompletionState InType)
-{
-	FNotificationInfo Info(InText);
-	Info.ExpireDuration = 5.0f;
 
-	if (TSharedPtr<SNotificationItem> InfoItem = FSlateNotificationManager::Get().AddNotification(Info))
-	{
-		InfoItem->SetCompletionState(InType);
-	}
-}
 
 SSubsystemBrowserPanel::SSubsystemBrowserPanel()
 {
@@ -762,7 +752,7 @@ void SSubsystemBrowserPanel::ToggleShowHiddenProperties()
 
 	RefreshView();
 
-	ShowBrowserInfoMessage(LOCTEXT("PropertyToggleWarning", "Changes will be applied after panel restart"), SNotificationItem::CS_Pending);
+	FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("PropertyToggleWarning", "Changes will be applied after panel restart"), SNotificationItem::CS_Pending);
 }
 
 void SSubsystemBrowserPanel::ToggleShouldShowOnlyGame()
@@ -1033,198 +1023,29 @@ TSharedPtr<SWidget> SSubsystemBrowserPanel::ConstructSubsystemContextMenu()
 {
 	TSharedRef<SWidget> MenuWidget = SNullWidget::NullWidget;
 
-	const FName MenuName = TEXT("SubsystemBrowser.ContextMenu");
-
 	UToolMenus* ToolMenus = UToolMenus::Get();
-	if (!ToolMenus->IsMenuRegistered(MenuName))
+
+	if (!ToolMenus->IsMenuRegistered(FSubsystemBrowserModule::SubsystemBrowserContextMenuName))
 	{
-		ToolMenus->RegisterMenu(MenuName);
+		ToolMenus->RegisterMenu(FSubsystemBrowserModule::SubsystemBrowserContextMenuName);
+		UE_LOG(LogSubsystemBrowser, Warning, TEXT("For some reason context menu did not register"));
 	}
 
-	FToolMenuContext Context(nullptr, TSharedPtr<FExtender>());
-	UToolMenu* Menu = ToolMenus->GenerateMenu(MenuName, Context);
+	FToolMenuContext Context;
+	UToolMenu* Menu = ToolMenus->GenerateMenu(FSubsystemBrowserModule::SubsystemBrowserContextMenuName, Context);
 
 	SubsystemTreeItemPtr Selected = GetFirstSelectedItem();
 	if (Selected.IsValid())
 	{
-		Selected->GenerateContextMenu(Menu, *this);
-	}
+		Selected->GenerateContextMenu(Menu);
 
-	{
-		FToolMenuSection& Section = Menu->AddSection("SubsystemContextActions", LOCTEXT("SubsystemContextActions", "Common"));
-		Section.AddMenuEntry("OpenSourceFile",
-			LOCTEXT("OpenSourceFile", "Open Source File"),
-			FText::GetEmpty(),
-			FSlateIcon(FEditorStyle::GetStyleSetName(), "SystemWideCommands.FindInContentBrowser"),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ContextMenu_OpenSourceFile),
-				FCanExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::HasSelectedSubsystem)
-			)
-		);
-	}
-
-	{
-		FToolMenuSection& Section = Menu->AddSection("SubsystemReferenceActions", LOCTEXT("SubsystemReferenceActions", "References"));
-		Section.AddMenuEntry("CopyClassName",
-			LOCTEXT("CopyClassName", "Copy Class Name"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ContextMenu_CopyClassName),
-				FCanExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::HasSelectedSubsystem)
-			)
-		);
-		Section.AddMenuEntry("CopyPackageName",
-			LOCTEXT("CopyPackageName", "Copy Module Name"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ContextMenu_CopyPackageName),
-				FCanExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::HasSelectedSubsystem)
-			)
-		);
-		Section.AddMenuEntry("CopyScriptName",
-			LOCTEXT("CopyScriptName", "Copy Script Name"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ContextMenu_CopyScriptName),
-				FCanExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::HasSelectedSubsystem)
-			)
-		);
-		Section.AddMenuEntry("CopyFilePath",
-			LOCTEXT("CopyFilePath", "Copy File Path"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ContextMenu_CopySourceFilePath),
-				FCanExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::HasSelectedSubsystem)
-			)
-		);
-	}
-
-	{
-		FToolMenuSection& Section = Menu->AddSection("SubsystemConfigActions", LOCTEXT("SubsystemConfigActions", "Config"));
-		Section.AddMenuEntry("ExportModified",
-			LOCTEXT("ExportModified", "Export Modified Properties"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ContextMenu_ConfigExport, true),
-				FCanExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::CanExportSelection)
-			)
-		);
-		Section.AddMenuEntry("ExportAll",
-			LOCTEXT("ExportAll", "Export All Properties"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ContextMenu_ConfigExport, false),
-				FCanExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::CanExportSelection)
-			)
-		);
+		// Apply customizations
+		FSubsystemBrowserModule::OnGenerateContextMenu.Broadcast(Selected.ToSharedRef(), Menu);
 	}
 
 	MenuWidget = ToolMenus->GenerateWidget(Menu);
 
 	return MenuWidget;
-}
-
-static void SetClipboardText(const FString& ClipboardText)
-{
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("Clipboard set to:\n%s"), *ClipboardText);
-
-	FPlatformApplicationMisc::ClipboardCopy(*ClipboardText);
-}
-
-void SSubsystemBrowserPanel::ContextMenu_OpenSourceFile() const
-{
-	const FSubsystemTreeSubsystemItem* SelectedSubsystem = GetFirstSelectedSubsystem();
-	if (SelectedSubsystem)
-	{
-		UObject* ViewedObject = SelectedSubsystem->GetObjectForDetails();
-		if (!ViewedObject || !FSourceCodeNavigation::CanNavigateToClass(ViewedObject->GetClass()))
-		{
-			ShowBrowserInfoMessage(LOCTEXT("OpenSourceFile_Failed", "Failed to open source file."), SNotificationItem::CS_Fail);
-		}
-		else
-		{
-			FSourceCodeNavigation::NavigateToClass(ViewedObject->GetClass());
-		}
-	}
-}
-
-void SSubsystemBrowserPanel::ContextMenu_CopySourceFilePath() const
-{
-	const FSubsystemTreeSubsystemItem* SelectedSubsystem = GetFirstSelectedSubsystem();
-	if (SelectedSubsystem)
-	{
-		FString ClipboardText;
-		for (const FString& Item : SelectedSubsystem->SourceFilePaths)
-		{
-			if (ClipboardText.Len() > 0)
-			{
-				ClipboardText += LINE_TERMINATOR;
-			}
-
-			ClipboardText += FPaths::ConvertRelativePathToFull(Item);
-		}
-
-		SetClipboardText(ClipboardText);
-	}
-}
-
-void SSubsystemBrowserPanel::ContextMenu_CopyClassName() const
-{
-	const FSubsystemTreeSubsystemItem* SelectedSubsystem = GetFirstSelectedSubsystem();
-	if (SelectedSubsystem)
-	{
-		FString ClipboardText;
-		ClipboardText += TEXT("U");
-		ClipboardText +=  SelectedSubsystem->ClassName.ToString();
-		SetClipboardText(ClipboardText);
-	}
-}
-
-void SSubsystemBrowserPanel::ContextMenu_CopyPackageName() const
-{
-	const FSubsystemTreeSubsystemItem* SelectedSubsystem = GetFirstSelectedSubsystem();
-	if (SelectedSubsystem)
-	{
-		FString ClipboardText;
-		ClipboardText +=  SelectedSubsystem->ShortPackage;
-		SetClipboardText(ClipboardText);
-	}
-}
-
-void SSubsystemBrowserPanel::ContextMenu_CopyScriptName() const
-{
-	const FSubsystemTreeSubsystemItem* SelectedSubsystem = GetFirstSelectedSubsystem();
-	if (SelectedSubsystem)
-	{
-		FString ClipboardText;
-		ClipboardText +=  SelectedSubsystem->LongPackage;
-		SetClipboardText(ClipboardText);
-	}
-}
-
-PRAGMA_DISABLE_OPTIMIZATION
-void SSubsystemBrowserPanel::ContextMenu_ConfigExport(bool bModifiedOnly) const
-{
-	const FSubsystemTreeSubsystemItem* SelectedSubsystem = GetFirstSelectedSubsystem();
-	if (SelectedSubsystem)
-	{
-		FString ClipboardText;
-		FSubsystemBrowserUtils::GenerateConfigExport(SelectedSubsystem, bModifiedOnly);
-		SetClipboardText(ClipboardText);
-	}
-}
-PRAGMA_ENABLE_OPTIMIZATION
-
-bool SSubsystemBrowserPanel::CanExportSelection() const
-{
-	auto SelectedSubsystem = GetFirstSelectedItem();
-	return SelectedSubsystem.IsValid()  && SelectedSubsystem->IsConfigExportable();
 }
 
 bool SSubsystemBrowserPanel::HasSelectedSubsystem() const

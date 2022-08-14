@@ -1,13 +1,15 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "SubsystemBrowserUtils.h"
-
+#include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserFlags.h"
 #include "SourceCodeNavigation.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Engine/LocalPlayer.h"
+#include "Framework/Notifications/NotificationManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "Model/SubsystemBrowserDescriptor.h"
+#include "HAL/PlatformApplicationMisc.h"
 
 FString FSubsystemBrowserUtils::GetDefaultSubsystemOwnerName(UObject* Instance)
 {
@@ -148,6 +150,13 @@ void FSubsystemBrowserUtils::GetClassPropertyCounts(UClass* InClass, int32& NumT
 	}
 }
 
+void FSubsystemBrowserUtils::SetClipboardText(const FString& ClipboardText)
+{
+	UE_LOG(LogSubsystemBrowser, Log, TEXT("Clipboard set to:\n%s"), *ClipboardText);
+
+	FPlatformApplicationMisc::ClipboardCopy(*ClipboardText);
+}
+
 FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsystemItem* SelectedSubsystem, bool bModifiedOnly)
 {
 	FString ConfigBlock;
@@ -227,3 +236,13 @@ FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsyst
 	return ConfigBlock;
 }
 
+void FSubsystemBrowserUtils::ShowBrowserInfoMessage(FText InText, SNotificationItem::ECompletionState InType)
+{
+	FNotificationInfo Info(InText);
+	Info.ExpireDuration = 5.0f;
+
+	if (TSharedPtr<SNotificationItem> InfoItem = FSlateNotificationManager::Get().AddNotification(Info))
+	{
+		InfoItem->SetCompletionState(InType);
+	}
+}

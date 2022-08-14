@@ -115,15 +115,6 @@ protected:
 	// Item context menu
 
 	TSharedPtr<SWidget> ConstructSubsystemContextMenu();
-	void ContextMenu_Empty() const { }
-	void ContextMenu_OpenSourceFile() const;
-	void ContextMenu_CopySourceFilePath() const;
-	void ContextMenu_CopyClassName() const;
-	void ContextMenu_CopyPackageName() const;
-	void ContextMenu_CopyScriptName() const;
-	void ContextMenu_ConfigExport(bool bModifiedOnly) const;
-
-	bool CanExportSelection() const;
 	bool HasSelectedSubsystem() const;
 
 	// Settings

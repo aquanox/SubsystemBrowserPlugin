@@ -11,8 +11,9 @@ class USubsystemBrowserSettings;
 
 class FSubsystemBrowserModule : public IModuleInterface
 {
+public:
 	static const FName SubsystemBrowserTabName;
-
+	static const FName SubsystemBrowserContextMenuName;
 public:
 	static FSubsystemBrowserModule& Get()
 	{
@@ -85,9 +86,17 @@ public:
 
 	/**
 	 * Callback that is called whenever a tooltip for item needs to be generated
+	 * Used to add custom data to tooltips.
 	 */
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateTooltip, TSharedRef<const struct ISubsystemTreeItem>, class FSubsystemTableItemTooltipBuilder&);
 	static SUBSYSTEMBROWSER_API FOnGenerateTooltip OnGenerateTooltip;
+
+	/**
+	 * Callback that is called whenever a menu for item needs to be generated.
+	 * Used to add custom menu actions.
+	 */
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateMenu, TSharedRef<const struct ISubsystemTreeItem>, class UToolMenu* Menu);
+	static SUBSYSTEMBROWSER_API FOnGenerateMenu OnGenerateContextMenu;
 
 private:
 	static TSharedRef<class SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args);

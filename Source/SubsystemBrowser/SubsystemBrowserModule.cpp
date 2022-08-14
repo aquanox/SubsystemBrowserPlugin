@@ -18,6 +18,8 @@
 #include "ISettingsSection.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "LevelEditor.h"
+#include "ToolMenu.h"
+#include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 
@@ -28,9 +30,11 @@ DEFINE_LOG_CATEGORY(LogSubsystemBrowser);
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
 const FName FSubsystemBrowserModule::SubsystemBrowserTabName = TEXT("SubsystemBrowserTab");
+const FName FSubsystemBrowserModule::SubsystemBrowserContextMenuName = TEXT("SubsystemBrowser.ContextMenu");
 
 FSubsystemBrowserModule::FOnGetSubsystemOwnerName FSubsystemBrowserModule::OnGetSubsystemOwnerName;
 FSubsystemBrowserModule::FOnGenerateTooltip FSubsystemBrowserModule::OnGenerateTooltip;
+FSubsystemBrowserModule::FOnGenerateMenu FSubsystemBrowserModule::OnGenerateContextMenu;
 
 #if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
 static const FName PanelIconName(TEXT("Icons.Settings"));
@@ -69,6 +73,9 @@ void FSubsystemBrowserModule::StartupModule()
 					.SetIcon( FSlateIcon(FEditorStyle::GetStyleSetName(), PanelIconName) );
 			}
 		});
+
+		// Register tool menu
+		UToolMenus::Get()->RegisterMenu(SubsystemBrowserContextMenuName);
 
 		// Register default columns and categories on startup
 		RegisterDefaultDynamicColumns();

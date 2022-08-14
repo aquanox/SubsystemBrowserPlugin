@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Widgets/Notifications/SNotificationList.h"
 
 /**
  * Collection of various helpers to use
@@ -43,6 +44,14 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * Collect property display info for tooltip
 	 */
 	static void GetClassPropertyCounts(UClass* InClass, int32& NumTotal, int32& NumVisible);
+
+	/**
+	 * @brief
+	 * @param ClipboardText
+	 */
+	static void SetClipboardText(const FString& Attribute);
+
+	static void ShowBrowserInfoMessage(FText InText, SNotificationItem::ECompletionState InType);
 
 	/**
 	 *

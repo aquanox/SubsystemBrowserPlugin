@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include "Chaos/AABB.h"
+#include "Chaos/AABB.h"
+#include "Chaos/AABB.h"
+#include "Chaos/AABB.h"
 #include "Model/SubsystemBrowserCategory.h"
 #include "Misc/TextFilter.h"
 
@@ -45,7 +49,7 @@ struct SUBSYSTEMBROWSER_API ISubsystemTreeItem : public TSharedFromThis<ISubsyst
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const { return nullptr; }
 
 	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const {}
-	virtual void GenerateContextMenu(class UToolMenu* MenuBuilder, class SSubsystemBrowserPanel& Browser) const { }
+	virtual void GenerateContextMenu(class UToolMenu* MenuBuilder) const { }
 
 	bool bExpanded = true;
 	bool bVisible = true;
@@ -107,7 +111,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	bool							bIsGameModuleClass = false;
 	bool							bIsPluginClass = false;
 
-	FSubsystemTreeSubsystemItem() = default;
+	FSubsystemTreeSubsystemItem();
 	FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance);
 
 	virtual FSubsystemTreeItemID GetID() const override { return ClassName; }
@@ -123,4 +127,8 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	virtual bool IsPluginModule() const override { return bIsPluginClass; }
 
 	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
+	virtual void GenerateContextMenu(class UToolMenu* MenuBuilder) const override;
+
+protected:
+
 };

@@ -2,9 +2,11 @@
 
 #include "Model/SubsystemBrowserDescriptor.h"
 
+#include "SourceCodeNavigation.h"
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserUtils.h"
+#include "ToolMenu.h"
 #include "Interfaces/IPluginManager.h"
 #include "Model/SubsystemBrowserModel.h"
 #include "UI/SubsystemTableItemTooltip.h"
@@ -29,6 +31,10 @@ void FSubsystemTreeCategoryItem::GenerateTooltip(FSubsystemTableItemTooltipBuild
 	TArray<SubsystemTreeItemPtr> Subsystems;
 	Model->GetAllSubsystemsInCategory(SharedThis(this), Subsystems);
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_NumSub", "Num Subsystems"), FText::AsNumber(Subsystems.Num()));
+}
+
+FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem()
+{
 }
 
 FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)
@@ -115,6 +121,151 @@ void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuil
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Props", "Num Properties"), FText::AsNumber(NumProperties));
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsVisible", "Num Visible Properties"), FText::AsNumber(NumViewableProperties));
 
+}
+
+void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) const
+{
+	TWeakPtr<const FSubsystemTreeSubsystemItem> Self = SharedThis(this);
+
+	{
+		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemContextActions", LOCTEXT("SubsystemContextActions", "Common"));
+		Section.AddMenuEntry("OpenSourceFile",
+			LOCTEXT("OpenSourceFile", "Open Source File"),
+			FText::GetEmpty(),
+			FSlateIcon(FEditorStyle::GetStyleSetName(), "SystemWideCommands.FindInContentBrowser"),
+			FUIAction(
+				FExecuteAction::CreateLambda([Self]()
+				{
+					if (Self.IsValid())
+					{
+						UObject* ViewedObject = Self.Pin()->GetObjectForDetails();
+						if (!ViewedObject || !FSourceCodeNavigation::CanNavigateToClass(ViewedObject->GetClass()))
+						{
+							FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("OpenSourceFile_Failed", "Failed to open source file."), SNotificationItem::CS_Fail);
+						}
+						else
+						{
+							FSourceCodeNavigation::NavigateToClass(ViewedObject->GetClass());
+						}
+					}
+				})
+			)
+		);
+	}
+
+	{
+		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemReferenceActions", LOCTEXT("SubsystemReferenceActions", "References"));
+		Section.AddMenuEntry("CopyClassName",
+			LOCTEXT("CopyClassName", "Copy Class Name"),
+			FText::GetEmpty(),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Self]()
+				{
+					if (Self.IsValid())
+					{
+						FSubsystemBrowserUtils::SetClipboardText(FString::Printf(TEXT("U%s"), *Self.Pin()->ClassName.ToString()));
+					}
+				})
+			)
+		);
+		Section.AddMenuEntry("CopyPackageName",
+			LOCTEXT("CopyPackageName", "Copy Module Name"),
+			FText::GetEmpty(),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Self]()
+				{
+					if (Self.IsValid())
+					{
+						FSubsystemBrowserUtils::SetClipboardText(Self.Pin()->ShortPackage);
+					}
+				})
+			)
+		);
+		Section.AddMenuEntry("CopyScriptName",
+			LOCTEXT("CopyScriptName", "Copy Script Name"),
+			FText::GetEmpty(),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Self]()
+				{
+					if (Self.IsValid())
+					{
+						FSubsystemBrowserUtils::SetClipboardText(Self.Pin()->LongPackage);
+					}
+				})
+			)
+		);
+		Section.AddMenuEntry("CopyFilePath",
+			LOCTEXT("CopyFilePath", "Copy File Path"),
+			FText::GetEmpty(),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Self]()
+				{
+					if (Self.IsValid())
+					{
+						const TArray<FString>& FilePaths = Self.Pin()->SourceFilePaths;
+
+						FString ClipboardText;
+						if (FilePaths.Num() > 0)
+						{
+							const FString* FoundHeader = FilePaths.FindByPredicate([](const FString& S)
+							{
+								FString Extension = FPaths::GetExtension(S);
+								return Extension == TEXT("h") || Extension == TEXT("hpp");
+							});
+
+							if (!FoundHeader) FoundHeader = &FilePaths[0];
+
+							ClipboardText = FPaths::ConvertRelativePathToFull(*FoundHeader);
+						}
+
+						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
+					}
+				})
+			)
+		);
+	}
+
+	{
+		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemConfigActions", LOCTEXT("SubsystemConfigActions", "Config"));
+		Section.AddMenuEntry("ExportModified",
+			LOCTEXT("ExportModified", "Export Modified Properties"),
+			FText::GetEmpty(),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Self]()
+				{
+					if (Self.IsValid())
+					{
+						FString ClipboardText;
+						FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), true);
+						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
+					}
+				}),
+				FCanExecuteAction::CreateSP(this, &FSubsystemTreeSubsystemItem::IsConfigExportable)
+			)
+		);
+		Section.AddMenuEntry("ExportAll",
+			LOCTEXT("ExportAll", "Export All Properties"),
+			FText::GetEmpty(),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Self]()
+				{
+					if (Self.IsValid())
+					{
+						FString ClipboardText;
+						FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), false);
+						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
+					}
+				}),
+				FCanExecuteAction::CreateSP(this, &FSubsystemTreeSubsystemItem::IsConfigExportable)
+			)
+		);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
