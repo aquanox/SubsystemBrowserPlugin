@@ -40,10 +40,17 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 */
 	static void CollectSourceFiles(UClass* InClass, TArray<FString>& OutSourceFiles);
 
+	struct FClassPropertyCounts
+	{
+		int32 NumTotal = 0;
+		int32 NumVisible = 0;
+		int32 NumConfig = 0;
+	};
+
 	/**
 	 * Collect property display info for tooltip
 	 */
-	static void GetClassPropertyCounts(UClass* InClass, int32& NumTotal, int32& NumVisible);
+	static FClassPropertyCounts GetClassPropertyCounts(UClass* InClass);
 
 	/**
 	 * @brief

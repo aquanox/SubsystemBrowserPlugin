@@ -2,10 +2,7 @@
 
 #pragma once
 
-#include "Chaos/AABB.h"
-#include "Chaos/AABB.h"
-#include "Chaos/AABB.h"
-#include "Chaos/AABB.h"
+#include "SubsystemBrowserUtils.h"
 #include "Model/SubsystemBrowserCategory.h"
 #include "Misc/TextFilter.h"
 
@@ -104,8 +101,8 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	FString							PluginName;
 	FString							PluginDisplayName;
 
-	int32							NumViewableProperties = 0;
-	int32							NumProperties = 0;
+	using FClassPropertyCounts = FSubsystemBrowserUtils::FClassPropertyCounts;
+	FClassPropertyCounts			PropertyStats;
 
 	bool							bConfigExportable = false;
 	bool							bIsGameModuleClass = false;

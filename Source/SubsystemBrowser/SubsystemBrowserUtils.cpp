@@ -129,10 +129,9 @@ void FSubsystemBrowserUtils::CollectSourceFiles(UClass* InClass, TArray<FString>
 	}
 }
 
-void FSubsystemBrowserUtils::GetClassPropertyCounts(UClass* InClass, int32& NumTotal, int32& NumVisible)
+FSubsystemBrowserUtils::FClassPropertyCounts FSubsystemBrowserUtils::GetClassPropertyCounts(UClass* InClass)
 {
-	NumTotal = 0;
-	NumVisible = 0;
+	FClassPropertyCounts Stats;
 
 #if UE_VERSION_OLDER_THAN(5,0,0)
 	for (TFieldIterator<FProperty> It(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::IncludeDeprecated); It; ++It)
@@ -140,14 +139,19 @@ void FSubsystemBrowserUtils::GetClassPropertyCounts(UClass* InClass, int32& NumT
 	for (TFieldIterator<FProperty> It(InClass, EFieldIterationFlags::IncludeSuper|EFieldIterationFlags::IncludeDeprecated); It; ++It)
 #endif
 	{
-		NumTotal++;
+		Stats.NumTotal++;
 
 		FProperty* const Property = *It;
 		if (Property->HasAnyPropertyFlags(CPF_BlueprintVisible|CPF_Edit|CPF_AdvancedDisplay))
 		{
-			NumVisible ++;
+			Stats.NumVisible ++;
+		}
+		if (Property->HasAnyPropertyFlags(CPF_Config|CPF_GlobalConfig))
+		{
+			Stats.NumConfig ++;
 		}
 	}
+	return Stats;
 }
 
 void FSubsystemBrowserUtils::SetClipboardText(const FString& ClipboardText)

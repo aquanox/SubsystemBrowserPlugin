@@ -88,7 +88,7 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 #endif
 	}
 
-	FSubsystemBrowserUtils::GetClassPropertyCounts(InClass, NumProperties, NumViewableProperties);
+	PropertyStats = FSubsystemBrowserUtils::GetClassPropertyCounts(InClass);
 }
 
 bool FSubsystemTreeSubsystemItem::IsSelected() const
@@ -119,8 +119,9 @@ void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuil
 		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Owner", "Owned by"), FText::FromString(OwnerName));
 	}
 
-	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Props", "Num Properties"), FText::AsNumber(NumProperties));
-	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsVisible", "Num Visible Properties"), FText::AsNumber(NumViewableProperties));
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Props", "Num Properties"), FText::AsNumber(PropertyStats.NumTotal));
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsVisible", "Num Visible Properties"), FText::AsNumber(PropertyStats.NumVisible));
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsConfig", "Num Config Properties"), FText::AsNumber(PropertyStats.NumConfig));
 
 }
 
@@ -244,6 +245,7 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 						FString ClipboardText;
 						FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), true);
 						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
+						FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Copied to clipboard"), SNotificationItem::CS_Success);
 					}
 				}),
 				FCanExecuteAction::CreateSP(this, &FSubsystemTreeSubsystemItem::IsConfigExportable)
