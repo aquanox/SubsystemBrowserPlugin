@@ -60,6 +60,7 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 	if (InClass->HasAnyClassFlags(CLASS_Config) && !InClass->ClassConfigName.IsNone())
 	{
 		bConfigExportable = true;
+		bIsDefaultConfig = InClass->HasAnyClassFlags(CLASS_DefaultConfig);
 		ConfigName = InClass->ClassConfigName;
 	}
 
@@ -231,19 +232,42 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 		);
 	}
 
+	if (IsConfigExportable())
 	{
 		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemConfigActions", LOCTEXT("SubsystemConfigActions", "Config"));
-		Section.AddMenuEntry("ExportModified",
-			LOCTEXT("ExportModified", "Export Modified Properties"),
-			FText::GetEmpty(),
+
+		Section.AddMenuEntry("ExportToDefaults",
+			LOCTEXT("ExportToDefaults", "Export Default Config"),
+			LOCTEXT("ExportToDefaultTooltip", "Export current values to DefaultConfig (only if class has DefaultConfig specifier)"),
 			FSlateIcon(),
 			FUIAction(
 				FExecuteAction::CreateLambda([Self]()
 				{
 					if (Self.IsValid())
 					{
-						FString ClipboardText;
-						FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), true);
+						if (FSubsystemBrowserUtils::TryUpdateDefaultConfigFile(Self.Pin()->GetObjectForDetails()))
+						{
+							FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Successfully updated defaults"), SNotificationItem::CS_Success);
+						}
+						else
+						{
+							FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Failed to update defaults"), SNotificationItem::CS_Fail);
+						}
+					}
+				}),
+				FCanExecuteAction::CreateSP(this, &FSubsystemTreeSubsystemItem::IsDefaultConfig)
+			)
+		);
+		Section.AddMenuEntry("ExportModified",
+			LOCTEXT("ExportModified", "Export Modified Properties"),
+			LOCTEXT("ExportModifiedTooltip", "Export modified properties as an INI section and store it in clipboard"),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Self]()
+				{
+					if (Self.IsValid())
+					{
+						FString ClipboardText = FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), true);
 						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
 						FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Copied to clipboard"), SNotificationItem::CS_Success);
 					}
@@ -253,16 +277,16 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 		);
 		Section.AddMenuEntry("ExportAll",
 			LOCTEXT("ExportAll", "Export All Properties"),
-			FText::GetEmpty(),
+			LOCTEXT("ExportAllTooltip", "Export all config properties as an INI section and store it in clipboard"),
 			FSlateIcon(),
 			FUIAction(
 				FExecuteAction::CreateLambda([Self]()
 				{
 					if (Self.IsValid())
 					{
-						FString ClipboardText;
-						FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), false);
+						FString ClipboardText = FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), false);
 						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
+						FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Copied to clipboard"), SNotificationItem::CS_Success);
 					}
 				}),
 				FCanExecuteAction::CreateSP(this, &FSubsystemTreeSubsystemItem::IsConfigExportable)

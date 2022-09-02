@@ -105,6 +105,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	FClassPropertyCounts			PropertyStats;
 
 	bool							bConfigExportable = false;
+	bool							bIsDefaultConfig = false;
 	bool							bIsGameModuleClass = false;
 	bool							bIsPluginClass = false;
 
@@ -120,6 +121,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	virtual UObject* GetObjectForDetails() const override { return Subsystem.Get(); }
 	virtual bool IsStale() const override { return Subsystem.IsStale() || Class.IsStale(); }
 	virtual bool IsConfigExportable() const override { return bConfigExportable; }
+	bool IsDefaultConfig() const { return bIsDefaultConfig; }
 	virtual bool IsGameModule() const override { return bIsGameModuleClass; }
 	virtual bool IsPluginModule() const override { return bIsPluginClass; }
 

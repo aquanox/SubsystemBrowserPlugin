@@ -254,3 +254,25 @@ void FSubsystemBrowserUtils::ShowBrowserInfoMessage(FText InText, SNotificationI
 		InfoItem->SetCompletionState(InType);
 	}
 }
+
+bool FSubsystemBrowserUtils::TryUpdateDefaultConfigFile(UObject* Instance)
+{
+	if (!Instance)
+	{
+		return false;
+	}
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	FString ConfigFile = Instance->GetDefaultConfigFilename();
+
+	if (!FPaths::FileExists(ConfigFile) || !IFileManager::Get().IsReadOnly(*ConfigFile))
+	{
+		Instance->UpdateDefaultConfigFile();
+		return true;
+	}
+
+	return false;
+#else
+	return Instance->TryUpdateDefaultConfigFile();
+#endif
+}

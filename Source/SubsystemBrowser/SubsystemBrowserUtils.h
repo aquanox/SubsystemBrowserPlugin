@@ -64,4 +64,9 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 *
 	 */
 	static FString GenerateConfigExport(const struct FSubsystemTreeSubsystemItem* Item, bool bModifiedOnly);
+
+	/**
+	 *
+	 */
+	static bool TryUpdateDefaultConfigFile(UObject* Object);
 };
