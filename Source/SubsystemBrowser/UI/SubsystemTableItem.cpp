@@ -5,9 +5,9 @@
 #include "UI/SubsystemBrowserPanel.h"
 #include "UI/SubsystemTableItemTooltip.h"
 #include "SlateOptMacros.h"
-#include "EditorStyleSet.h"
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserSettings.h"
+#include "SubsystemBrowserStyle.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -59,10 +59,10 @@ const FSlateBrush* SSubsystemTableItem::GetItemIconBrush() const
 	{
 		if (Item->GetNumChildren() > 0 && Item->bExpanded)
 		{
-			return FEditorStyle::GetBrush(FolderOpenName);
+			return FStyleHelper::GetBrush(FolderOpenName);
 		}
 
-		return FEditorStyle::GetBrush(FolderClosedName);
+		return FStyleHelper::GetBrush(FolderClosedName);
 	}
 
 	return nullptr;

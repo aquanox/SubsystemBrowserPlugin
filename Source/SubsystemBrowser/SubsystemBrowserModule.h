@@ -8,6 +8,8 @@
 #include "Model/SubsystemBrowserColumn.h" // [no-fwd]
 
 class USubsystemBrowserSettings;
+class UToolMenu;
+struct ISubsystemTreeItem;
 
 class FSubsystemBrowserModule : public IModuleInterface
 {
@@ -88,14 +90,14 @@ public:
 	 * Callback that is called whenever a tooltip for item needs to be generated
 	 * Used to add custom data to tooltips.
 	 */
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateTooltip, TSharedRef<const struct ISubsystemTreeItem>, class FSubsystemTableItemTooltipBuilder&);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateTooltip, TSharedRef<const ISubsystemTreeItem>, class FSubsystemTableItemTooltipBuilder&);
 	static SUBSYSTEMBROWSER_API FOnGenerateTooltip OnGenerateTooltip;
 
 	/**
 	 * Callback that is called whenever a menu for item needs to be generated.
 	 * Used to add custom menu actions.
 	 */
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateMenu, TSharedRef<const struct ISubsystemTreeItem>, class UToolMenu* Menu);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateMenu, TSharedRef<const ISubsystemTreeItem>, UToolMenu*);
 	static SUBSYSTEMBROWSER_API FOnGenerateMenu OnGenerateContextMenu;
 
 private:

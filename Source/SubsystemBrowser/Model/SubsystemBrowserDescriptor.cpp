@@ -10,6 +10,7 @@
 #include "Interfaces/IPluginManager.h"
 #include "Model/SubsystemBrowserModel.h"
 #include "UI/SubsystemTableItemTooltip.h"
+#include "SubsystemBrowserStyle.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -132,7 +133,7 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 		Section.AddMenuEntry("OpenSourceFile",
 			LOCTEXT("OpenSourceFile", "Open Source File"),
 			FText::GetEmpty(),
-			FSlateIcon(FEditorStyle::GetStyleSetName(), "SystemWideCommands.FindInContentBrowser"),
+			FStyleHelper::GetSlateIcon("SystemWideCommands.FindInContentBrowser"),
 			FUIAction(
 				FExecuteAction::CreateLambda([Self]()
 				{

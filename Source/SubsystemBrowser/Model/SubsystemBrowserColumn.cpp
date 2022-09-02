@@ -8,6 +8,7 @@
 #include "Model/SubsystemBrowserDescriptor.h"
 #include "SubsystemBrowserSorting.h"
 #include "UI/SubsystemTableItem.h"
+#include "SubsystemBrowserStyle.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -88,7 +89,7 @@ FSlateColor FSubsystemDynamicTextColumn::ExtractColorIfEnabled(TSharedRef<const 
 
 FSlateFontInfo FSubsystemDynamicTextColumn::ExtractFont(TSharedRef<const ISubsystemTreeItem> Item) const
 {
-	return FEditorStyle::GetFontStyle("WorldBrowser.LabelFont");
+	return FStyleHelper::GetFontStyle("WorldBrowser.LabelFont");
 }
 
 void FSubsystemDynamicTextColumn::SortItems(TArray<SubsystemTreeItemPtr>& RootItems, const EColumnSortMode::Type SortMode) const
@@ -124,7 +125,7 @@ struct FSubsystemDynamicColumn_Tick : public FSubsystemDynamicColumn
 			[
 				SNew(SImage)
 				.ColorAndOpacity(FSlateColor::UseForeground())
-				.Image(FEditorStyle::GetBrush(TEXT("GraphEditor.Conduit_16x")))
+				.Image(FStyleHelper::GetBrush(TEXT("GraphEditor.Conduit_16x")))
 				.DesiredSizeOverride(FVector2d{16,16})
 				.Visibility(this, &FSubsystemDynamicColumn_Tick::ExtractIsTickable, Item)
 			];

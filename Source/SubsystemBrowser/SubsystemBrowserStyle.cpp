@@ -2,15 +2,22 @@
 
 #include "SubsystemBrowserStyle.h"
 
+#include "SubsystemBrowserFlags.h"
 #include "Interfaces/IPluginManager.h"
 #include "Styling/SlateStyle.h"
 #include "Styling/SlateStyleRegistry.h"
+
+#if UE_VERSION_OLDER_THAN(5,1,0)
+#include "EditorStyleSet.h"
+#else
+#include "Styling/AppStyle.h"
+#endif
 
 #define IMAGE_BRUSH( RelativePath, ... ) FSlateImageBrush( RootToContentDir( RelativePath, TEXT(".png") ), __VA_ARGS__ )
 #define BOX_BRUSH( RelativePath, ... ) FSlateBoxBrush( RootToContentDir( RelativePath, TEXT(".png") ), __VA_ARGS__ )
 #define BORDER_BRUSH( RelativePath, ... ) FSlateBorderBrush( RootToContentDir( RelativePath, TEXT(".png") ), __VA_ARGS__ )
 
-FName FSubsystemBrowserStyle::StyleName("SubsystemBrowserStyle");
+const FName FSubsystemBrowserStyle::StyleName("SubsystemBrowserStyle");
 TSharedPtr<FSubsystemBrowserStyle> FSubsystemBrowserStyle::StyleInstance;
 
 void FSubsystemBrowserStyle::Register()
@@ -48,6 +55,51 @@ FSubsystemBrowserStyle::FSubsystemBrowserStyle() : FSlateStyleSet(StyleName)
 
 	// register styles here
 	// Set("SubsystemBrowser.TabIcon", new IMAGE_BRUSH("Icons/SubsystemBrowser_16x", Icon16x16));
+}
+
+const ISlateStyle& FStyleHelper::Get()
+{
+#if UE_VERSION_OLDER_THAN(5,1,0)
+	return FEditorStyle::Get();
+#else
+	return FAppStyle::Get();
+#endif
+}
+
+const FSlateBrush* FStyleHelper::GetBrush(const FName& InName)
+{
+#if UE_VERSION_OLDER_THAN(5,1,0)
+	return FEditorStyle::GetBrush(InName);
+#else
+	return FAppStyle::GetBrush(InName);
+#endif
+}
+
+FSlateFontInfo FStyleHelper::GetFontStyle(const FName& InName)
+{
+#if UE_VERSION_OLDER_THAN(5,1,0)
+	return FEditorStyle::GetFontStyle(InName);
+#else
+	return FAppStyle::GetFontStyle(InName);
+#endif
+}
+
+FSlateIcon FStyleHelper::GetSlateIcon(const FName& InIcon)
+{
+#if UE_VERSION_OLDER_THAN(5,1,0)
+	return FSlateIcon( FEditorStyle::GetStyleSetName(), InIcon );
+#else
+	return FSlateIcon(  FAppStyle::GetAppStyleSetName(), InIcon);
+#endif
+}
+
+FSlateColor FStyleHelper::GetSlateColor(const FName& InName)
+{
+#if UE_VERSION_OLDER_THAN(5,1,0)
+	return FEditorStyle::GetSlateColor(InName);
+#else
+	return FAppStyle::GetSlateColor(InName);
+#endif
 }
 
 #undef IMAGE_BRUSH

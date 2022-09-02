@@ -1,6 +1,7 @@
 ﻿#include "UI/SubsystemTableItemTooltip.h"
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserModule.h"
+#include "SubsystemBrowserStyle.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -11,7 +12,7 @@ void SSubsystemTableItemTooltip::Construct(const FArguments& InArgs)
 	Super::Construct(
 		SToolTip::FArguments()
 		.TextMargin(1.0f)
-		.BorderImage(FEditorStyle::GetBrush("ContentBrowser.TileViewTooltip.ToolTipBorder"))
+		.BorderImage(FStyleHelper::GetBrush("ContentBrowser.TileViewTooltip.ToolTipBorder"))
 	);
 }
 
@@ -52,7 +53,7 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 		[
 			SNew(SBorder)
 					.Padding(6)
-					.BorderImage(FEditorStyle::GetBrush("ContentBrowser.TileViewTooltip.ContentBorder"))
+					.BorderImage(FStyleHelper::GetBrush("ContentBrowser.TileViewTooltip.ContentBorder"))
 			[
 				SNew(SVerticalBox)
 
@@ -68,7 +69,7 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 					[
 						SNew(STextBlock)
 								.Text(TableItem->Item->GetDisplayName())
-								.Font(FEditorStyle::GetFontStyle("ContentBrowser.TileViewTooltip.NameFont"))
+								.Font(FStyleHelper::GetFontStyle("ContentBrowser.TileViewTooltip.NameFont"))
 					]
 				]
 
@@ -82,7 +83,7 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 			[
 				SNew(SBorder)
 					.Padding(6)
-					.BorderImage(FEditorStyle::GetBrush("ContentBrowser.TileViewTooltip.ContentBorder"))
+					.BorderImage(FStyleHelper::GetBrush("ContentBrowser.TileViewTooltip.ContentBorder"))
 				[
 					TooltipBuilder.Primary.ToSharedRef()
 				]
@@ -96,7 +97,7 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 			[
 				SNew(SBorder)
 					.Padding(6)
-					.BorderImage(FEditorStyle::GetBrush("ContentBrowser.TileViewTooltip.ContentBorder"))
+					.BorderImage(FStyleHelper::GetBrush("ContentBrowser.TileViewTooltip.ContentBorder"))
 				[
 					TooltipBuilder.Secondary.ToSharedRef()
 				]
@@ -105,7 +106,7 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 
 		return SNew(SBorder)
 				.Padding(6)
-				.BorderImage( FEditorStyle::GetBrush("ContentBrowser.TileViewTooltip.NonContentBorder") )
+				.BorderImage( FStyleHelper::GetBrush("ContentBrowser.TileViewTooltip.NonContentBorder") )
 				[
 					OverallTooltipVBox
 				];

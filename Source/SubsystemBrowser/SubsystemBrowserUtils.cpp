@@ -218,7 +218,11 @@ FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsyst
 				uint8* DefaultValue = Property->ContainerPtrToValuePtrForDefaults<uint8>(Class, SubsystemDefaults, Idx);
 
 				FString ExportValue;
+#if UE_VERSION_OLDER_THAN(5,1,0)
 				Property->ExportTextItem(ExportValue, DataPtr, DefaultValue, nullptr, 0);
+#else
+				Property->ExportTextItem_Direct(ExportValue, DataPtr, DefaultValue, nullptr, 0);
+#endif
 
 				if (ExportValue.IsEmpty())
 				{

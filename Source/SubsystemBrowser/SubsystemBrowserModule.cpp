@@ -70,7 +70,7 @@ void FSubsystemBrowserModule::StartupModule()
 					.SetDisplayName(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 					.SetTooltipText(LOCTEXT("SubsystemBrowserTooltip", "Open the Subsystem Browser tab."))
 					.SetGroup( WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory() )
-					.SetIcon( FSlateIcon(FEditorStyle::GetStyleSetName(), PanelIconName) );
+					.SetIcon( FStyleHelper::GetSlateIcon(PanelIconName) );
 			}
 		});
 
@@ -101,13 +101,13 @@ TSharedRef<SDockTab> FSubsystemBrowserModule::HandleTabManagerSpawnTab(const FSp
 {
 	return SNew(SDockTab)
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-		.Icon(FEditorStyle::GetBrush(PanelIconName))
+		.Icon(FStyleHelper::GetBrush(PanelIconName))
 #endif
 		.Label(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 	[
 		SNew(SBorder)
 		//.Padding(4)
-		.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+		.BorderImage( FStyleHelper::GetBrush("ToolPanel.GroupBorder") )
 		[
 			CreateSubsystemBrowser(Args)
 		]

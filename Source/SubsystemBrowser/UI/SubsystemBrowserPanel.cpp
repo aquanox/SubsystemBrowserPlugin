@@ -2,9 +2,11 @@
 
 #include "UI/SubsystemBrowserPanel.h"
 
+#include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
-#include "SubsystemBrowserFlags.h"
+#include "SubsystemBrowserStyle.h"
+#include "SubsystemBrowserUtils.h"
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Images/SImage.h"
@@ -18,7 +20,6 @@
 #include "HAL/PlatformApplicationMisc.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "IDetailsView.h"
-#include "SubsystemBrowserUtils.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -104,7 +105,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 		.AutoHeight()
 		[
 			SNew(SBorder)
-			.BorderImage(FEditorStyle::GetBrush(TEXT("ToolPanel.GroupBorder")))
+			.BorderImage(FStyleHelper::GetBrush(TEXT("ToolPanel.GroupBorder")))
 			[
 				SNew(SHorizontalBox)
 
@@ -116,7 +117,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 				[
 					// Levels menu
 					SNew( SComboButton )
-					.ComboButtonStyle(FEditorStyle::Get(), "ToolbarComboButton")
+					.ComboButtonStyle(FStyleHelper::Get(), "ToolbarComboButton")
 					.ForegroundColor(FLinearColor::White)
 					.ContentPadding(0)
 					.OnGetMenuContent(this, &SSubsystemBrowserPanel::GetWorldsButtonContent)
@@ -140,7 +141,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 						.Padding(1,0,2,0)
 						[
 							SNew(STextBlock)
-							.TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")
+							.TextStyle(FStyleHelper::Get(), "ContentBrowser.TopBar.Font")
 							.Text(this, &SSubsystemBrowserPanel::GetCurrentWorldText)
 						]
 					]
@@ -153,7 +154,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 		.AutoHeight()
 		[
 			SNew(SBorder)
-			.BorderImage(FEditorStyle::GetBrush(TEXT("ToolPanel.GroupBorder")))
+			.BorderImage(FStyleHelper::GetBrush(TEXT("ToolPanel.GroupBorder")))
 			[
 				SNew(SHorizontalBox)
 
@@ -175,12 +176,12 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 		.Padding(0,4,0,0)
 		[
 			SNew(SBorder)
-			.BorderImage(FEditorStyle::GetBrush(TEXT("ToolPanel.GroupBorder")))
+			.BorderImage(FStyleHelper::GetBrush(TEXT("ToolPanel.GroupBorder")))
 			[
 				SAssignNew(BrowserSplitter, SSplitter)
 				.MinimumSlotHeight(140.0f)
 				.Orientation(Orient_Vertical)
-				.Style(FEditorStyle::Get(), "SplitterDark")
+				.Style(FStyleHelper::Get(), "SplitterDark")
 				.PhysicalSplitterHandleSize(2.0f)
 				.OnSplitterFinishedResizing(this, &SSubsystemBrowserPanel::BrowserSplitterFinishedResizing)
 				+ SSplitter::Slot().Value(Settings->GetSeparatorLocation())
@@ -238,7 +239,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 							SAssignNew( ViewOptionsComboButton, SComboButton )
 							.ContentPadding(0)
 							.ForegroundColor( this, &SSubsystemBrowserPanel::GetViewOptionsButtonForegroundColor )
-							.ButtonStyle( FEditorStyle::Get(), "ToggleButton" )
+							.ButtonStyle( FStyleHelper::Get(), "ToggleButton" )
 							.OnGetMenuContent( this, &SSubsystemBrowserPanel::GetViewOptionsButtonContent )
 							.ButtonContent()
 							[
@@ -248,7 +249,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 								.AutoWidth()
 								.VAlign(VAlign_Center)
 								[
-									SNew(SImage).Image( FEditorStyle::GetBrush("GenericViewButton") )
+									SNew(SImage).Image( FStyleHelper::GetBrush("GenericViewButton") )
 								]
 
 								+SHorizontalBox::Slot()
@@ -471,7 +472,9 @@ FSlateColor SSubsystemBrowserPanel::GetViewOptionsButtonForegroundColor() const
 	static const FName InvertedForegroundName("InvertedForeground");
 	static const FName DefaultForegroundName("DefaultForeground");
 
-	return ViewOptionsComboButton->IsHovered() ? FEditorStyle::GetSlateColor(InvertedForegroundName) : FEditorStyle::GetSlateColor(DefaultForegroundName);
+	return ViewOptionsComboButton->IsHovered()
+		? FStyleHelper::GetSlateColor(InvertedForegroundName)
+		: FStyleHelper::GetSlateColor(DefaultForegroundName);
 }
 
 TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
@@ -567,7 +570,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("OpenSettingsPanel", "All Options"),
 			LOCTEXT("OpenSettingsPanel_Tooltip", "Open plugin settings panel."),
-			FSlateIcon(FEditorStyle::GetStyleSetName(), "EditorPreferences.TabIcon"),
+			FStyleHelper::GetSlateIcon("EditorPreferences.TabIcon"),
 			FUIAction(
 				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowPluginSettingsTab)
 			),
@@ -793,7 +796,7 @@ void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item,
 
 const FSlateBrush* SSubsystemBrowserPanel::GetWorldsMenuBrush() const
 {
-	return FEditorStyle::GetBrush("WorldBrowser.LevelsMenuBrush");
+	return FStyleHelper::GetBrush("WorldBrowser.LevelsMenuBrush");
 }
 
 FText SSubsystemBrowserPanel::GetCurrentWorldText() const
