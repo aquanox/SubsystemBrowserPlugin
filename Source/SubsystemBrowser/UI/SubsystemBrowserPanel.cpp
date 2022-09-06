@@ -117,7 +117,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 				[
 					// Levels menu
 					SNew( SComboButton )
-					.ComboButtonStyle(FStyleHelper::Get(), "ToolbarComboButton")
+					.ComboButtonStyle(FStyleHelper::GetWidgetStylePtr<FComboButtonStyle>("ToolbarComboButton"))
 					.ForegroundColor(FLinearColor::White)
 					.ContentPadding(0)
 					.OnGetMenuContent(this, &SSubsystemBrowserPanel::GetWorldsButtonContent)
@@ -138,10 +138,10 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 						+ SHorizontalBox::Slot()
 						.AutoWidth()
 						.VAlign(VAlign_Center)
-						.Padding(1,0,2,0)
+						.Padding(1,2,1,2)
 						[
 							SNew(STextBlock)
-							.TextStyle(FStyleHelper::Get(), "ContentBrowser.TopBar.Font")
+							.TextStyle(FStyleHelper::GetWidgetStylePtr<FTextBlockStyle>("ContentBrowser.TopBar.Font"))
 							.Text(this, &SSubsystemBrowserPanel::GetCurrentWorldText)
 						]
 					]
@@ -181,14 +181,18 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 				SAssignNew(BrowserSplitter, SSplitter)
 				.MinimumSlotHeight(140.0f)
 				.Orientation(Orient_Vertical)
-				.Style(FStyleHelper::Get(), "SplitterDark")
-				.PhysicalSplitterHandleSize(2.0f)
+				.Style(FStyleHelper::GetWidgetStylePtr<FSplitterStyle>("SplitterDark"))
+				.PhysicalSplitterHandleSize(4.0f)
+				.HitDetectionSplitterHandleSize(6.0f)
 				.OnSplitterFinishedResizing(this, &SSubsystemBrowserPanel::BrowserSplitterFinishedResizing)
-				+ SSplitter::Slot().Value(Settings->GetSeparatorLocation())
+				+ SSplitter::Slot()
+				.MinSize(120.f)
+				.Value(Settings->GetSeparatorLocation())
 				[
 					SNew(SVerticalBox)
 					+ SVerticalBox::Slot()
 					.FillHeight(1.f)
+					.Padding(0, 0, 0, 2)
 					[
 						SAssignNew(TreeWidget, SSubsystemsTreeWidget, SubsystemModel, SharedThis(this))
 						.TreeItemsSource(&RootTreeItems)
@@ -202,15 +206,6 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 						.HighlightParentNodesForSelection(true)
 						.ClearSelectionOnClick(true)
 						.HeaderRow(HeaderRowWidget.ToSharedRef())
-					]
-
-					// Separator
-					+SVerticalBox::Slot()
-					.AutoHeight()
-					.Padding(0, 0, 0, 1)
-					[
-						SNew(SSeparator)
-						.Visibility(EVisibility::Visible)
 					]
 
 					// View options
@@ -239,7 +234,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 							SAssignNew( ViewOptionsComboButton, SComboButton )
 							.ContentPadding(0)
 							.ForegroundColor( this, &SSubsystemBrowserPanel::GetViewOptionsButtonForegroundColor )
-							.ButtonStyle( FStyleHelper::Get(), "ToggleButton" )
+							.ButtonStyle( FStyleHelper::GetWidgetStylePtr<FButtonStyle>("ToggleButton") )
 							.OnGetMenuContent( this, &SSubsystemBrowserPanel::GetViewOptionsButtonContent )
 							.ButtonContent()
 							[
@@ -262,12 +257,21 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 							]
 						]
 					]
+
+					// Separator
+					+SVerticalBox::Slot()
+					.AutoHeight()
+					.Padding(0, 0, 0, 1)
+					[
+						SNew(SSeparator)
+						.Visibility(EVisibility::Visible)
+					]
 				]
 				+ SSplitter::Slot()
 				[
 					SNew( SVerticalBox )
 					+SVerticalBox::Slot()
-					.Padding(0, 4, 0, 0)
+					.Padding(0, 4, 0, 2)
 					[
 						DetailsView.ToSharedRef()
 					]
