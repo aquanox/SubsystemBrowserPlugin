@@ -161,14 +161,20 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 			.BorderImage(FStyleHelper::GetBrush(TEXT("ToolPanel.GroupBorder")))
 			[
 				SAssignNew(BrowserSplitter, SSplitter)
-				.MinimumSlotHeight(140.0f)
+				.MinimumSlotHeight(100.f)
 				.Orientation(Orient_Vertical)
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				.Style(FStyleHelper::GetWidgetStylePtr<FSplitterStyle>("Splitter"))
+#else
 				.Style(FStyleHelper::GetWidgetStylePtr<FSplitterStyle>("SplitterDark"))
+#endif
 				.PhysicalSplitterHandleSize(4.0f)
 				.HitDetectionSplitterHandleSize(6.0f)
 				.OnSplitterFinishedResizing(this, &SSubsystemBrowserPanel::BrowserSplitterFinishedResizing)
 				+ SSplitter::Slot()
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 				.MinSize(120.f)
+#endif
 				.Value(Settings->GetSeparatorLocation())
 				[
 					SNew(SVerticalBox)
@@ -177,17 +183,17 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 					.Padding(0, 0, 0, 2)
 					[
 						SAssignNew(TreeWidget, SSubsystemsTreeWidget, SubsystemModel, SharedThis(this))
-						.TreeItemsSource(&RootTreeItems)
-						.SelectionMode(ESelectionMode::Single)
-						.OnGenerateRow(this, &SSubsystemBrowserPanel::GenerateTreeRow)
-						.OnGetChildren(this, &SSubsystemBrowserPanel::GetChildrenForTree)
-						.OnSelectionChanged(this, &SSubsystemBrowserPanel::OnSelectionChanged)
-						.OnExpansionChanged(this, &SSubsystemBrowserPanel::OnExpansionChanged)
-						.OnMouseButtonDoubleClick(this, &SSubsystemBrowserPanel::OnTreeViewMouseButtonDoubleClick)
-						.OnContextMenuOpening(ContextMenuEvent)
-						.HighlightParentNodesForSelection(true)
-						.ClearSelectionOnClick(true)
-						.HeaderRow(HeaderRowWidget.ToSharedRef())
+							.TreeItemsSource(&RootTreeItems)
+							.SelectionMode(ESelectionMode::Single)
+							.OnGenerateRow(this, &SSubsystemBrowserPanel::GenerateTreeRow)
+							.OnGetChildren(this, &SSubsystemBrowserPanel::GetChildrenForTree)
+							.OnSelectionChanged(this, &SSubsystemBrowserPanel::OnSelectionChanged)
+							.OnExpansionChanged(this, &SSubsystemBrowserPanel::OnExpansionChanged)
+							.OnMouseButtonDoubleClick(this, &SSubsystemBrowserPanel::OnTreeViewMouseButtonDoubleClick)
+							.OnContextMenuOpening(ContextMenuEvent)
+							.HighlightParentNodesForSelection(true)
+							.ClearSelectionOnClick(true)
+							.HeaderRow(HeaderRowWidget.ToSharedRef())
 					]
 
 					// View options
@@ -961,7 +967,13 @@ void SSubsystemBrowserPanel::RecreateDetails()
 	TSharedPtr<IDetailsView> ExistingDetails = DetailsView;
 
 	DetailsView = CreateDetails();
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	DetailsViewBox->ClearChildren();
+	DetailsViewBox->AddSlot().Padding(0, 4, 0, 2) [ DetailsView.ToSharedRef() ];
+#else
 	DetailsViewBox->GetSlot(0) [ DetailsView.ToSharedRef() ];
+#endif
 
 	// Copy other props from existing details ?
 	ExistingDetails.Reset();
