@@ -129,9 +129,9 @@ void FSubsystemBrowserUtils::CollectSourceFiles(UClass* InClass, TArray<FString>
 	}
 }
 
-FSubsystemBrowserUtils::FClassPropertyCounts FSubsystemBrowserUtils::GetClassPropertyCounts(UClass* InClass)
+FSubsystemBrowserUtils::FClassFieldStats FSubsystemBrowserUtils::GetClassFieldStats(UClass* InClass)
 {
-	FClassPropertyCounts Stats;
+	FClassFieldStats Stats;
 
 #if UE_VERSION_OLDER_THAN(5,0,0)
 	for (TFieldIterator<FProperty> It(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::IncludeDeprecated); It; ++It)
@@ -139,10 +139,14 @@ FSubsystemBrowserUtils::FClassPropertyCounts FSubsystemBrowserUtils::GetClassPro
 	for (TFieldIterator<FProperty> It(InClass, EFieldIterationFlags::IncludeSuper|EFieldIterationFlags::IncludeDeprecated); It; ++It)
 #endif
 	{
-		Stats.NumTotal++;
+		const FProperty* Property = CastField<FProperty>(*It);
+		Stats.NumProperties++;
 
-		FProperty* const Property = *It;
-		if (Property->HasAnyPropertyFlags(CPF_BlueprintVisible|CPF_Edit|CPF_AdvancedDisplay))
+		if (Property->HasAnyPropertyFlags(CPF_Edit))
+		{
+			Stats.NumEditable ++;
+		}
+		if (Property->HasAnyPropertyFlags(CPF_BlueprintVisible))
 		{
 			Stats.NumVisible ++;
 		}
@@ -151,6 +155,22 @@ FSubsystemBrowserUtils::FClassPropertyCounts FSubsystemBrowserUtils::GetClassPro
 			Stats.NumConfig ++;
 		}
 	}
+
+	const FName MD_CallInEditor(TEXT("CallInEditor"));
+
+#if UE_VERSION_OLDER_THAN(5,0,0)
+	for (TFieldIterator<UFunction> It(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::IncludeDeprecated); It; ++It)
+#else
+	for (TFieldIterator<UFunction> It(InClass, EFieldIterationFlags::IncludeSuper|EFieldIterationFlags::IncludeDeprecated); It; ++It)
+#endif
+	{
+		const UFunction* TestFunction = *It;
+		if (TestFunction->GetBoolMetaData(MD_CallInEditor) && (TestFunction->ParmsSize == 0))
+		{
+			Stats.NumCallable ++;
+		}
+	}
+
 	return Stats;
 }
 

@@ -109,8 +109,14 @@ protected:
 
 	// Details
 
+	TSharedRef<IDetailsView> CreateDetails();
+	void RecreateDetails();
 	void SetSelectedObject(SubsystemTreeItemPtr Item);
 	void ResetSelectedObject();
+
+	bool IsDetailsPropertyEditingEnabled();
+	bool IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty);
+	bool IsDetailsPropertyVisible(const FPropertyAndParent& InProperty);
 
 	// Item context menu
 
@@ -130,6 +136,7 @@ private:
 	TSharedPtr<FSubsystemModel> SubsystemModel;
 
 	TSharedPtr<IDetailsView>	DetailsView;
+	TSharedPtr<SVerticalBox>	DetailsViewBox;
 	TSharedPtr<SVerticalBox>	VerticalBox;
 	TSharedPtr<SBorder>			VerticalBoxBorder;
 	TSharedPtr<SSplitter>		BrowserSplitter;

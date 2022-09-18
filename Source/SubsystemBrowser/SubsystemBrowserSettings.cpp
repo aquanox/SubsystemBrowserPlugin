@@ -6,6 +6,10 @@
 
 USubsystemBrowserSettings::FSettingChangedEvent USubsystemBrowserSettings::SettingChangedEvent;
 
+const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsView(TEXT("ConfigAffectsView"));
+const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsColumns(TEXT("ConfigAffectsColumns"));
+const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsDetails(TEXT("ConfigAffectsDetails"));
+
 USubsystemBrowserSettings::USubsystemBrowserSettings()
 {
 }

@@ -12,18 +12,14 @@
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Views/STableRow.h"
 #include "SlateOptMacros.h"
-#include "SourceCodeNavigation.h"
 #include "ToolMenus.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Editor.h"
 #include "Engine/MemberReference.h"
 #include "HAL/PlatformApplicationMisc.h"
-#include "Widgets/Notifications/SNotificationList.h"
 #include "IDetailsView.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
-
-
 
 SSubsystemBrowserPanel::SSubsystemBrowserPanel()
 {
@@ -74,21 +70,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 	HeaderRowWidget = SNew(SSubsystemsHeaderRow, SubsystemModel, SharedThis(this));
 
 	// Build the details viewer
-	FDetailsViewArgs DetailsViewArgs;
-	DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
-	DetailsViewArgs.ViewIdentifier = TEXT("SubsystemBrowserView");
-	DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Show; // always show defaults
-	DetailsViewArgs.bShowPropertyMatrixButton = false;
-	DetailsViewArgs.bShowAnimatedPropertiesOption = false;
-	DetailsViewArgs.bShowKeyablePropertiesOption = false;
-	DetailsViewArgs.bAllowFavoriteSystem = false; // no favorites here
-	// show All properties. possibly apply custom property filter or custom checkbox.
-	// but there is no way to change its value via IDetailsView interface
-	// so show all and filter visibility by IsPropertyVisible
-	DetailsViewArgs.bForceHiddenPropertyVisibility = Settings->ShouldShowHiddenProperties();
-
-	FPropertyEditorModule& EditModule = FModuleManager::Get().GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
-	DetailsView = EditModule.CreateDetailView( DetailsViewArgs );
+	DetailsView = CreateDetails();
 	check(DetailsView.IsValid());
 
 	// Context menu
@@ -269,7 +251,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 				]
 				+ SSplitter::Slot()
 				[
-					SNew( SVerticalBox )
+					SAssignNew( DetailsViewBox, SVerticalBox )
 					+SVerticalBox::Slot()
 					.Padding(0, 4, 0, 2)
 					[
@@ -758,8 +740,7 @@ void SSubsystemBrowserPanel::ToggleShowHiddenProperties()
 	USubsystemBrowserSettings::Get()->ToggleShouldShowHiddenProperties();
 
 	RefreshView();
-
-	FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("PropertyToggleWarning", "Changes will be applied after panel restart"), SNotificationItem::CS_Pending);
+	RecreateDetails();
 }
 
 void SSubsystemBrowserPanel::ToggleShouldShowOnlyGame()
@@ -790,7 +771,7 @@ void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item,
 
 	if (!bUpdatingSelection)
 	{
-		TGuardValue<bool> ReentrantGuard(bUpdatingSelection, true);
+		TGuardValue<bool> ScopeGuard(bUpdatingSelection, true);
 
 		const TArray<SubsystemTreeItemPtr>& SelectedItems = TreeWidget->GetSelectedItems();
 
@@ -941,6 +922,51 @@ void SSubsystemBrowserPanel::HandlePIEEnd(const bool bIsSimulating)
 	OnSelectWorld(EditorWorld);
 }
 
+
+TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
+{
+	bool bShowHidden = USubsystemBrowserSettings::Get()->ShouldShowHiddenProperties();
+
+	FDetailsViewArgs DetailsViewArgs;
+	DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
+	DetailsViewArgs.ViewIdentifier = TEXT("SubsystemBrowserDetailsView");
+	DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Show;
+	DetailsViewArgs.bShowPropertyMatrixButton = false;
+	DetailsViewArgs.bShowAnimatedPropertiesOption = false;
+	DetailsViewArgs.bShowKeyablePropertiesOption = false;
+	DetailsViewArgs.bHideSelectionTip = true;
+	DetailsViewArgs.bAllowFavoriteSystem = false; // no favorites here
+	// show All properties. possibly apply custom property filter or custom checkbox.
+	// but there is no way to change its value via IDetailsView interface
+	// so show all and filter visibility by IsPropertyVisible
+	DetailsViewArgs.bForceHiddenPropertyVisibility = bShowHidden;
+
+	FPropertyEditorModule& EditModule = FModuleManager::Get().GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	TSharedRef<IDetailsView> DetailViewWidget = EditModule.CreateDetailView( DetailsViewArgs );
+
+	DetailViewWidget->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyEditingEnabled));
+	DetailViewWidget->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyReadOnly));
+	DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyVisible));
+
+	// DetailViewWidget->SetCustomFilterLabel(LOCTEXT("ShowAllParameters", "Show All Parameters"));
+	// DetailViewWidget->SetCustomFilterDelegate(FSimpleDelegate::CreateSP(this, &SSubsystemBrowserPanel::ToggleShowingOnlyAllowedProperties));
+	// DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateSP(this, &SSubsystemBrowserPanel::GetIsPropertyVisible));
+	// DetailViewWidget->SetIsCustomRowVisibleDelegate(FIsCustomRowVisible::CreateSP(this, &SSubsystemBrowserPanel::GetIsRowVisible));
+
+	return DetailViewWidget;
+}
+
+void SSubsystemBrowserPanel::RecreateDetails()
+{
+	TSharedPtr<IDetailsView> ExistingDetails = DetailsView;
+
+	DetailsView = CreateDetails();
+	DetailsViewBox->GetSlot(0) [ DetailsView.ToSharedRef() ];
+
+	// Copy other props from existing details ?
+	ExistingDetails.Reset();
+}
+
 void SSubsystemBrowserPanel::SetSelectedObject(SubsystemTreeItemPtr Item)
 {
 	UObject* InObject = Item.IsValid() ? Item->GetObjectForDetails() : nullptr;
@@ -966,6 +992,21 @@ void SSubsystemBrowserPanel::ResetSelectedObject()
 		DetailsView->SetObject(nullptr);
 		RefreshDetails();
 	}
+}
+
+bool SSubsystemBrowserPanel::IsDetailsPropertyEditingEnabled()
+{
+	return true;
+}
+
+bool SSubsystemBrowserPanel::IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty)
+{
+	return false;
+}
+
+bool SSubsystemBrowserPanel::IsDetailsPropertyVisible(const FPropertyAndParent& InProperty)
+{
+	return true;
 }
 
 SubsystemTreeItemPtr SSubsystemBrowserPanel::GetFirstSelectedItem() const
@@ -1028,8 +1069,6 @@ void SSubsystemBrowserPanel::SetParentsExpansionState(const TMap<FSubsystemTreeI
 
 TSharedPtr<SWidget> SSubsystemBrowserPanel::ConstructSubsystemContextMenu()
 {
-	TSharedRef<SWidget> MenuWidget = SNullWidget::NullWidget;
-
 	UToolMenus* ToolMenus = UToolMenus::Get();
 
 	if (!ToolMenus->IsMenuRegistered(FSubsystemBrowserModule::SubsystemBrowserContextMenuName))
@@ -1050,9 +1089,7 @@ TSharedPtr<SWidget> SSubsystemBrowserPanel::ConstructSubsystemContextMenu()
 		FSubsystemBrowserModule::OnGenerateContextMenu.Broadcast(Selected.ToSharedRef(), Menu);
 	}
 
-	MenuWidget = ToolMenus->GenerateWidget(Menu);
-
-	return MenuWidget;
+	return ToolMenus->GenerateWidget(Menu);
 }
 
 bool SSubsystemBrowserPanel::HasSelectedSubsystem() const
@@ -1063,24 +1100,21 @@ bool SSubsystemBrowserPanel::HasSelectedSubsystem() const
 
 void SSubsystemBrowserPanel::OnSettingsChanged(FName InPropertyName)
 {
-	static const FName MD_ConfigAffecsView(TEXT("ConfigAffectsView"));
-	static const FName MD_ConfigAffecsColumns(TEXT("ConfigAffectsColumns"));
-	static const FName MD_ConfigAffecsDetails(TEXT("ConfigAffectsDetails"));
-
 	if (FProperty* Property = USubsystemBrowserSettings::StaticClass()->FindPropertyByName(InPropertyName))
 	{
-		if (Property->HasMetaData(MD_ConfigAffecsView))
+		if (Property->HasMetaData(FSubsystemBrowserConfigMeta::MD_ConfigAffectsView))
 		{
 			bFullRefresh = true;
 			RefreshView();
 		}
-		if (Property->HasMetaData(MD_ConfigAffecsColumns))
+		if (Property->HasMetaData(FSubsystemBrowserConfigMeta::MD_ConfigAffectsColumns))
 		{
 			RefreshColumns();
 		}
-		if (Property->HasMetaData(MD_ConfigAffecsDetails))
+		if (Property->HasMetaData(FSubsystemBrowserConfigMeta::MD_ConfigAffectsDetails))
 		{
-			RefreshDetails();
+			RecreateDetails();
+			RefreshView();
 		}
 	}
 }

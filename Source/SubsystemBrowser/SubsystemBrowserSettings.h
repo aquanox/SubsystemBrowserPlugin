@@ -21,6 +21,13 @@ struct FSubsystemBrowserConfigItem
 	bool operator==(const FName& OtherName) const { return Name == OtherName; }
 };
 
+struct FSubsystemBrowserConfigMeta
+{
+	static const FName MD_ConfigAffectsView;
+	static const FName MD_ConfigAffectsColumns;
+	static const FName MD_ConfigAffectsDetails;
+};
+
 /**
  * Class that holds settings for subsystem browser plugin.
  *
@@ -114,7 +121,7 @@ protected:
 	// Should show hidden properties in Details View?
 	// Enforces display of all hidden object properties in details panel.
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
-	bool bShowHiddenProperties = true;
+	bool bShowHiddenProperties = false;
 
 	// Should show subsystems only from Game Modules?
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))

@@ -101,7 +101,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	FString							PluginName;
 	FString							PluginDisplayName;
 
-	using FClassPropertyCounts = FSubsystemBrowserUtils::FClassPropertyCounts;
+	using FClassPropertyCounts = FSubsystemBrowserUtils::FClassFieldStats;
 	FClassPropertyCounts			PropertyStats;
 
 	bool							bConfigExportable = false;

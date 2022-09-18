@@ -40,28 +40,37 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 */
 	static void CollectSourceFiles(UClass* InClass, TArray<FString>& OutSourceFiles);
 
-	struct FClassPropertyCounts
+	struct FClassFieldStats
 	{
-		int32 NumTotal = 0;
+		int32 NumProperties = 0;
+		int32 NumEditable = 0;
 		int32 NumVisible = 0;
 		int32 NumConfig = 0;
+		int32 NumCallable = 0;
 	};
 
 	/**
 	 * Collect property display info for tooltip
 	 */
-	static FClassPropertyCounts GetClassPropertyCounts(UClass* InClass);
+	static FClassFieldStats GetClassFieldStats(UClass* InClass);
+
+	/**
+	 * Put text into clipboard
+	 */
+	static void SetClipboardText(const FString& ClipboardText);
 
 	/**
 	 * @brief
-	 * @param ClipboardText
+	 * @param InText
+	 * @param InType
 	 */
-	static void SetClipboardText(const FString& Attribute);
-
 	static void ShowBrowserInfoMessage(FText InText, SNotificationItem::ECompletionState InType);
 
 	/**
-	 *
+	 * @brief Generate config export string for specified item
+	 * @param Item
+	 * @param bModifiedOnly
+	 * @return
 	 */
 	static FString GenerateConfigExport(const struct FSubsystemTreeSubsystemItem* Item, bool bModifiedOnly);
 
