@@ -1,11 +1,18 @@
+[![GitHub release](https://img.shields.io/github/release/aquanox/SubsystemBrowserPlugin.svg)](https://github.com/aquanox/SubsystemBrowserPlugin/releases)
+[![GitHub license](https://img.shields.io/github/license/aquanox/SubsystemBrowserPlugin)](https://github.com/aquanox/SubsystemBrowserPlugin/blob/main/LICENSE)
+[![GitHub forks](https://img.shields.io/github/forks/aquanox/SubsystemBrowserPlugin)](https://github.com/aquanox/SubsystemBrowserPlugin/network)
+[![GitHub stars](https://img.shields.io/github/stars/aquanox/SubsystemBrowserPlugin)](https://github.com/aquanox/SubsystemBrowserPlugin/stargazers)
+![UE4](https://img.shields.io/badge/UE4-4.25+-lightgrey)
+![UE5](https://img.shields.io/badge/UE5-5.0+-lightgrey)
+
 ## Subsystem Browser Plugin for Unreal Engine
 
-Subsystems are great, they provide easy way to extend engine functionality and implement new features!
+Subsystems provide an easy way to extend engine functionality and implement new features while avoiding the complexity of overriding engine classes or packing multiple independent features into a single class.
 Check [Programming Subsystems](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/Subsystems/) article if you haven't tried them yet.
 
-But there is nothing in Unreal Engine Editor that could be used to visualize them or allow to change their property values in runtime.
+With Subsystems being a great tool, Unreal Engine Editor does not have a default method to visualize them or allow changing their properties at runtime.
 
-The Subsystem Browser Plugin comes to rescue with a dedicated panel to display which subsystems currently active in world and enables viewing and editing of their properties.
+The Subsystem Browser Plugin comes to rescue with a dedicated panel displaying active subsystems and enabling viewing and editing of their properties.
 
 ## Key Features
 
@@ -14,17 +21,17 @@ The Subsystem Browser Plugin comes to rescue with a dedicated panel to display w
    * Editor Subsystems
    * Game Instance Subsystems
    * World Subsystems
-   * Local Player Subsystems
- * Support for user-defined subsystem types (see SubsystemBrowserCategory.cpp example section) **NEW**
- * Support for user-defined table colums (see SubsystemBrowserColumn.cpp example section) **NEW**
- * Ability to view subsystems in different worlds 
- * Automatic toggle between PlayInEditor and Editor worlds when Starting / Stopping PIE
- * Ability to easily view and modify subsystem properties in Details View
- * Ability to easily identify which subsystems came from which module and if that module is a game module
- * Quick navigation to subsystem source file via "Open Source File" context menu
- * Quick actions to export properties as ini config sections via "Export Config" context menu
- * Browser state (chosen filters, category folders state) is saved to local editor settings
-
+   * Local Player Subsystems  
+ * Display active subsystems in selected worlds
+ * Display which module or plugin subsystems originate from
+ * View and modify subsystem properties with Details View (including hidden properties)
+ * Quick navigation to source file via "Open Source File" context menu action
+ * Quick actions to work with ini config settings via "Export Config", "Export to Defaults" context menu actions
+ * Browser panel state (chosen filters, category folders state) is saved to local editor settings
+ * Support for custom categories: ![Customizing Categories](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Categories)
+ * Support for custom table colums: ![Customizing Columns](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Columns)
+ * Support for custom tooltips: ![Customizing Tooltips](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Tooltips)
+ 
 ## Unreal Engine Versions
 
 Tested with 4.25-4.27, 5.0, ue5-main and can be easily modified to work with other engine versions.
@@ -33,7 +40,7 @@ Tested with 4.25-4.27, 5.0, ue5-main and can be easily modified to work with oth
 
 Please report any issues with GitHub Issues page for this repository.
 
-If you want to suggest changes, improvements or updates to the plugin use GitHub Pull Requests.
+If you want to suggest changes, improvements or updates to the plugin open new GitHub Issue requesting them or Pull Request.
 
 ## License
 
