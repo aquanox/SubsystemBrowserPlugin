@@ -43,6 +43,9 @@ public:
 	EDemoEnum Baz;
 };
 
+DECLARE_DYNAMIC_DELEGATE(FSubsystemDynamicTestDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemDynamicMCTestDelegate);
+
 /**
  *
  */
@@ -58,6 +61,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 HiddenBlueprintOnlyProperty;
+	UPROPERTY(Config)
+	int32 HiddenConfigProperty;
 	UPROPERTY()
 	int32 HiddenProperty;
 
@@ -111,4 +116,11 @@ public:
 	void EditorFunctionReset();
 	UPROPERTY(VisibleAnywhere, Category=Tools)
 	int32 EditorFunctionCallCounter = 0;
+
+	UPROPERTY(VisibleAnywhere, Category=Delegates)
+	FSubsystemDynamicTestDelegate SingleDelegate;
+	UPROPERTY(VisibleAnywhere, Category=Delegates)
+	FSubsystemDynamicMCTestDelegate MulticastDelegate;
+	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category=Delegates)
+	FSubsystemDynamicMCTestDelegate MulticastAssignableDelegate;
 };

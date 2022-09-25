@@ -78,4 +78,18 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 *
 	 */
 	static bool TryUpdateDefaultConfigFile(UObject* Object);
+
+	/**
+	 * Dump class flags to output
+	 *
+	 * Example: `SB.PrintClass /Script/SubsystemBrowser.SubsystemBrowserTestSubsystem`
+	 */
+	static void PrintClassDetails(const TArray< FString >& InArgs, UWorld* InWorld, FOutputDevice& InLog);
+
+	/**
+	 * Dump property flags to output
+	 *
+	 * Example: `SB.PrintProperty /Script/SubsystemBrowser.SubsystemBrowserTestSubsystem SingleDelegate`
+	 */
+	static void PrintPropertyDetails(const TArray< FString >& InArgs, UWorld* InWorld, FOutputDevice& InLog);
 };

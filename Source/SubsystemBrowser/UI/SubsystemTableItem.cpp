@@ -47,7 +47,7 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 const FSlateBrush* SSubsystemTableItem::GetItemIconBrush() const
 {
-#if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
+#if SINCE_UE_VERSION(5, 0, 0)
 	static const FName FolderOpenName(TEXT("Icons.FolderOpen"));
 	static const FName FolderClosedName(TEXT("Icons.FolderClosed"));
 #else

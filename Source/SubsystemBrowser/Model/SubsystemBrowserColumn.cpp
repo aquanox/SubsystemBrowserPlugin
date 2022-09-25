@@ -101,7 +101,7 @@ void FSubsystemDynamicTextColumn::SortItems(TArray<SubsystemTreeItemPtr>& RootIt
 
 #undef LOCTEXT_NAMESPACE
 
-#if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES && SB_UE_VERSION_NEWER_OR_SAME(4, 27, 0)
+#if ENABLE_SUBSYSTEM_BROWSER_EXAMPLES && SINCE_UE_VERSION(4, 27, 0)
 
 // 1. Create a new struct inheriting FSubsystemDynamicColumn
 

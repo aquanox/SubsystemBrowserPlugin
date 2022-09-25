@@ -36,7 +36,7 @@ FSubsystemBrowserModule::FOnGetSubsystemOwnerName FSubsystemBrowserModule::OnGet
 FSubsystemBrowserModule::FOnGenerateTooltip FSubsystemBrowserModule::OnGenerateTooltip;
 FSubsystemBrowserModule::FOnGenerateMenu FSubsystemBrowserModule::OnGenerateContextMenu;
 
-#if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
+#if SINCE_UE_VERSION(5, 0, 0)
 static const FName PanelIconName(TEXT("Icons.Settings"));
 #else
 static const FName PanelIconName(TEXT("LevelEditor.GameSettings.Small"));

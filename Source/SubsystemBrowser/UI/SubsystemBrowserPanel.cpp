@@ -451,7 +451,7 @@ FSlateColor SSubsystemBrowserPanel::GetFilterStatusTextColor() const
 
 void SSubsystemBrowserPanel::BrowserSplitterFinishedResizing()
 {
-#if SB_UE_VERSION_NEWER_OR_SAME(5, 0, 0)
+#if SINCE_UE_VERSION(5, 0, 0)
 	float NewValue = BrowserSplitter->SlotAt(0).GetSizeValue();
 #else
 	float NewValue = BrowserSplitter->SlotAt(0).SizeValue.Get();
@@ -1008,16 +1008,45 @@ void SSubsystemBrowserPanel::ResetSelectedObject()
 
 bool SSubsystemBrowserPanel::IsDetailsPropertyEditingEnabled()
 {
+	// Always allow editing
 	return true;
 }
 
 bool SSubsystemBrowserPanel::IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty)
 {
-	return false;
+	if (USubsystemBrowserSettings::Get()->ShouldEditAnyProperties())
+	{
+		return false;
+	}
+
+	const FProperty* Property = InProperty.ParentProperties.Num() > 0 ? InProperty.ParentProperties.Last() : &InProperty.Property;
+
+	bool bReadOnly = Property->HasAnyPropertyFlags(CPF_EditConst) || !Property->HasAnyPropertyFlags(CPF_Edit);
+
+	if (Property->HasAnyPropertyFlags(CPF_Config))
+	{ // config always editable
+		return false;
+	}
+
+
+
+	return bReadOnly;
 }
 
 bool SSubsystemBrowserPanel::IsDetailsPropertyVisible(const FPropertyAndParent& InProperty)
 {
+	if (USubsystemBrowserSettings::Get()->ShouldShowHiddenProperties())
+	{
+		return true;
+	}
+
+	const FProperty* Property = InProperty.ParentProperties.Num() > 0 ? InProperty.ParentProperties.Last() : &InProperty.Property;
+
+	if (CastField<FDelegateProperty>(Property) || CastField<FMulticastDelegateProperty>(Property))
+	{ // hide blueprint delegate properties
+		return false;
+	}
+
 	return true;
 }
 
@@ -1126,7 +1155,6 @@ void SSubsystemBrowserPanel::OnSettingsChanged(FName InPropertyName)
 		if (Property->HasMetaData(FSubsystemBrowserConfigMeta::MD_ConfigAffectsDetails))
 		{
 			RecreateDetails();
-			RefreshView();
 		}
 	}
 }

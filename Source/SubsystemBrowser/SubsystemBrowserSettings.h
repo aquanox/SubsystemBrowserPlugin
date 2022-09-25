@@ -81,6 +81,8 @@ public:
 	void SetShowHiddenProperties(bool bNewValue);
 	void ToggleShouldShowHiddenProperties() { SetShowHiddenProperties(!bShowHiddenProperties); }
 
+	bool ShouldEditAnyProperties() const { return bEditAnyProperties; }
+
 	bool ShouldShowOnlyGame() const { return bShowOnlyGameModules; }
 	void SetShouldShowOnlyGame(bool bNewValue);
 	void ToggleShouldShowOnlyGame() { SetShouldShowOnlyGame(!bShowOnlyGameModules); }
@@ -122,6 +124,11 @@ protected:
 	// Enforces display of all hidden object properties in details panel.
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
 	bool bShowHiddenProperties = false;
+
+	// Should force edit all properties in Details View?
+	// Enforces editing of all visible object properties in details panel.
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
+	bool bEditAnyProperties = false;
 
 	// Should show subsystems only from Game Modules?
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
