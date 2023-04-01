@@ -1,6 +1,9 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "Model/Category/SubsystemBrowserCategory_GameInstance.h"
+
+#include "Engine/GameInstance.h"
+#include "Engine/World.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
 FSubsystemCategory_GameInstance::FSubsystemCategory_GameInstance()

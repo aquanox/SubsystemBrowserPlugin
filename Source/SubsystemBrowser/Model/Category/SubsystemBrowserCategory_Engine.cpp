@@ -1,6 +1,8 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "Model/Category/SubsystemBrowserCategory_Engine.h"
+
+#include "Engine/Engine.h"
 #include "Subsystems/EngineSubsystem.h"
 
 FSubsystemCategory_Engine::FSubsystemCategory_Engine()

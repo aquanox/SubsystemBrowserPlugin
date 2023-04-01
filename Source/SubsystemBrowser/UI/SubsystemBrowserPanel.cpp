@@ -18,6 +18,8 @@
 #include "Engine/MemberReference.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "IDetailsView.h"
+#include "PropertyEditorModule.h"
+#include "Widgets/Input/SComboButton.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 

@@ -7,9 +7,12 @@
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Engine/LocalPlayer.h"
 #include "Framework/Notifications/NotificationManager.h"
+#include "HAL/FileManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "Model/SubsystemBrowserDescriptor.h"
 #include "HAL/PlatformApplicationMisc.h"
+#include "Misc/PackageName.h"
+#include "UObject/Package.h"
 
 static FAutoConsoleCommandWithWorldArgsAndOutputDevice CmdPrintClassData(
 	TEXT("SB.PrintClass"), TEXT("Dump class details"),
