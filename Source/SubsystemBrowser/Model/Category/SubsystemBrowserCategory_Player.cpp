@@ -1,8 +1,11 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "Model/Category/SubsystemBrowserCategory_Player.h"
+
+#include "Engine/GameInstance.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Engine/LocalPlayer.h"
+#include "Engine/World.h"
 
 FSubsystemCategory_Player::FSubsystemCategory_Player()
 {

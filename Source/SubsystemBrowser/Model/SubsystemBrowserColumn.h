@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Model/SubsystemBrowserDescriptor.h"
+#include "Widgets/Views/SHeaderRow.h"
 
 /* Represents a configurable column */
 struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn : public TSharedFromThis<FSubsystemDynamicColumn>

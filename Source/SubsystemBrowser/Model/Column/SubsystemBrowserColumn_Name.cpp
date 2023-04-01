@@ -3,6 +3,9 @@
 #include "Model/Column/SubsystemBrowserColumn_Name.h"
 
 #include "UI/SubsystemTableItem.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Widgets/Views/SListView.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 

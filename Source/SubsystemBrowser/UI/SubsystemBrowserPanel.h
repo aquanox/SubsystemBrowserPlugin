@@ -11,6 +11,8 @@
 #include "UI/SubsystemTableHeader.h"
 #include "Model/SubsystemBrowserModel.h"
 
+class SComboButton;
+struct FPropertyAndParent;
 class IDetailsView;
 
 /**

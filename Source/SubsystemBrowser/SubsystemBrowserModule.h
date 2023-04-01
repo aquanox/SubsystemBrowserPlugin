@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleInterface.h"
+#include "Modules/ModuleManager.h"
 #include "Model/SubsystemBrowserCategory.h" // [no-fwd]
 #include "Model/SubsystemBrowserColumn.h" // [no-fwd]
 
+class FSpawnTabArgs;
 class USubsystemBrowserSettings;
 class UToolMenu;
 struct ISubsystemTreeItem;
