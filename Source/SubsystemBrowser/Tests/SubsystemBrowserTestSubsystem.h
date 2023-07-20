@@ -23,11 +23,11 @@ struct FDemoStruct
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	int32 Foo;
+	int32 Foo = 0;
 	UPROPERTY(EditAnywhere)
-	int32 Bar;
+	int32 Bar = 0;
 	UPROPERTY(EditAnywhere)
-	EDemoEnum Baz;
+	EDemoEnum Baz = EDemoEnum::Alpha;
 };
 
 UCLASS(DefaultToInstanced, EditInlineNew)
