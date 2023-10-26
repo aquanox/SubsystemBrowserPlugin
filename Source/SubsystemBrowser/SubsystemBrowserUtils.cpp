@@ -333,7 +333,7 @@ const TMap<EClassFlags, FString>& GetClassFlagsMap()
 		ADD_FLAG(CLASS_Transient);
 		ADD_FLAG(CLASS_MatchedSerializers);
 		ADD_FLAG(CLASS_Native);
-#if UE_VERSION_OLDER_THAN(5, 2, 0)
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 		ADD_FLAG(CLASS_NoExport);
 #endif
 		ADD_FLAG(CLASS_NotPlaceable);
@@ -342,7 +342,7 @@ const TMap<EClassFlags, FString>& GetClassFlagsMap()
 		ADD_FLAG(CLASS_EditInlineNew);
 		ADD_FLAG(CLASS_CollapseCategories);
 		ADD_FLAG(CLASS_Interface);
-#if UE_VERSION_OLDER_THAN(5, 2, 0)
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 		ADD_FLAG(CLASS_CustomConstructor);
 #endif
 		ADD_FLAG(CLASS_Const);
