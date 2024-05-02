@@ -18,6 +18,7 @@
 #include "Engine/MemberReference.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "IDetailsView.h"
+#include "EditorStyleSet.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 

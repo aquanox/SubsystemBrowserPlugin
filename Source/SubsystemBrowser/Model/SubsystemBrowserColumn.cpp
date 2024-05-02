@@ -9,6 +9,7 @@
 #include "SubsystemBrowserSorting.h"
 #include "UI/SubsystemTableItem.h"
 #include "SubsystemBrowserStyle.h"
+#include "EditorStyleSet.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
