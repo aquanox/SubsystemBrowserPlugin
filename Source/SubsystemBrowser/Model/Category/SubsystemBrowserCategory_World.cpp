@@ -1,6 +1,8 @@
 // Copyright 2022, Aquanox.
 
 #include "Model/Category/SubsystemBrowserCategory_World.h"
+
+#include "Engine/World.h"
 #include "Subsystems/WorldSubsystem.h"
 
 FSubsystemCategory_World::FSubsystemCategory_World()

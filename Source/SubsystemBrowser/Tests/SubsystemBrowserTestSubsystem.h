@@ -22,11 +22,11 @@ struct FDemoStruct
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	int32 Foo = 0;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	int32 Bar = 0;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	EDemoEnum Baz = EDemoEnum::Alpha;
 };
 
@@ -35,11 +35,11 @@ class UDemoObject : public UObject
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	int32 Foo;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	int32 Bar;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	EDemoEnum Baz;
 };
 
@@ -59,7 +59,7 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category="SubsystemBrowserTest")
 	int32 HiddenBlueprintOnlyProperty;
 	UPROPERTY(Config)
 	int32 HiddenConfigProperty;

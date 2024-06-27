@@ -11,6 +11,9 @@
 #include "Model/SubsystemBrowserModel.h"
 #include "UI/SubsystemTableItemTooltip.h"
 #include "SubsystemBrowserStyle.h"
+#include "Misc/PackageName.h"
+#include "UObject/Package.h"
+#include "Widgets/Views/SListView.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 

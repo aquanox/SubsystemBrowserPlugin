@@ -1,6 +1,8 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "Model/Category/SubsystemBrowserCategory_Editor.h"
+
+#include "Editor.h"
 #include "EditorSubsystem.h"
 
 FSubsystemCategory_Editor::FSubsystemCategory_Editor()
