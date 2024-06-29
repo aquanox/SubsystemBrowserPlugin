@@ -34,7 +34,7 @@ The Subsystem Browser Plugin comes to rescue with a dedicated panel displaying a
  
 ## Unreal Engine Versions
 
-Tested with 4.25-4.27, 5.0, ue5-main and can be easily modified to work with other engine versions.
+Plugin compatible with 4.25-4.27, 5.0-5.4, ue5-main and can be easily modified to work with other engine versions.
 
 ## Contributing
 
@@ -55,4 +55,4 @@ SubsystemBrowserPlugin is available under the MIT license. See the LICENSE file 
 
 ---
 
-Special Thanks to Unreal Slackers Community Discord and #cpp 
+Special Thanks to Unreal Source Community Discord and #cpp 
