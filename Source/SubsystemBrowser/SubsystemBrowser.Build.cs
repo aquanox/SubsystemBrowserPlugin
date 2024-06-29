@@ -16,9 +16,10 @@ public class SubsystemBrowser : ModuleRules
 			bTreatAsEngineModule = true;
 		}
 
-		// This is to use non Public/Private folder system
+		// This is to use non-Public/Private folder system
 		PublicIncludePaths.Add(ModuleDirectory);
-		PrivateIncludePaths.Add(ModuleDirectory);
+		// Same as above but exclusively for current module
+		// PrivateIncludePaths.Add(ModuleDirectory);
 
 		// These are dependencies always needed if planning on expanding plugin
 		PublicDependencyModuleNames.AddRange(new string[]

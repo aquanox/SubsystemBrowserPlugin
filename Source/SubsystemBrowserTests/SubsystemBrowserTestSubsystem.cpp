@@ -1,6 +1,6 @@
 ﻿// Copyright 2022, Aquanox.
 
-#include "Tests/SubsystemBrowserTestSubsystem.h"
+#include "SubsystemBrowserTestSubsystem.h"
 
 USubsystemBrowserTestSubsystem::USubsystemBrowserTestSubsystem()
 {
@@ -8,7 +8,11 @@ USubsystemBrowserTestSubsystem::USubsystemBrowserTestSubsystem()
 
 bool USubsystemBrowserTestSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
+#ifdef WITH_SB_HOST_PROJECT
+	return WITH_SB_HOST_PROJECT && Super::ShouldCreateSubsystem(Outer);
+#else
 	return GetClass() != USubsystemBrowserTestSubsystem::StaticClass() && Super::ShouldCreateSubsystem(Outer);
+#endif
 }
 
 void USubsystemBrowserTestSubsystem::Initialize(FSubsystemCollectionBase& Collection)

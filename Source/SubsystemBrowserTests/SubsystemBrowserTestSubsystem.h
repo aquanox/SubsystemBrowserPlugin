@@ -7,7 +7,7 @@
 #include "SubsystemBrowserTestSubsystem.generated.h"
 
 UENUM(meta=(Experimental))
-enum class EDemoEnum : uint8
+enum class ESBDemoEnum : uint8
 {
 	Alpha,
 	Beta,
@@ -16,9 +16,8 @@ enum class EDemoEnum : uint8
 	Epsilon
 };
 
-
 USTRUCT(meta=(Experimental))
-struct FDemoStruct
+struct SUBSYSTEMBROWSERTESTS_API FSBDemoStruct
 {
 	GENERATED_BODY()
 
@@ -27,11 +26,11 @@ struct FDemoStruct
 	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	int32 Bar = 0;
 	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
-	EDemoEnum Baz = EDemoEnum::Alpha;
+	ESBDemoEnum Baz = ESBDemoEnum::Alpha;
 };
 
-UCLASS(DefaultToInstanced, EditInlineNew)
-class UDemoObject : public UObject
+UCLASS(Hidden, DefaultToInstanced, EditInlineNew)
+class SUBSYSTEMBROWSERTESTS_API USBDemoObject : public UObject
 {
 	GENERATED_BODY()
 public:
@@ -40,17 +39,17 @@ public:
 	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	int32 Bar;
 	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
-	EDemoEnum Baz;
+	ESBDemoEnum Baz;
 };
 
-DECLARE_DYNAMIC_DELEGATE(FSubsystemDynamicTestDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemDynamicMCTestDelegate);
+DECLARE_DYNAMIC_DELEGATE(FSBTestDynamicDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSBTestDynamicMCDelegate);
 
 /**
  *
  */
-UCLASS(Abstract, Config=Test, DefaultConfig)
-class SUBSYSTEMBROWSER_API USubsystemBrowserTestSubsystem : public UWorldSubsystem
+UCLASS(Hidden, Config=Test, DefaultConfig, meta=(Experimental, SBTooltip="SB Tooltip Text", SBColor="ff0000"))
+class SUBSYSTEMBROWSERTESTS_API USubsystemBrowserTestSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 public:
@@ -58,7 +57,7 @@ public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
-
+	
 	UPROPERTY(BlueprintReadWrite, Category="SubsystemBrowserTest")
 	int32 HiddenBlueprintOnlyProperty;
 	UPROPERTY(Config)
@@ -85,17 +84,17 @@ public:
 	UPROPERTY(EditAnywhere, Category=General)
 	TSoftObjectPtr<class ULevel> GeneralAssetProperty;
 	UPROPERTY(EditAnywhere, Instanced, Category=General)
-	UDemoObject* GeneralInstancedProperty;
+	USBDemoObject* GeneralInstancedProperty;
 	UPROPERTY(EditAnywhere, Category=General)
 	int32 GeneralIntProperty;
 	UPROPERTY(EditAnywhere, Category=General)
-	FDemoStruct GeneralStructProperty;
+	FSBDemoStruct GeneralStructProperty;
 	UPROPERTY(EditAnywhere, Category=General)
-	EDemoEnum GeneralEnumProperty;
+	ESBDemoEnum GeneralEnumProperty;
 	UPROPERTY(EditAnywhere, Category=General)
 	FGuid GeneralGuidProperty;
 	UPROPERTY(EditAnywhere, Category=General, meta=(ForceInlineRow))
-	TMap<FGuid, UDemoObject*> GeneralMapProperty;
+	TMap<FGuid, USBDemoObject*> GeneralMapProperty;
 
 	UPROPERTY(Config, EditAnywhere, Category=Config)
 	int32 ConfigIntProperty;
@@ -106,9 +105,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category=Config)
 	TSoftObjectPtr<class UDataAsset> ConfigAssetProperty;
 	UPROPERTY(Config, EditAnywhere, Category=Config)
-	TArray<FDemoStruct> ConfigArrayOfStructsProperty;
+	TArray<FSBDemoStruct> ConfigArrayOfStructsProperty;
 	UPROPERTY(Config, EditAnywhere, Category=Config)
-	TArray<EDemoEnum> ConfigArrayOfEnumsProperty;
+	TArray<ESBDemoEnum> ConfigArrayOfEnumsProperty;
 
 	UFUNCTION(CallInEditor, Category=Tools)
 	void EditorFunction();
@@ -118,9 +117,9 @@ public:
 	int32 EditorFunctionCallCounter = 0;
 
 	UPROPERTY(VisibleAnywhere, Category=Delegates)
-	FSubsystemDynamicTestDelegate SingleDelegate;
+	FSBTestDynamicDelegate SingleDelegate;
 	UPROPERTY(VisibleAnywhere, Category=Delegates)
-	FSubsystemDynamicMCTestDelegate MulticastDelegate;
+	FSBTestDynamicMCDelegate MulticastDelegate;
 	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category=Delegates)
-	FSubsystemDynamicMCTestDelegate MulticastAssignableDelegate;
+	FSBTestDynamicMCDelegate MulticastAssignableDelegate;
 };
