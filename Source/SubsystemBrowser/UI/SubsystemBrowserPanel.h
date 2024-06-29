@@ -101,13 +101,14 @@ protected:
 
 	const FSlateBrush* GetWorldsMenuBrush() const;
 	FText GetCurrentWorldText() const;
-	FText GetWorldDescription(UWorld* World) const;
+	FText GetWorldDescription(const UWorld* World) const;
 	void OnSelectWorld(TWeakObjectPtr<UWorld> InWorld);
 	bool IsWorldChecked(TWeakObjectPtr<UWorld> InWorld);
 	TSharedRef<SWidget> GetWorldsButtonContent();
 
 	void HandlePIEStart(const bool bIsSimulating);
 	void HandlePIEEnd(const bool bIsSimulating);
+	void HandleWorldChange(UWorld* InWorld);
 
 	// Details
 

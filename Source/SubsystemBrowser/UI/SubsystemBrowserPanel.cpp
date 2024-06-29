@@ -31,6 +31,9 @@ SSubsystemBrowserPanel::~SSubsystemBrowserPanel()
 {
 	FEditorDelegates::PostPIEStarted.RemoveAll(this);
 	FEditorDelegates::PrePIEEnded.RemoveAll(this);
+	
+	GEngine->OnWorldAdded().RemoveAll(this);
+	GEngine->OnWorldDestroyed().RemoveAll(this);
 }
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
@@ -39,6 +42,10 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 	// Automatically switch to pie world and back
 	FEditorDelegates::PostPIEStarted.AddSP(this, &SSubsystemBrowserPanel::HandlePIEStart);
 	FEditorDelegates::PrePIEEnded.AddSP(this, &SSubsystemBrowserPanel::HandlePIEEnd);
+
+	// World load/unload events
+	GEngine->OnWorldAdded().AddSP(this, &SSubsystemBrowserPanel::HandleWorldChange);
+	GEngine->OnWorldDestroyed().AddSP(this, &SSubsystemBrowserPanel::HandleWorldChange);
 
 	// Update initial settings to apply custom category registrations
 	USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
@@ -799,7 +806,7 @@ FText SSubsystemBrowserPanel::GetCurrentWorldText() const
 	return FText::Format(LOCTEXT("WorldsSelectButton", "World: {World}"), Args);
 }
 
-FText SSubsystemBrowserPanel::GetWorldDescription(UWorld* World) const
+FText SSubsystemBrowserPanel::GetWorldDescription(const UWorld* World) const
 {
 	FText Description;
 	if(World)
@@ -930,6 +937,16 @@ void SSubsystemBrowserPanel::HandlePIEEnd(const bool bIsSimulating)
 	OnSelectWorld(EditorWorld);
 }
 
+void SSubsystemBrowserPanel::HandleWorldChange(UWorld* InWorld)
+{
+	UE_LOG(LogSubsystemBrowser, Log, TEXT("On World Changed"));
+
+	// Automatically switch to the newest editor world after opening level
+	if (InWorld && InWorld->WorldType == EWorldType::Editor)
+	{
+		OnSelectWorld(InWorld);
+	}
+}
 
 TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
 {
