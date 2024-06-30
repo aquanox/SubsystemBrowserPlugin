@@ -13,7 +13,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	/**
 	 * Get info about subsystem "Owner"
 	 */
-	static FString GetDefaultSubsystemOwnerName(UObject* InObject);
+	static FString GetSubsystemOwnerName(UObject* InObject);
 
 	/**
 	 * Finds the base directory for a given module.
@@ -23,17 +23,12 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	/**
 	 * Find fully qualified class module name
 	 */
-	static FString GetModuleNameForClass(UClass* InClass);
+	static bool GetModuleDetailsForClass(UClass* InClass, FString& OutName, bool& OutGameFlag);
 
 	/**
 	 * Find plugin name that contains class
 	 */
-	static TSharedPtr<class IPlugin> GetPluginForClass(UClass* InClass);
-
-	/**
-	 * Test if class is belongs to a Game Module
-	 */
-	static bool IsGameModuleClass(UClass* InClass);
+	static bool GetPluginDetailsForClass(UClass* InClass, FString& OutName, FString& OutFriendlyName);
 
 	/**
 	 * Collect related source files belonging to specified class
@@ -53,6 +48,11 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * Collect property display info for tooltip
 	 */
 	static FClassFieldStats GetClassFieldStats(UClass* InClass);
+
+	/**
+	 * Find metadata value in entire hierarchy of classes
+	 */
+	static TOptional<FString> GetMetadataHierarchical(UClass* InClass, FName InKey);
 
 	/**
 	 * Put text into clipboard

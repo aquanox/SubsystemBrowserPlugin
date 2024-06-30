@@ -25,6 +25,11 @@ void USubsystemBrowserTestSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
+FString USubsystemBrowserTestSubsystem::GetSBOwnerName() const
+{
+	return TEXT("Hello from ") + GetNameSafe(GetOuter());
+}
+
 void USubsystemBrowserTestSubsystem::EditorFunction()
 {
 	++EditorFunctionCallCounter;

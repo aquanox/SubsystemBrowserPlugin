@@ -10,6 +10,10 @@ const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsView(TEXT("ConfigAffect
 const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsColumns(TEXT("ConfigAffectsColumns"));
 const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsDetails(TEXT("ConfigAffectsDetails"));
 
+const FName FSubsystemBrowserUserMeta::MD_SBColor(TEXT("SBColor"));
+const FName FSubsystemBrowserUserMeta::MD_SBTooltip(TEXT("SBTooltip"));
+const FName FSubsystemBrowserUserMeta::MD_SBOwnerName(TEXT("SBOwnerName"));
+
 USubsystemBrowserSettings::USubsystemBrowserSettings()
 {
 }
@@ -46,6 +50,15 @@ bool USubsystemBrowserSettings::OnSettingsReset()
 	
 	bEnableColoring = false;
 	
+	bEnableStaleColor = false;
+	StaleStateColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
+	bEnableSelectedColor = false;
+	SelectedStateColor = FLinearColor(0.828, 0.364, 0.003, 1.0);
+	bEnableColoringGameModule = false;
+	GameModuleColor = FLinearColor(0.4, 0.4, 1.0, 1.0);
+	bEnableColoringEngineModule = false;
+	EngineModuleColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
+
 
 	NotifyPropertyChange(NAME_All);
 	
@@ -110,6 +123,36 @@ void USubsystemBrowserSettings::SetColoringEnabled(bool bNewValue)
 {
 	bEnableColoring = bNewValue;
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bEnableColoring));
+}
+
+FSlateColor USubsystemBrowserSettings::GetSelectedColor() const
+{
+	if (bEnableColoring && bEnableSelectedColor)
+	{
+		return SelectedStateColor;
+	}
+	return FSlateColor::UseForeground();
+}
+
+FSlateColor USubsystemBrowserSettings::GetStaleColor() const
+{
+	if (bEnableColoring && bEnableStaleColor)
+	{
+		return StaleStateColor;
+	}
+	return FSlateColor::UseSubduedForeground();
+}
+
+FSlateColor USubsystemBrowserSettings::GetModuleColor(bool bGameModule)
+{
+	if (bEnableColoring)
+	{
+		if (bGameModule && bEnableColoringGameModule)
+			return GameModuleColor;
+		if (!bGameModule && bEnableColoringEngineModule)
+			return EngineModuleColor;
+	}
+	return FSlateColor::UseForeground();
 }
 
 void USubsystemBrowserSettings::SetShowHiddenProperties(bool bNewValue)

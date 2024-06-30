@@ -1,13 +1,12 @@
 // Copyright 2022, Aquanox.
 
 #include "UI/SubsystemTableItem.h"
+#include "SubsystemBrowserSettings.h"
+#include "SubsystemBrowserStyle.h"
 #include "Model/SubsystemBrowserModel.h"
 #include "UI/SubsystemBrowserPanel.h"
 #include "UI/SubsystemTableItemTooltip.h"
 #include "SlateOptMacros.h"
-#include "SubsystemBrowserFlags.h"
-#include "SubsystemBrowserSettings.h"
-#include "SubsystemBrowserStyle.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -47,24 +46,14 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 const FSlateBrush* SSubsystemTableItem::GetItemIconBrush() const
 {
-#if SINCE_UE_VERSION(5, 0, 0)
-	static const FName FolderOpenName(TEXT("Icons.FolderOpen"));
-	static const FName FolderClosedName(TEXT("Icons.FolderClosed"));
-#else
-	static const FName FolderOpenName(TEXT("WorldBrowser.FolderOpen"));
-	static const FName FolderClosedName(TEXT("WorldBrowser.FolderClosed"));
-#endif
-
 	if (Item.IsValid() && Item->CanHaveChildren())
 	{
 		if (Item->GetNumChildren() > 0 && Item->bExpanded)
 		{
-			return FStyleHelper::GetBrush(FolderOpenName);
+			return FStyleHelper::GetBrush(FSubsystemBrowserStyle::FolderOpenName);
 		}
-
-		return FStyleHelper::GetBrush(FolderClosedName);
+		return FStyleHelper::GetBrush(FSubsystemBrowserStyle::FolderClosedName);
 	}
-
 	return nullptr;
 }
 

@@ -5,6 +5,7 @@
 #include "SubsystemBrowserUtils.h"
 #include "Model/SubsystemBrowserCategory.h"
 #include "Misc/TextFilter.h"
+#include "Misc/Optional.h"
 
 class FSubsystemModel;
 struct ISubsystemTreeItem;
@@ -16,7 +17,7 @@ using SubsystemTreeItemPtr = TSharedPtr<ISubsystemTreeItem>;
 using SubsystemTreeItemConstPtr = TSharedPtr<const ISubsystemTreeItem>;
 
 /*
- * Abstract subsystem tree item node
+ * Node base class for Subsystem TreeView
  */
 struct SUBSYSTEMBROWSER_API ISubsystemTreeItem : public TSharedFromThis<ISubsystemTreeItem>
 {
@@ -59,7 +60,7 @@ struct SUBSYSTEMBROWSER_API ISubsystemTreeItem : public TSharedFromThis<ISubsyst
 };
 
 /**
- * Category node
+ * Node representing a Subsystem Category in TreeView
  */
 struct SUBSYSTEMBROWSER_API FSubsystemTreeCategoryItem final : public ISubsystemTreeItem
 {
@@ -74,38 +75,52 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeCategoryItem final : public ISubsystem
 	virtual bool CanHaveChildren() const override { return true; }
 	virtual FSubsystemTreeCategoryItem* GetAsCategoryDescriptor() const override { return const_cast<FSubsystemTreeCategoryItem*>(this); }
 
-	TArray<UObject*> Select(UWorld* InContext) const;
-
 	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
 };
 
 /**
- * Subsystem node
+ * Node representing a Subsystem in TreeView
  */
 struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsystemTreeItem
 {
 	TWeakObjectPtr<UObject>			Subsystem;
 	TWeakObjectPtr<UClass>			Class;
 
+	// Friendly display name (Class Name)
 	FText							DisplayName;
+	// Subsystem class name (ClassName)
 	FName							ClassName;
+	// Subsystem package name (/Script/ModuleName)
 	FString							Package;
-	FString							LongPackage;
-	FString							ShortPackage;
+	// Full package name (/Script/ModuleName.ClassName)
+	FString							ScriptName;
+	// Short module name (ModuleName)
+	FString							ModuleName;
+	// Config category name (Class specifier value of UCLASS)
 	FName							ConfigName;
 
+	// Owning object name for LocalPlayerSS and similar
 	FString							OwnerName;
 
+	// List of source locations associated with subsystem class
 	TArray<FString>					SourceFilePaths;
 
+	// Detected plugin name that this subsystem is part of
 	FString							PluginName;
+	// Friendly name of plugin
 	FString							PluginDisplayName;
+
+	// Optional user color override
+	TOptional<FLinearColor>			UserColor;
+	// Optional user extra tooltip text
+	TOptional<FString>				UserTooltip;
 
 	using FClassPropertyCounts = FSubsystemBrowserUtils::FClassFieldStats;
 	FClassPropertyCounts			PropertyStats;
 
 	bool							bConfigExportable = false;
 	bool							bIsDefaultConfig = false;
+	bool							bIsGlobalUserConfig = false;
 	bool							bIsGameModuleClass = false;
 	bool							bIsPluginClass = false;
 
@@ -127,7 +142,5 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 
 	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
 	virtual void GenerateContextMenu(class UToolMenu* MenuBuilder) const override;
-
-protected:
 
 };

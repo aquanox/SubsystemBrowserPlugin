@@ -83,12 +83,6 @@ public:
 	void SummonSubsystemTab();
 
 	/**
-	 * Callback that is called whenever an owner name is needed to be obtained for the subsystem
-	 */
-	DECLARE_DELEGATE_RetVal_OneParam(FString, FOnGetSubsystemOwnerName, UObject*);
-	static SUBSYSTEMBROWSER_API FOnGetSubsystemOwnerName OnGetSubsystemOwnerName;
-
-	/**
 	 * Callback that is called whenever a tooltip for item needs to be generated
 	 * Used to add custom data to tooltips.
 	 */

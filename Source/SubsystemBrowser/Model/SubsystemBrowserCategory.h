@@ -31,7 +31,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory : public TSharedFromThis<FSubsyst
 
 	virtual bool IsVisibleByDefault() const { return true; }
 
-	/* Select subsystems for the respected category */
+	/* Select subsystems for this category */
 	virtual void Select(UWorld* InContext, TArray<UObject*>& OutData) const = 0;
 };
 

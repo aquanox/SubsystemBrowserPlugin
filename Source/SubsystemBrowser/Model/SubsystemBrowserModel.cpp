@@ -261,7 +261,9 @@ void FSubsystemModel::PopulateSubsystems()
 	{
 		const FSubsystemTreeCategoryItem* AsCategory = Category->GetAsCategoryDescriptor();
 
-		for (UObject* Impl : AsCategory->Select(LocalWorld))
+		TArray<UObject*> Result;
+		AsCategory->Data->Select(LocalWorld, Result);
+		for (UObject* Impl : Result)
 		{
 			auto Descriptor = MakeShared<FSubsystemTreeSubsystemItem>(SharedThis(this), Category, Impl);
 

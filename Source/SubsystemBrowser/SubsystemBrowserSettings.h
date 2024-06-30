@@ -21,6 +21,19 @@ struct FSubsystemBrowserConfigItem
 	bool operator==(const FName& OtherName) const { return Name == OtherName; }
 };
 
+// Dynamic delegate for owner name requesting
+DECLARE_DYNAMIC_DELEGATE_RetVal(FString, FSubsystemBrowserGetOwnerName);
+
+struct FSubsystemBrowserUserMeta
+{
+	// Subsystem name color in list
+	static const FName MD_SBColor;
+	// Extra tooltip text when hovering 
+	static const FName MD_SBTooltip;
+	// Owner name provider function/property name (will be called on subsystem)
+	static const FName MD_SBOwnerName;
+};
+
 struct FSubsystemBrowserConfigMeta
 {
 	static const FName MD_ConfigAffectsView;
@@ -76,6 +89,10 @@ public:
 	bool IsColoringEnabled() const { return bEnableColoring; }
 	void SetColoringEnabled(bool bNewValue);
 	void ToggleColoringEnabled() { SetColoringEnabled(!bEnableColoring); }
+
+	FSlateColor GetSelectedColor() const;
+	FSlateColor GetStaleColor() const;
+	FSlateColor GetModuleColor(bool bGameModule);
 
 	bool ShouldShowHiddenProperties() const { return bShowHiddenProperties; }
 	void SetShowHiddenProperties(bool bNewValue);
@@ -138,6 +155,26 @@ protected:
 	// Should color some data in table?
 	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(ConfigAffectsView))
 	bool bEnableColoring = false;
+
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
+	bool bEnableStaleColor = false;
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableStaleColor"))
+	FLinearColor StaleStateColor = FLinearColor(0.4, 0.4, 1.0);
+	
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
+	bool bEnableSelectedColor = false;
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableSelectedColor"))
+	FLinearColor SelectedStateColor = FLinearColor(0.828, 0.364, 0.003, 1.0);
+
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
+	bool bEnableColoringGameModule = false;
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableColoringGameModule"))
+	FLinearColor GameModuleColor = FLinearColor(0.4, 0.4, 1.0, 1.0);
+
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
+	bool bEnableColoringEngineModule = false;
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableColoringEngineModule"))
+	FLinearColor EngineModuleColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
 
 	// 
 	UPROPERTY(config, EditAnywhere, Category=State, meta=(ConfigAffectsView, TitleProperty="Name"))

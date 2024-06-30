@@ -2,6 +2,7 @@
 
 #include "UI/SubsystemTableItem.h"
 #include "Widgets/SToolTip.h"
+#include "Widgets/Text/STextBlock.h"
 
 class SSubsystemTableItemTooltip : public SToolTip
 {
@@ -31,6 +32,9 @@ private:
 	TWeakPtr<SSubsystemTableItem> SubsystemTableItem;
 };
 
+/**
+ * 
+ */
 class SUBSYSTEMBROWSER_API FSubsystemTableItemTooltipBuilder
 {
 	friend SSubsystemTableItemTooltip;
@@ -38,6 +42,7 @@ class SUBSYSTEMBROWSER_API FSubsystemTableItemTooltipBuilder
 	TSharedRef<SSubsystemTableItem> Item;
 	TSharedPtr<SVerticalBox>		Primary;
 	TSharedPtr<SVerticalBox>		Secondary;
+	TSharedPtr<STextBlock>			UserTooltip;
 public:
 	enum
 	{
@@ -46,11 +51,19 @@ public:
 		DF_WITH_HIGHLIGHT	= 1 << 1,
 	};
 
-	FSubsystemTableItemTooltipBuilder(TSharedRef<SSubsystemTableItem> Item) : Item(Item) {}
+	explicit FSubsystemTableItemTooltipBuilder(TSharedRef<SSubsystemTableItem> Item) : Item(Item) {}
 
 	void AddPrimary(const FText& Key, const FText& Value, uint32 DisplayFlags = DF_NONE);
+	void EmptyPrimary() { Primary.Reset(); }
+	
 	void AddSecondary(const FText& Key, const FText& Value, uint32 DisplayFlags = DF_NONE);
-	bool HasAnyData() const { return Primary.IsValid() || Secondary.IsValid(); }
+	void EmptySecondary() { Secondary.Reset(); }
+	
+	void SetUserTooltip(const FText& Value);
+	void EmptyUserTooltip() { UserTooltip.Reset(); }
+	
+	bool HasAnyData() const;
+
 private:
 	void AddBox(TSharedRef<SVerticalBox> Target, const FText& Key, const FText& Value, uint32 DisplayFlags);
 };

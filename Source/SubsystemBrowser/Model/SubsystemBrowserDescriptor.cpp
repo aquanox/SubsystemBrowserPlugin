@@ -3,7 +3,7 @@
 #include "Model/SubsystemBrowserDescriptor.h"
 
 #include "SourceCodeNavigation.h"
-#include "SubsystemBrowserFlags.h"
+#include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserUtils.h"
 #include "ToolMenu.h"
@@ -21,13 +21,6 @@ FSubsystemTreeCategoryItem::FSubsystemTreeCategoryItem(TSharedRef<FSubsystemMode
 	: Data(InCategory)
 {
 	Model = InModel;
-}
-
-TArray<UObject*> FSubsystemTreeCategoryItem::Select(UWorld* InContext) const
-{
-	TArray<UObject*> Result;
-	Data->Select(InContext,Result);
-	return Result;
 }
 
 void FSubsystemTreeCategoryItem::GenerateTooltip(FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
@@ -52,47 +45,52 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 	UClass* const InClass = Instance->GetClass();
 	Class = InClass;
 
-	// save data needed to display so hotreload or other things won't crash editor or disaster happen
-	// maybe let each column allocate some kind of struct to hold it for own usage?
 	DisplayName = InClass->GetDisplayNameText();
 	ClassName = InClass->GetFName();
+
 	Package = InClass->GetOuterUPackage()->GetName();
-	ShortPackage = FPackageName::GetShortName(Package);
-	LongPackage = FString::Printf(TEXT("%s.%s"), *Package, *ClassName.ToString());
+	if (!FSubsystemBrowserUtils::GetModuleDetailsForClass(InClass, ModuleName, bIsGameModuleClass))
+	{
+		ModuleName = FPackageName::GetShortName(Package);
+		bIsGameModuleClass = false;
+	}
+	
+	ScriptName = FString::Printf(TEXT("/Script/%s.%s"), *ModuleName, *ClassName.ToString());
 
 	if (InClass->HasAnyClassFlags(CLASS_Config) && !InClass->ClassConfigName.IsNone())
 	{
 		bConfigExportable = true;
 		bIsDefaultConfig = InClass->HasAnyClassFlags(CLASS_DefaultConfig);
+		bIsGlobalUserConfig = InClass->HasAnyClassFlags(CLASS_GlobalUserConfig);
 		ConfigName = InClass->ClassConfigName;
 	}
 
-	bIsGameModuleClass = FSubsystemBrowserUtils::IsGameModuleClass(InClass);
-
 	FSubsystemBrowserUtils::CollectSourceFiles(InClass, SourceFilePaths);
 
-	if (FSubsystemBrowserModule::OnGetSubsystemOwnerName.IsBound())
-	{
-		OwnerName = FSubsystemBrowserModule::OnGetSubsystemOwnerName.Execute(Instance);
-	}
-	else
-	{
-		OwnerName = FSubsystemBrowserUtils::GetDefaultSubsystemOwnerName(Instance);
-	}
+	OwnerName = FSubsystemBrowserUtils::GetSubsystemOwnerName(Instance);
 
-	TSharedPtr<IPlugin> Plugin = FSubsystemBrowserUtils::GetPluginForClass(InClass);
-	if (Plugin.IsValid())
+	if (FSubsystemBrowserUtils::GetPluginDetailsForClass(InClass, PluginName, PluginDisplayName))
 	{
 		bIsPluginClass = true;
-		PluginName = Plugin->GetName();
-#if UE_VERSION_OLDER_THAN(4, 26, 0)
-		PluginDisplayName = Plugin->GetName();
-#else
-		PluginDisplayName = Plugin->GetFriendlyName();
-#endif
 	}
 
 	PropertyStats = FSubsystemBrowserUtils::GetClassFieldStats(InClass);
+
+	TOptional<FString> UserColorValue = FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBColor);
+	if (UserColorValue.IsSet())
+	{
+		FLinearColor Value(ForceInit);
+		if (Value.InitFromString(*UserColorValue))
+		{
+			UserColor = Value;
+		}
+	}
+
+	TOptional<FString> UserTooltipValue = FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBTooltip);
+	if (UserTooltipValue.IsSet())
+	{
+		UserTooltip = UserTooltipValue;
+	}
 }
 
 bool FSubsystemTreeSubsystemItem::IsSelected() const
@@ -109,7 +107,7 @@ void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuil
 {
 	//TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Path", "Path"), FText::FromString(LongPackage));
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Class", "Class"), FText::FromName(ClassName));
-	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Module", "Module"), FText::FromString(ShortPackage));
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Module", "Module"), FText::FromString(ModuleName));
 	if (IsPluginModule())
 	{
 		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Plugin", "Plugin"), FText::FromString(PluginDisplayName));
@@ -127,6 +125,10 @@ void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuil
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsEditable", "Num Editable Properties"), FText::AsNumber(PropertyStats.NumEditable));
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsConfig", "Num Config Properties"), FText::AsNumber(PropertyStats.NumConfig));
 
+	if (UserTooltip.IsSet())
+	{
+		TooltipBuilder.SetUserTooltip(FText::FromString(UserTooltip.GetValue()));
+	}
 }
 
 void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) const
@@ -184,7 +186,7 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 				{
 					if (Self.IsValid())
 					{
-						FSubsystemBrowserUtils::SetClipboardText(Self.Pin()->ShortPackage);
+						FSubsystemBrowserUtils::SetClipboardText(Self.Pin()->ModuleName);
 					}
 				})
 			)
@@ -198,7 +200,7 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 				{
 					if (Self.IsValid())
 					{
-						FSubsystemBrowserUtils::SetClipboardText(Self.Pin()->LongPackage);
+						FSubsystemBrowserUtils::SetClipboardText(Self.Pin()->ScriptName);
 					}
 				})
 			)

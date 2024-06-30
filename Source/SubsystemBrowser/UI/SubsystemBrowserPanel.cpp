@@ -6,7 +6,6 @@
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
-#include "SubsystemBrowserUtils.h"
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Images/SImage.h"
@@ -1160,6 +1159,15 @@ bool SSubsystemBrowserPanel::HasSelectedSubsystem() const
 
 void SSubsystemBrowserPanel::OnSettingsChanged(FName InPropertyName)
 {
+	if (InPropertyName == NAME_All)
+	{
+		bFullRefresh = true;
+		RefreshView();
+		RefreshColumns();
+		RecreateDetails();
+		return;
+	}
+	
 	if (FProperty* Property = USubsystemBrowserSettings::StaticClass()->FindPropertyByName(InPropertyName))
 	{
 		if (Property->HasMetaData(FSubsystemBrowserConfigMeta::MD_ConfigAffectsView))

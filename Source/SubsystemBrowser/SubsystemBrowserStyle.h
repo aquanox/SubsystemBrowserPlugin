@@ -20,6 +20,10 @@ class FSubsystemBrowserStyle final : public FSlateStyleSet
 public:
 	static const FName StyleName;
 
+	static const FName PanelIconName;
+	static const FName FolderOpenName;
+	static const FName FolderClosedName;
+
 	/** Register style set */
 	static void Register();
 	/** Unregister style set */

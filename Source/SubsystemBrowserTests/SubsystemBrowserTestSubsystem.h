@@ -48,7 +48,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSBTestDynamicMCDelegate);
 /**
  *
  */
-UCLASS(Hidden, Config=Test, DefaultConfig, meta=(Experimental, SBTooltip="SB Tooltip Text", SBColor="ff0000"))
+UCLASS(Abstract, Config=Test, DefaultConfig,
+	meta=(Experimental, SBTooltip="SB Tooltip Text", SBColor="(R=255,G=128,B=0)", SBOwnerName="GetSBOwnerName"))
 class SUBSYSTEMBROWSERTESTS_API USubsystemBrowserTestSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
@@ -57,7 +58,10 @@ public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
-	
+
+	UFUNCTION()
+	FString GetSBOwnerName() const;
+
 	UPROPERTY(BlueprintReadWrite, Category="SubsystemBrowserTest")
 	int32 HiddenBlueprintOnlyProperty;
 	UPROPERTY(Config)

@@ -54,7 +54,7 @@ TSharedPtr<SWidget> FSubsystemDynamicTextColumn::GenerateColumnWidget(TSharedRef
 		[
 			SNew(STextBlock)
 			.Font(this, &FSubsystemDynamicTextColumn::ExtractFont, Item)
-			.ColorAndOpacity(this, &FSubsystemDynamicTextColumn::ExtractColorIfEnabled, Item)
+			.ColorAndOpacity(this, &FSubsystemDynamicTextColumn::ExtractColor, Item)
 			.Text(this, &FSubsystemDynamicTextColumn::ExtractText, Item)
 			.ToolTipText(this, &FSubsystemDynamicTextColumn::ExtractTooltipText, Item)
 			.HighlightText(TableRow->HighlightText)
@@ -68,25 +68,16 @@ FText FSubsystemDynamicTextColumn::ExtractTooltipText(TSharedRef<const ISubsyste
 
 FSlateColor FSubsystemDynamicTextColumn::ExtractColor(TSharedRef<const ISubsystemTreeItem> Item) const
 {
+	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
 	if (Item->IsStale())
 	{
-		return FSlateColor::UseSubduedForeground();
+		return Settings->GetStaleColor();
 	}
-	if (Item->IsGameModule() && !Item->IsSelected())
+	if (Item->IsSelected())
 	{
-		return FLinearColor(0.4f, 0.4f, 1.0f);
+		return Settings->GetSelectedColor();
 	}
-
 	return FSlateColor::UseForeground();
-}
-
-FSlateColor FSubsystemDynamicTextColumn::ExtractColorIfEnabled(TSharedRef<const ISubsystemTreeItem> Item) const
-{
-	if (USubsystemBrowserSettings::Get()->IsColoringEnabled())
-	{
-		return ExtractColor(Item);
-	}
-	return Item->IsStale() ? FSlateColor::UseSubduedForeground() : FSlateColor::UseForeground();
 }
 
 FSlateFontInfo FSubsystemDynamicTextColumn::ExtractFont(TSharedRef<const ISubsystemTreeItem> Item) const

@@ -4,6 +4,7 @@
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserFlags.h"
 #include "SourceCodeNavigation.h"
+#include "SubsystemBrowserSettings.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Engine/LocalPlayer.h"
 #include "Framework/Notifications/NotificationManager.h"
@@ -24,8 +25,36 @@ static FAutoConsoleCommandWithWorldArgsAndOutputDevice CmdPrintPropertyData(
 	FConsoleCommandWithWorldArgsAndOutputDeviceDelegate::CreateStatic(&FSubsystemBrowserUtils::PrintPropertyDetails)
 );
 
-FString FSubsystemBrowserUtils::GetDefaultSubsystemOwnerName(UObject* Instance)
+FString FSubsystemBrowserUtils::GetSubsystemOwnerName(UObject* Instance)
 {
+	// First try searching for user function or 
+	TOptional<FString> UserSource = GetMetadataHierarchical(Instance->GetClass(), FSubsystemBrowserUserMeta::MD_SBOwnerName);
+	if (UserSource.IsSet())
+	{
+		const FName Name ( *UserSource.GetValue() );
+		if (const UFunction* Func = Instance->GetClass()->FindFunctionByName(Name))
+		{
+			if (Func->GetReturnProperty()->IsA(FStrProperty::StaticClass())
+				&& Func->HasAllFunctionFlags(FUNC_Native)
+				&& !Func->HasAnyFunctionFlags(FUNC_Static))
+			{
+				FSubsystemBrowserGetOwnerName Delegate;
+				Delegate.BindUFunction(Instance, Name);
+				return Delegate.Execute();
+			}
+		}
+		else if (const FProperty* Prop = Instance->GetClass()->FindPropertyByName(Name))
+		{
+			if (Prop->IsA(FStrProperty::StaticClass()))
+			{
+				return CastFieldChecked<FStrProperty>(Prop)->GetPropertyValue(Instance);
+			}
+		}
+		
+		UE_LOG(LogSubsystemBrowser, Warning, TEXT("%s specifies OwnerSource %s but it is neither valid function or property"),
+				*GetNameSafe(Instance), *UserSource.GetValue());
+	}
+
 	if (ULocalPlayerSubsystem* PlayerSubsystem = Cast<ULocalPlayerSubsystem>(Instance))
 	{
 		if (ULocalPlayer* LocalPlayer = PlayerSubsystem->GetLocalPlayer<ULocalPlayer>())
@@ -51,56 +80,20 @@ FString FSubsystemBrowserUtils::GetModulePathForClass(UClass* InClass)
 	return ModulePath;
 }
 
-FString FSubsystemBrowserUtils::GetModuleNameForClass(UClass* InClass)
+bool FSubsystemBrowserUtils::GetModuleDetailsForClass(UClass* InClass, FString& OutName, bool& OutGameFlag)
 {
-	FString ModuleName;
-	if (!FSourceCodeNavigation::FindClassModuleName(InClass, ModuleName))
-	{
-		return TEXT("Unknown");
-	}
-	return ModuleName;
-}
-
-TSharedPtr<class IPlugin> FSubsystemBrowserUtils::GetPluginForClass(UClass* InClass)
-{
+	OutName = TEXT("Unknown");
+	OutGameFlag = false;
+	
 	// Find module name from class
 	if( InClass )
 	{
-		UPackage* ClassPackage = InClass->GetOuterUPackage();
-
-		if( ClassPackage )
+		if( UPackage* ClassPackage = InClass->GetOuterUPackage() )
 		{
 			//@Package name transition
 			FName ShortClassPackageName = FPackageName::GetShortFName(ClassPackage->GetFName());
 
-			for (TSharedRef<IPlugin>& Plugin : IPluginManager::Get().GetDiscoveredPlugins())
-			{
-				for (const FModuleDescriptor& ModuleDescriptor : Plugin->GetDescriptor().Modules)
-				{
-					if (ModuleDescriptor.Name == ShortClassPackageName)
-					{
-						return Plugin;
-					}
-				}
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-bool FSubsystemBrowserUtils::IsGameModuleClass(UClass* InClass)
-{
-	bool bResult = false;
-	// Find module name from class
-	if( InClass )
-	{
-		UPackage* ClassPackage = InClass->GetOuterUPackage();
-
-		if( ClassPackage )
-		{
-			//@Package name transition
-			FName ShortClassPackageName = FPackageName::GetShortFName(ClassPackage->GetFName());
+			OutName = ShortClassPackageName.ToString();
 
 			// Is this module loaded?  In many cases, we may not have a loaded module for this class' package,
 			// as it might be statically linked into the executable, etc.
@@ -112,12 +105,51 @@ bool FSubsystemBrowserUtils::IsGameModuleClass(UClass* InClass)
 				FModuleStatus ModuleStatus;
 				if( ensure( FModuleManager::Get().QueryModule( ShortClassPackageName, ModuleStatus ) ) )
 				{
-					bResult = ModuleStatus.bIsGameModule;
+					OutName = ModuleStatus.Name;
+					OutGameFlag = ModuleStatus.bIsGameModule;
+					return true;
+				}
+				else
+				{
+					UE_LOG(LogSubsystemBrowser, Warning, TEXT("Failed to resolve module details of %s: Query Failed"), *ShortClassPackageName.ToString() );
+				}
+			}
+			else
+			{
+				UE_LOG(LogSubsystemBrowser, Warning, TEXT("Failed to resolve module details of %s: Not Loaded Yet"), *ShortClassPackageName.ToString() );
+			}
+		}
+	}
+	return false;
+}
+
+bool FSubsystemBrowserUtils::GetPluginDetailsForClass(UClass* InClass, FString& OutName, FString& OutFriendlyName)
+{
+	if (InClass)
+	{
+		if (UPackage* ClassPackage = InClass->GetOuterUPackage())
+		{
+			FName ShortClassPackageName = FPackageName::GetShortFName(ClassPackage->GetFName());
+
+			for (TSharedRef<IPlugin>& Plugin : IPluginManager::Get().GetDiscoveredPlugins())
+			{
+				for (const FModuleDescriptor& ModuleDescriptor : Plugin->GetDescriptor().Modules)
+				{
+					if (ModuleDescriptor.Name == ShortClassPackageName)
+					{
+						OutName = Plugin->GetName();
+#if UE_VERSION_OLDER_THAN(4, 26, 0)
+						OutFriendlyName = Plugin->GetName();
+#else
+						OutFriendlyName = Plugin->GetFriendlyName();
+#endif
+						return true;
+					}
 				}
 			}
 		}
 	}
-	return bResult;
+	return false;
 }
 
 void FSubsystemBrowserUtils::CollectSourceFiles(UClass* InClass, TArray<FString>& OutSourceFiles)
@@ -187,6 +219,22 @@ FSubsystemBrowserUtils::FClassFieldStats FSubsystemBrowserUtils::GetClassFieldSt
 	return Stats;
 }
 
+TOptional<FString> FSubsystemBrowserUtils::GetMetadataHierarchical(UClass* InClass, FName InKey)
+{
+	UClass* CurrentClass = InClass;
+	while(CurrentClass && CurrentClass != UObject::StaticClass())
+	{
+		if (const FString* Value = CurrentClass->FindMetaData(InKey))
+		{
+			return *Value;
+		}
+		
+		CurrentClass = CurrentClass->GetSuperClass();
+	}
+
+	return TOptional<FString>();
+}
+
 void FSubsystemBrowserUtils::SetClipboardText(const FString& ClipboardText)
 {
 	UE_LOG(LogSubsystemBrowser, Log, TEXT("Clipboard set to:\n%s"), *ClipboardText);
@@ -198,9 +246,11 @@ FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsyst
 {
 	FString ConfigBlock;
 	ConfigBlock.Reserve(256);
-	ConfigBlock += FString::Printf(TEXT("; Should be in Default%s.ini"), *SelectedSubsystem->ConfigName.ToString());
+	ConfigBlock += FString::Printf(TEXT("; Should be in %s%s.ini"),
+		SelectedSubsystem->bIsDefaultConfig ? TEXT("Default") : TEXT(""),
+		*SelectedSubsystem->ConfigName.ToString());
 	ConfigBlock += LINE_TERMINATOR;
-	ConfigBlock += FString::Printf(TEXT("[%s.%s]"), *SelectedSubsystem->Package, *SelectedSubsystem->ClassName.ToString());
+	ConfigBlock += FString::Printf(TEXT("[%s]"), *SelectedSubsystem->ScriptName);
 	ConfigBlock += LINE_TERMINATOR;
 
 	UObject* const Subsystem  = SelectedSubsystem->Subsystem.Get();

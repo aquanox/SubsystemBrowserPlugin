@@ -2,6 +2,7 @@
 
 #include "Model/Column/SubsystemBrowserColumn_Name.h"
 
+#include "SubsystemBrowserSettings.h"
 #include "UI/SubsystemTableItem.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Text/STextBlock.h"
@@ -66,9 +67,16 @@ FText FSubsystemDynamicColumn_Name::ExtractText(TSharedRef<const ISubsystemTreeI
 
 FSlateColor FSubsystemDynamicColumn_Name::ExtractColor(TSharedRef<const ISubsystemTreeItem> Item) const
 {
-	if (Item->IsStale())
+	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+	if (Settings->IsColoringEnabled() && !Item->IsStale() && !Item->IsSelected())
 	{
-		return FSlateColor::UseSubduedForeground();
+		if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
+		{
+			if (SubsystemItem->UserColor.IsSet())
+			{
+				return SubsystemItem->UserColor.GetValue();
+			}
+		}
 	}
 	return Super::ExtractColor(Item);
 }

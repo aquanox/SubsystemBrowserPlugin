@@ -32,15 +32,8 @@ DEFINE_LOG_CATEGORY(LogSubsystemBrowser);
 const FName FSubsystemBrowserModule::SubsystemBrowserTabName = TEXT("SubsystemBrowserTab");
 const FName FSubsystemBrowserModule::SubsystemBrowserContextMenuName = TEXT("SubsystemBrowser.ContextMenu");
 
-FSubsystemBrowserModule::FOnGetSubsystemOwnerName FSubsystemBrowserModule::OnGetSubsystemOwnerName;
 FSubsystemBrowserModule::FOnGenerateTooltip FSubsystemBrowserModule::OnGenerateTooltip;
 FSubsystemBrowserModule::FOnGenerateMenu FSubsystemBrowserModule::OnGenerateContextMenu;
-
-#if SINCE_UE_VERSION(5, 0, 0)
-static const FName PanelIconName(TEXT("Icons.Settings"));
-#else
-static const FName PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
-#endif
 
 void FSubsystemBrowserModule::StartupModule()
 {
@@ -71,7 +64,7 @@ void FSubsystemBrowserModule::StartupModule()
 					.SetDisplayName(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 					.SetTooltipText(LOCTEXT("SubsystemBrowserTooltip", "Open the Subsystem Browser tab."))
 					.SetGroup( WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory() )
-					.SetIcon( FStyleHelper::GetSlateIcon(PanelIconName) );
+					.SetIcon( FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName) );
 			}
 		});
 
@@ -101,7 +94,7 @@ TSharedRef<SDockTab> FSubsystemBrowserModule::HandleTabManagerSpawnTab(const FSp
 {
 	return SNew(SDockTab)
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-		.Icon(FStyleHelper::GetBrush(PanelIconName))
+		.Icon(FStyleHelper::GetBrush(FSubsystemBrowserStyle::PanelIconName))
 #endif
 		.Label(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 	[
