@@ -543,6 +543,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
+#if 0
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("TogglePluginOnly", "Only Plugin Modules"),
 			LOCTEXT("TogglePluginOnly_Tooltip", "Show only subsystems that are within plugins."),
@@ -555,6 +556,20 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
+#endif
+		MenuBuilder.AddMenuEntry(
+			LOCTEXT("ToggleViewableOnly", "Only With Properties"),
+			LOCTEXT("ToggleViewableOnly_Tooltip", "Show only subsystems that have viewable elements."),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleShouldShowOnlyViewable),
+				FCanExecuteAction(),
+				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldShowOnlyViewable)
+			),
+			NAME_None,
+			EUserInterfaceActionType::ToggleButton
+		);
+		
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("ToggleHiddenProps", "Show Hidden Properties"),
 			LOCTEXT("ToggleHiddenProps_Tooltip", "Enforces display of all hidden object properties in details panel."),
@@ -767,6 +782,13 @@ void SSubsystemBrowserPanel::ToggleShouldShowOnlyGame()
 void SSubsystemBrowserPanel::ToggleShouldShowOnlyPlugins()
 {
 	USubsystemBrowserSettings::Get()->ToggleShouldShowOnlyPlugins();
+
+	FullRefresh();
+}
+
+void SSubsystemBrowserPanel::ToggleShouldShowOnlyViewable()
+{
+	USubsystemBrowserSettings::Get()->ToggleShouldShowOnlyViewable();
 
 	FullRefresh();
 }

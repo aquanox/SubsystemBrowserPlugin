@@ -103,6 +103,17 @@ FText FSubsystemTreeSubsystemItem::GetDisplayName() const
 	return DisplayName;
 }
 
+bool FSubsystemTreeSubsystemItem::HasViewableElements() const
+{
+	if (PropertyStats.NumProperties && (PropertyStats.NumEditable || PropertyStats.NumVisible))
+		return true;
+	if (PropertyStats.NumCallable)
+		return true;
+	if (PropertyStats.NumConfig)
+		return true;
+	return false;
+}
+
 void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
 {
 	//TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Path", "Path"), FText::FromString(LongPackage));

@@ -122,6 +122,8 @@ void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemConstPtr Category, 
 				continue;
 			if (Settings->ShouldShowOnlyPlugins() && !Item->IsPluginModule())
 				continue;
+			if (Settings->ShouldShowOnlyViewable() && !Item->HasViewableElements())
+				continue;
 
 			if (!SubsystemTextFilter.IsValid() || SubsystemTextFilter->PassesFilter(*Item))
 			{

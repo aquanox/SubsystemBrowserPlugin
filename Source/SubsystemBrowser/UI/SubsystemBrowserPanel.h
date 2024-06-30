@@ -85,6 +85,7 @@ protected:
 	void ToggleShowHiddenProperties();
 	void ToggleShouldShowOnlyGame();
 	void ToggleShouldShowOnlyPlugins();
+	void ToggleShouldShowOnlyViewable();
 
 	void ShowPluginSettingsTab() const;
 

@@ -40,6 +40,7 @@ struct SUBSYSTEMBROWSER_API ISubsystemTreeItem : public TSharedFromThis<ISubsyst
 	virtual bool IsConfigExportable() const { return false; }
 	virtual bool IsGameModule() const { return false; }
 	virtual bool IsPluginModule() const { return false; }
+	virtual bool HasViewableElements() const { return false; }
 
 	virtual FText GetDisplayName() const = 0;
 
@@ -139,6 +140,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 	bool IsDefaultConfig() const { return bIsDefaultConfig; }
 	virtual bool IsGameModule() const override { return bIsGameModuleClass; }
 	virtual bool IsPluginModule() const override { return bIsPluginClass; }
+	virtual bool HasViewableElements() const override;
 
 	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
 	virtual void GenerateContextMenu(class UToolMenu* MenuBuilder) const override;

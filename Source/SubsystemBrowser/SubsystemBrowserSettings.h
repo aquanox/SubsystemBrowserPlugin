@@ -109,6 +109,10 @@ public:
 	void SetShouldShowOnlyPlugins(bool bNewValue);
 	void ToggleShouldShowOnlyPlugins() { SetShouldShowOnlyPlugins(!bShowOnlyPluginModules); }
 
+	bool ShouldShowOnlyViewable() const { return bShowOnlyWithViewableElements; }
+	void SetShouldShowOnlyViewable(bool bNewValue);
+	void ToggleShouldShowOnlyViewable() { SetShouldShowOnlyViewable(!bShowOnlyWithViewableElements); }
+	
 	int32 GetMaxColumnTogglesToShow() const { return MaxColumnTogglesToShow; }
 	int32 GetMaxCategoryTogglesToShow() const { return MaxCategoryTogglesToShow; }
 
@@ -133,6 +137,10 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
 	bool bShowOnlyPluginModules = false;
 
+	// Should show subsystems that have Edit or Visible properties or callable functions?
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
+	bool bShowOnlyWithViewableElements = false;
+	
 	// Should show hidden properties in Details View?
 	// Enforces display of all hidden object properties in details panel.
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))

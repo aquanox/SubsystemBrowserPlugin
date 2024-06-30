@@ -173,6 +173,12 @@ void USubsystemBrowserSettings::SetShouldShowOnlyPlugins(bool bNewValue)
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowOnlyPluginModules));
 }
 
+void USubsystemBrowserSettings::SetShouldShowOnlyViewable(bool bNewValue)
+{
+	bShowOnlyWithViewableElements = bNewValue;
+	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowOnlyWithViewableElements));
+}
+
 void USubsystemBrowserSettings::SyncColumnSettings()
 {
 	TMap<FName, bool> CurrentSettings;
