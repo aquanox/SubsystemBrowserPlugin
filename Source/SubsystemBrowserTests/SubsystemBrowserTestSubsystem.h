@@ -29,7 +29,7 @@ struct SUBSYSTEMBROWSERTESTS_API FSBDemoStruct
 	ESBDemoEnum Baz = ESBDemoEnum::Alpha;
 };
 
-UCLASS(Hidden, DefaultToInstanced, EditInlineNew)
+UCLASS(DefaultToInstanced, EditInlineNew, meta=(Experimental))
 class SUBSYSTEMBROWSERTESTS_API USBDemoObject : public UObject
 {
 	GENERATED_BODY()

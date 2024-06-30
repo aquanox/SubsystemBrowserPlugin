@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Styling/SlateColor.h"
 #include "SubsystemBrowserSettings.generated.h"
 
 USTRUCT()
@@ -159,7 +160,7 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
 	bool bEnableStaleColor = false;
 	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableStaleColor"))
-	FLinearColor StaleStateColor = FLinearColor(0.4, 0.4, 1.0);
+	FLinearColor StaleStateColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
 	
 	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
 	bool bEnableSelectedColor = false;

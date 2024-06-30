@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Widgets/Views/STableRow.h"
+#include "Widgets/Views/SListView.h" // NoPCH
 #include "Model/SubsystemBrowserDescriptor.h"
 
 class FSubsystemModel;
