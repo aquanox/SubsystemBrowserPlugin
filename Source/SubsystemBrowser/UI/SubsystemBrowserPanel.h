@@ -93,6 +93,7 @@ protected:
 
 	TMap<FSubsystemTreeItemID, bool> GetParentsExpansionState() const;
 	void SetParentsExpansionState(const TMap<FSubsystemTreeItemID, bool>& ExpansionInfo);
+	void ResetParentsExpansionState();
 
 	SubsystemTreeItemPtr GetFirstSelectedItem() const;
 	const FSubsystemTreeSubsystemItem* GetFirstSelectedSubsystem() const;
@@ -169,6 +170,7 @@ private:
 	bool bNeedRefreshDetails = false;
 	bool bUpdatingSelection = false;
 	bool bLoadedExpansionSettings = false;
+	bool bNeedsExpansionSettingsSave = false;
 	bool bNeedListRebuild = true; // needs initial header update to upply config
 	bool bNeedsColumnRefresh = false; // refresh header widgets?
 

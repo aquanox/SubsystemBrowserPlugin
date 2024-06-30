@@ -44,6 +44,7 @@ bool USubsystemBrowserSettings::OnSettingsReset()
 	bShowOnlyPluginModules = false;
 	bShowHiddenProperties = false;
 	bEditAnyProperties = false;
+	bShowOnlyWithViewableElements = false;
 	
 	MaxColumnTogglesToShow = 4;
 	MaxCategoryTogglesToShow = 6;
@@ -100,6 +101,12 @@ void USubsystemBrowserSettings::SetCategoryState(FName Category, bool State)
 {
 	SetConfigFlag(CategoryVisibilityState, Category, State);
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, CategoryVisibilityState));
+}
+
+bool USubsystemBrowserSettings::GetTreeExpansionState(FName Category) const
+{
+	const FSubsystemBrowserConfigItem* bFoundState = TreeExpansionState.FindByKey(Category);
+	return bFoundState ? bFoundState->bValue : true;
 }
 
 void USubsystemBrowserSettings::LoadTreeExpansionStates(TMap<FName, bool>& States)

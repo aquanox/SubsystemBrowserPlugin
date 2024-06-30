@@ -81,6 +81,7 @@ public:
 	bool GetTableColumnState(FName Column) const;
 	void SetTableColumnState(FName Column, bool State);
 
+	bool GetTreeExpansionState(FName Category) const;
 	void LoadTreeExpansionStates(TMap<FName, bool>& States);
 	void SetTreeExpansionStates(const TMap<FName, bool>& States);
 
@@ -190,7 +191,7 @@ protected:
 	TArray<FSubsystemBrowserConfigItem> CategoryVisibilityState;
 
 	// 
-	UPROPERTY(config, EditAnywhere, Category=State, meta=(ConfigAffectsView, TitleProperty="Name"))
+	UPROPERTY(config, VisibleAnywhere, Category=State, meta=(ConfigAffectsView, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> TreeExpansionState;
 
 	//

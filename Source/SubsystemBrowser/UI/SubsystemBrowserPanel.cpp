@@ -318,6 +318,12 @@ void SSubsystemBrowserPanel::Tick(const FGeometry& AllotedGeometry, const double
 		}
 		bNeedRefreshDetails = false;
 	}
+
+	if (bNeedsExpansionSettingsSave)
+	{
+		USubsystemBrowserSettings::Get()->SetTreeExpansionStates(GetParentsExpansionState());
+		bNeedsExpansionSettingsSave = false;
+	}
 }
 
 void SSubsystemBrowserPanel::Populate()
@@ -325,11 +331,6 @@ void SSubsystemBrowserPanel::Populate()
 	TGuardValue<bool> ReentrantGuard(bIsReentrant, true);
 
 	TMap<FSubsystemTreeItemID, bool> ExpansionStateInfo = GetParentsExpansionState();
-	if (!bLoadedExpansionSettings)
-	{// load settings only on first populate
-		USubsystemBrowserSettings::Get()->LoadTreeExpansionStates(ExpansionStateInfo);
-		bLoadedExpansionSettings = true;
-	}
 
 	const FSubsystemTreeItemID SelectedItem = GetFirstSelectedItemId();
 
@@ -342,6 +343,14 @@ void SSubsystemBrowserPanel::Populate()
 		SubsystemModel->GetFilteredCategories(RootTreeItems);
 		for (SubsystemTreeItemPtr Category : RootTreeItems)
 		{
+			if (!bLoadedExpansionSettings || !ExpansionStateInfo.Num())
+			{
+				bool bExpanded = USubsystemBrowserSettings::Get()->GetTreeExpansionState(Category->GetID());
+				
+				Category->bExpanded = bExpanded;
+				ExpansionStateInfo.Add(Category->GetID(), bExpanded);
+			}
+			
 			TreeItemMap.Add(Category->GetID(), Category);
 
 			SubsystemModel->GetFilteredSubsystems(Category, Category->Children);
@@ -374,6 +383,8 @@ void SSubsystemBrowserPanel::Populate()
 	TreeWidget->RequestTreeRefresh();
 
 	bNeedsRefresh = false;
+
+	bLoadedExpansionSettings = true;
 }
 
 void SSubsystemBrowserPanel::EmptyTreeItems()
@@ -732,7 +743,7 @@ void SSubsystemBrowserPanel::OnExpansionChanged(SubsystemTreeItemPtr Item, bool 
 	}
 
 	// Save expansion states
-	USubsystemBrowserSettings::Get()->SetTreeExpansionStates(GetParentsExpansionState());
+	bNeedsExpansionSettingsSave = true;
 
 	RefreshView();
 }
@@ -1124,7 +1135,7 @@ TMap<FSubsystemTreeItemID, bool> SSubsystemBrowserPanel::GetParentsExpansionStat
 
 	for (const auto& Pair : TreeItemMap)
 	{
-		if (Pair.Value->GetChildren().Num() > 0)
+		if (Pair.Value->GetNumChildren() > 0)
 		{
 			ExpansionStates.Add(Pair.Key, Pair.Value->bExpanded);
 		}
@@ -1146,6 +1157,19 @@ void SSubsystemBrowserPanel::SetParentsExpansionState(const TMap<FSubsystemTreeI
 			TreeWidget->SetItemExpansion(Item, bExpanded);
 		}
 	}
+}
+
+void SSubsystemBrowserPanel::ResetParentsExpansionState()
+{
+	for (const auto& Pair : TreeItemMap)
+	{
+		if (Pair.Value->GetNumChildren() > 0)
+		{
+			Pair.Value->bExpanded = true;
+		}
+	}
+
+	bNeedsRefresh = true;
 }
 
 TSharedPtr<SWidget> SSubsystemBrowserPanel::ConstructSubsystemContextMenu()
@@ -1187,6 +1211,7 @@ void SSubsystemBrowserPanel::OnSettingsChanged(FName InPropertyName)
 		RefreshView();
 		RefreshColumns();
 		RecreateDetails();
+		ResetParentsExpansionState();
 		return;
 	}
 	
