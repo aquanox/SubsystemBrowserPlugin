@@ -31,6 +31,24 @@ bool USubsystemBrowserSettings::OnSettingsModified()
 bool USubsystemBrowserSettings::OnSettingsReset()
 {
 	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being reset"));
+
+	CategoryVisibilityState.Empty();
+	TreeExpansionState.Empty();
+	TableColumnVisibilityState.Empty();
+	
+	bShowOnlyGameModules = false;
+	bShowOnlyPluginModules = false;
+	bShowHiddenProperties = false;
+	bEditAnyProperties = false;
+	
+	MaxColumnTogglesToShow = 4;
+	MaxCategoryTogglesToShow = 6;
+	
+	bEnableColoring = false;
+	
+
+	NotifyPropertyChange(NAME_All);
+	
 	return true;
 }
 

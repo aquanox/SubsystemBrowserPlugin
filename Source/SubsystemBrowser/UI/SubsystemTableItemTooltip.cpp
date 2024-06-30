@@ -2,6 +2,7 @@
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserStyle.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 

@@ -58,11 +58,12 @@ void FSubsystemBrowserModule::StartupModule()
 			SettingsObject
 		);
 		SettingsSection->OnSelect().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsSelected);
-		//SettingsSection->OnResetDefaults().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsReset);
+		SettingsSection->OnResetDefaults().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsReset);
 
 		FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-		LevelEditorModule.OnTabManagerChanged().AddLambda([ &LevelEditorModule ]()
+		LevelEditorModule.OnTabManagerChanged().AddLambda([]()
 		{
+			FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 			TSharedPtr<FTabManager> LevelEditorTabManager = LevelEditorModule.GetLevelEditorTabManager();
 			if (LevelEditorTabManager.IsValid())
 			{
@@ -87,8 +88,7 @@ void FSubsystemBrowserModule::ShutdownModule()
 {
 	if (GIsEditor && !IsRunningCommandlet())
 	{
-		FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>(TEXT("LevelEditor"));
-		if (LevelEditorModule)
+		if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>(TEXT("LevelEditor")))
 		{
 			LevelEditorModule->GetLevelEditorTabManager()->UnregisterTabSpawner(SubsystemBrowserTabName);
 		}

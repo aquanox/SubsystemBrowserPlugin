@@ -486,7 +486,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewColumnsGroup", "Columns"));
 	{
-		if (SubsystemModel->GetNumDynamicColumns() > Settings->MaxColumnTogglesToShow)
+		if (SubsystemModel->GetNumDynamicColumns() > Settings->GetMaxColumnTogglesToShow())
 		{
 			MenuBuilder.AddSubMenu(
 				LOCTEXT("ChooseColumnSubMenu", "Choose Columns"),
@@ -503,7 +503,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewCategoryGroup", "Categories"));
 	{
-		if (SubsystemModel->GetNumCategories() > Settings->MaxCategoryTogglesToShow)
+		if (SubsystemModel->GetNumCategories() > Settings->GetMaxCategoryTogglesToShow())
 		{
 			MenuBuilder.AddSubMenu(
 				LOCTEXT("ChooseCategorySubMenu", "Choose Category"),

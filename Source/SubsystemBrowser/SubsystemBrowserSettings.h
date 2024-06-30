@@ -91,6 +91,9 @@ public:
 	void SetShouldShowOnlyPlugins(bool bNewValue);
 	void ToggleShouldShowOnlyPlugins() { SetShouldShowOnlyPlugins(!bShowOnlyPluginModules); }
 
+	int32 GetMaxColumnTogglesToShow() const { return MaxColumnTogglesToShow; }
+	int32 GetMaxCategoryTogglesToShow() const { return MaxCategoryTogglesToShow; }
+
 private:
 
 	template<typename TList, typename TMap>
@@ -104,32 +107,6 @@ private:
 
 protected:
 
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView, TitleProperty="Name"))
-	TArray<FSubsystemBrowserConfigItem> CategoryVisibilityState;
-
-	UPROPERTY(config, /*EditAnywhere, Category=General,*/ meta=(ConfigAffectsView, TitleProperty="Name"))
-	TArray<FSubsystemBrowserConfigItem> TreeExpansionState;
-
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsColumns, TitleProperty="Name"))
-	TArray<FSubsystemBrowserConfigItem> TableColumnVisibilityState;
-
-	UPROPERTY(config, EditAnywhere, Category=General)
-	float HorizontalSeparatorLocation = 0.33f;
-
-	// Should color some data in table?
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
-	bool bEnableColoring = false;
-
-	// Should show hidden properties in Details View?
-	// Enforces display of all hidden object properties in details panel.
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
-	bool bShowHiddenProperties = false;
-
-	// Should force edit all properties in Details View?
-	// Enforces editing of all visible object properties in details panel.
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
-	bool bEditAnyProperties = false;
-
 	// Should show subsystems only from Game Modules?
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
 	bool bShowOnlyGameModules = false;
@@ -138,17 +115,46 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
 	bool bShowOnlyPluginModules = false;
 
-public:
+	// Should show hidden properties in Details View?
+	// Enforces display of all hidden object properties in details panel.
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
+	bool bShowHiddenProperties = false;
+
+	// Should force editing of all properties in Details View?
+	// Enforces editing of all visible object properties in details panel.
+	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
+	bool bEditAnyProperties = false;
+
 	// Maximum number of column toggles to show in menu before folding into submenu
 	// Specify 0 to always fold
-	UPROPERTY(config, EditAnywhere, Category=General)
+	UPROPERTY(config, EditAnywhere, Category=Visuals)
 	int32 MaxColumnTogglesToShow = 4;
 
 	// Maximum number of category toggles to show in menu before folding into submenu
 	// Specify 0 to always fold
-	UPROPERTY(config, EditAnywhere, Category=General)
+	UPROPERTY(config, EditAnywhere, Category=Visuals)
 	int32 MaxCategoryTogglesToShow = 6;
 
+	// Should color some data in table?
+	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(ConfigAffectsView))
+	bool bEnableColoring = false;
+
+	// 
+	UPROPERTY(config, EditAnywhere, Category=State, meta=(ConfigAffectsView, TitleProperty="Name"))
+	TArray<FSubsystemBrowserConfigItem> CategoryVisibilityState;
+
+	// 
+	UPROPERTY(config, EditAnywhere, Category=State, meta=(ConfigAffectsView, TitleProperty="Name"))
+	TArray<FSubsystemBrowserConfigItem> TreeExpansionState;
+
+	//
+	UPROPERTY(config, EditAnywhere, Category=State, meta=(ConfigAffectsColumns, TitleProperty="Name"))
+	TArray<FSubsystemBrowserConfigItem> TableColumnVisibilityState;
+
+	//
+	UPROPERTY(config, EditAnywhere, Category=State)
+	float HorizontalSeparatorLocation = 0.33f;
+	
 private:
 	void NotifyPropertyChange(FName PropertyName);
 
