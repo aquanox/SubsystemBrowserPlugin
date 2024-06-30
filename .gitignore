@@ -76,3 +76,8 @@ DerivedDataCache/*
 # Misc
 Releases/*
 Marketplace/*
+
+# my omnibuild/package scripts
+/BuildScripts/*.bat
+/BuildScripts/*.php
+/BuildScripts/*.U*

@@ -1,0 +1,13 @@
+@echo off
+
+set PLUGIN_PATH="%cd%\..\SubsystemBrowserPlugin.uplugin"
+set RUNUAT_PATH="%EPIC_LIBRARY%\UE_%VERSION%\Engine\Build\BatchFiles\RunUAT.bat"
+set PACKAGE_PATH="%cd%\..\Intermediate\%VERSION%"
+
+set EXTRA_PARAMS= -StrictIncludes
+
+echo.
+echo Compiling for %VERSION%
+echo.
+
+%RUNUAT_PATH% BuildPlugin -Plugin=%PLUGIN_PATH% -Package=%PACKAGE_PATH% -HostPlatforms=Win64 -NoTargetPlatforms %EXTRA_PARAMS%
