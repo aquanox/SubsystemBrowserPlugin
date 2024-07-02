@@ -3,12 +3,18 @@
 #include "Model/SubsystemBrowserCategory.h"
 
 #include "SubsystemBrowserFlags.h"
+#include "Subsystems/Subsystem.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
 FSubsystemCategory::FSubsystemCategory(const FName& Name, const FText& Label, int32 SortOrder)
-	: Name(Name), Label(Label), SortOrder(SortOrder)
+	: Name(Name), SettingsName(Name), Label(Label), SortOrder(SortOrder)
 {
+}
+
+UClass* FSubsystemCategory::GetSubsystemClass() const
+{
+	return USubsystem::StaticClass();
 }
 
 FSimpleSubsystemCategory::FSimpleSubsystemCategory(const FName& Name, const FText& Label, const FEnumSubsystemsDelegate& Selector, int32 SortOrder)

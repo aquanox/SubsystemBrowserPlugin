@@ -6,5 +6,6 @@
 struct FSubsystemCategory_GameInstance : public FSubsystemCategory
 {
 	FSubsystemCategory_GameInstance();
+	virtual UClass* GetSubsystemClass() const override;
 	virtual void Select(UWorld* InContext, TArray<UObject*>& OutData) const override;
 };

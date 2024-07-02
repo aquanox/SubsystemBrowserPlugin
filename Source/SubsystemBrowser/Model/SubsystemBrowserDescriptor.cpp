@@ -54,14 +54,13 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 		ModuleName = FPackageName::GetShortName(Package);
 		bIsGameModuleClass = false;
 	}
-	
+
 	ScriptName = FString::Printf(TEXT("/Script/%s.%s"), *ModuleName, *ClassName.ToString());
 
 	if (InClass->HasAnyClassFlags(CLASS_Config) && !InClass->ClassConfigName.IsNone())
 	{
 		bConfigExportable = true;
 		bIsDefaultConfig = InClass->HasAnyClassFlags(CLASS_DefaultConfig);
-		bIsGlobalUserConfig = InClass->HasAnyClassFlags(CLASS_GlobalUserConfig);
 		ConfigName = InClass->ClassConfigName;
 	}
 
@@ -108,8 +107,6 @@ bool FSubsystemTreeSubsystemItem::HasViewableElements() const
 	if (PropertyStats.NumProperties && (PropertyStats.NumEditable || PropertyStats.NumVisible))
 		return true;
 	if (PropertyStats.NumCallable)
-		return true;
-	if (PropertyStats.NumConfig)
 		return true;
 	return false;
 }
@@ -263,11 +260,11 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 					{
 						if (FSubsystemBrowserUtils::TryUpdateDefaultConfigFile(Self.Pin()->GetObjectForDetails()))
 						{
-							FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Successfully updated defaults"), SNotificationItem::CS_Success);
+							FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowserDefaultsUpdate_Success", "Successfully updated defaults"), SNotificationItem::CS_Success);
 						}
 						else
 						{
-							FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Failed to update defaults"), SNotificationItem::CS_Fail);
+							FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowserDefaultsUpdate_Failed", "Failed to update defaults"), SNotificationItem::CS_Fail);
 						}
 					}
 				}),
@@ -285,7 +282,7 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 					{
 						FString ClipboardText = FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), true);
 						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
-						FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Copied to clipboard"), SNotificationItem::CS_Success);
+						FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowserClipboardCopy_Success", "Copied to clipboard"), SNotificationItem::CS_Success);
 					}
 				}),
 				FCanExecuteAction::CreateSP(this, &FSubsystemTreeSubsystemItem::IsConfigExportable)
@@ -302,7 +299,7 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 					{
 						FString ClipboardText = FSubsystemBrowserUtils::GenerateConfigExport(Self.Pin().Get(), false);
 						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
-						FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowser", "Copied to clipboard"), SNotificationItem::CS_Success);
+						FSubsystemBrowserUtils::ShowBrowserInfoMessage(LOCTEXT("SubsystemBrowserClipboardCopy_Success", "Copied to clipboard"), SNotificationItem::CS_Success);
 					}
 				}),
 				FCanExecuteAction::CreateSP(this, &FSubsystemTreeSubsystemItem::IsConfigExportable)

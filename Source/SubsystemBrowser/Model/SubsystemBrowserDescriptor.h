@@ -121,7 +121,6 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem final : public ISubsyste
 
 	bool							bConfigExportable = false;
 	bool							bIsDefaultConfig = false;
-	bool							bIsGlobalUserConfig = false;
 	bool							bIsGameModuleClass = false;
 	bool							bIsPluginClass = false;
 

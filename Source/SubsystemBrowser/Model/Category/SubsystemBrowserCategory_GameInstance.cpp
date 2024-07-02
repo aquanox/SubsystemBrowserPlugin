@@ -9,8 +9,14 @@
 FSubsystemCategory_GameInstance::FSubsystemCategory_GameInstance()
 {
 	Name = TEXT("GameInstanceCategory");
+	SettingsName = TEXT("GameInstance");
 	Label = NSLOCTEXT("SubsystemBrowser", "SubsystemBrowser_GameInstance", "Game Instance Subsystems");
 	SortOrder = 300;
+}
+
+UClass* FSubsystemCategory_GameInstance::GetSubsystemClass() const
+{
+	return UGameInstanceSubsystem::StaticClass();
 }
 
 void FSubsystemCategory_GameInstance::Select(UWorld* InContext, TArray<UObject*>& OutData) const

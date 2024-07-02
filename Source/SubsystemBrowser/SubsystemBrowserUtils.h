@@ -40,7 +40,11 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 		int32 NumProperties = 0;
 		int32 NumEditable = 0;
 		int32 NumVisible = 0;
+		// number of properties with Config flag
 		int32 NumConfig = 0;
+		// number of properties with Config flag that are Editable
+		int32 NumConfigWithEdit = 0;
+		// number of CallInEditor functions
 		int32 NumCallable = 0;
 	};
 
@@ -48,6 +52,11 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * Collect property display info for tooltip
 	 */
 	static FClassFieldStats GetClassFieldStats(UClass* InClass);
+
+	/**
+	 * Find metadata value in class
+	 */
+	static TOptional<FString> GetMetadataOptional(UClass* InClass, FName InKey);
 
 	/**
 	 * Find metadata value in entire hierarchy of classes
@@ -73,6 +82,14 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * @return
 	 */
 	static FString GenerateConfigExport(const struct FSubsystemTreeSubsystemItem* Item, bool bModifiedOnly);
+
+	/**
+	 *
+	 * @param Item
+	 * @param bModifiedOnly
+	 * @return
+	 */
+	static FString GenerateConfigExport(UObject* Item, bool bModifiedOnly);
 
 	/**
 	 *

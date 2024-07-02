@@ -14,14 +14,14 @@
 const FName FSubsystemBrowserStyle::StyleName("SubsystemBrowserStyle");
 TSharedPtr<FSubsystemBrowserStyle> FSubsystemBrowserStyle::StyleInstance;
 
-#if SINCE_UE_VERSION(5, 0, 0)
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+const FName FSubsystemBrowserStyle::PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
+const FName FSubsystemBrowserStyle::FolderOpenName(TEXT("SceneOutliner.FolderOpen"));
+const FName FSubsystemBrowserStyle::FolderClosedName(TEXT("SceneOutliner.FolderClosed"));
+#else
 const FName FSubsystemBrowserStyle::PanelIconName(TEXT("Icons.Settings"));
 const FName FSubsystemBrowserStyle::FolderOpenName(TEXT("Icons.FolderOpen"));
 const FName FSubsystemBrowserStyle::FolderClosedName(TEXT("Icons.FolderClosed"));
-#else
-const FName FSubsystemBrowserStyle::PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
-const FName FSubsystemBrowserStyle::FolderOpenName(TEXT("WorldBrowser.FolderOpen"));
-const FName FSubsystemBrowserStyle::FolderClosedName(TEXT("WorldBrowser.FolderClosed"));
 #endif
 
 void FSubsystemBrowserStyle::Register()

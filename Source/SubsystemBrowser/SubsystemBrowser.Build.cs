@@ -47,6 +47,7 @@ public class SubsystemBrowser : ModuleRules
 			"WorldBrowser",
 			"LevelEditor",
 			"ToolMenus",
+			"SettingsEditor",
 			"AssetTools",
 			"Projects"
 		});

@@ -2,6 +2,10 @@
 
 #include "SubsystemBrowserTestSubsystem.h"
 
+#include "ISettingsModule.h"
+#include "Modules/ModuleManager.h"
+#include "Misc/EngineVersionComparison.h"
+
 USubsystemBrowserTestSubsystem::USubsystemBrowserTestSubsystem()
 {
 }
@@ -38,4 +42,31 @@ void USubsystemBrowserTestSubsystem::EditorFunction()
 void USubsystemBrowserTestSubsystem::EditorFunctionReset()
 {
 	EditorFunctionCallCounter = 0;
+}
+
+void USubsystemBrowserTestSubsystem::RegisterSettings()
+{
+	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
+
+	SettingsModule.RegisterSettings(TEXT("Subsystem"), TEXT("Sample"),
+		GetClass()->GetFName(),
+		GetClass()->GetDisplayNameText(),
+		INVTEXT("Sample subsystem self-registered"),
+		this);
+}
+
+void USubsystemBrowserTestSubsystem::UnRegisterSettings()
+{
+	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
+
+	SettingsModule.UnregisterSettings(TEXT("Subsystem"), TEXT("Sample"), GetClass()->GetFName());
+}
+
+void USubsystemBrowserTestSubsystem::KillSettings()
+{
+#if UE_VERSION_OLDER_THAN(5,0,0)
+	MarkPendingKill();
+#else
+	MarkAsGarbage();
+#endif
 }

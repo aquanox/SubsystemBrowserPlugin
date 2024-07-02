@@ -16,6 +16,8 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory : public TSharedFromThis<FSubsyst
 {
 	/* Category config identifier */
 	FName Name;
+	/* Category display in Settings */
+	FName SettingsName;
 	/* Category display title */
 	FText Label;
 	/* Sort weight for the category (with 0 being topmost, 1000 bottom last) */
@@ -26,10 +28,15 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory : public TSharedFromThis<FSubsyst
 	virtual ~FSubsystemCategory() = default;
 
 	const FName& GetID() const { return Name; }
+	const FName& GetSettingsName() const { return SettingsName; }
 	const FText& GetDisplayName() const { return Label; }
 	int32 GetSortOrder() const { return SortOrder; }
 
 	virtual bool IsVisibleByDefault() const { return true; }
+	virtual bool IsVisibleInSettings() const { return true; }
+
+	/* Get primary subsystem category class */
+	virtual UClass* GetSubsystemClass() const;
 
 	/* Select subsystems for this category */
 	virtual void Select(UWorld* InContext, TArray<UObject*>& OutData) const = 0;

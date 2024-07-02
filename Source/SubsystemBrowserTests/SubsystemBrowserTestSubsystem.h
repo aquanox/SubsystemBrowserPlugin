@@ -120,6 +120,13 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Tools)
 	int32 EditorFunctionCallCounter = 0;
 
+	UFUNCTION(CallInEditor, Category=Settings)
+	void RegisterSettings();
+	UFUNCTION(CallInEditor, Category=Settings)
+	void UnRegisterSettings();
+	UFUNCTION(CallInEditor, Category=Settings)
+	void KillSettings();
+
 	UPROPERTY(VisibleAnywhere, Category=Delegates)
 	FSBTestDynamicDelegate SingleDelegate;
 	UPROPERTY(VisibleAnywhere, Category=Delegates)

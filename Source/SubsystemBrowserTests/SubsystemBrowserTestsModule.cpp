@@ -6,14 +6,14 @@
 
 void FSubsystemBrowserTestsModule::StartupModule()
 {
-    
+
 }
 
 void FSubsystemBrowserTestsModule::ShutdownModule()
 {
-    
+
 }
 
 #undef LOCTEXT_NAMESPACE
-    
+
 IMPLEMENT_MODULE(FDefaultModuleImpl, SubsystemBrowserTests)

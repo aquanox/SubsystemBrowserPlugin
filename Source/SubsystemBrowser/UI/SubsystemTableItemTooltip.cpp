@@ -103,7 +103,7 @@ TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<S
 				]
 			];
 		}
-		
+
 		if (TooltipBuilder.UserTooltip.IsValid())
 		{
 			OverallTooltipVBox->AddSlot()
@@ -196,7 +196,7 @@ void FSubsystemTableItemTooltipBuilder::AddBox(TSharedRef<SVerticalBox> Target, 
 				.Text(FText::Format(LOCTEXT("SubsystemItemTooltipFormat", "{0}:"), Key))
 				.ColorAndOpacity( bImportant ? ImportantStyle.GetSubduedForegroundColor() : FSlateColor::UseSubduedForeground())
 		]
-		
+
 		+ SHorizontalBox::Slot()
 			.AutoWidth()
 		[
@@ -206,7 +206,7 @@ void FSubsystemTableItemTooltipBuilder::AddBox(TSharedRef<SVerticalBox> Target, 
 				.HighlightText(bHighlightable ? Item->HighlightText : FText())
 				.WrapTextAt(400.0f)
 		]
-		
+
 	];
 }
 

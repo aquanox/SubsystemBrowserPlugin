@@ -14,6 +14,7 @@
 class SComboButton;
 struct FPropertyAndParent;
 class IDetailsView;
+class ITableRow;
 
 /**
  * Subsystem browser tab content widget
@@ -70,24 +71,25 @@ protected:
 	// Tree view
 
 	void SetupColumns(SHeaderRow& HeaderRow);
-	TSharedRef<class ITableRow> GenerateTreeRow(SubsystemTreeItemPtr Item, const TSharedRef<STableViewBase>& OwnerTable);
+	TSharedRef<ITableRow> GenerateTreeRow(SubsystemTreeItemPtr Item, const TSharedRef<STableViewBase>& OwnerTable);
 	void GetChildrenForTree(SubsystemTreeItemPtr Item, TArray<SubsystemTreeItemPtr>& OutChildren);
 	void OnExpansionChanged(SubsystemTreeItemPtr Item, bool bIsItemExpanded);
 	void OnSelectionChanged(const SubsystemTreeItemPtr Item, ESelectInfo::Type SelectInfo);
 	void OnTreeViewMouseButtonDoubleClick(SubsystemTreeItemPtr Item);
 
 	EColumnSortMode::Type GetColumnSortMode(FName ColumnId) const;
-	void OnColumnSortModeChanged( const EColumnSortPriority::Type SortPriority, const FName& ColumnId, const EColumnSortMode::Type InSortMode );
+	void OnColumnSortModeChanged(const EColumnSortPriority::Type SortPriority, const FName& ColumnId, const EColumnSortMode::Type InSortMode);
 	void SortItems(TArray<SubsystemTreeItemPtr>& Items) const;
 
 	void ToggleDisplayColumn(FName ColumnName);
 	void ToggleTableColoring();
-	void ToggleShowHiddenProperties();
+	void ToggleForceHiddenPropertyVisibility();
 	void ToggleShouldShowOnlyGame();
 	void ToggleShouldShowOnlyPlugins();
 	void ToggleShouldShowOnlyViewable();
 
 	void ShowPluginSettingsTab() const;
+	void ShowSubsystemSettingsTab() const;
 
 	// Selection and Expansion
 
@@ -119,9 +121,8 @@ protected:
 	void SetSelectedObject(SubsystemTreeItemPtr Item);
 	void ResetSelectedObject();
 
-	bool IsDetailsPropertyEditingEnabled();
-	bool IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty);
-	bool IsDetailsPropertyVisible(const FPropertyAndParent& InProperty);
+	static bool IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty);
+	static bool IsDetailsPropertyVisible(const FPropertyAndParent& InProperty);
 
 	// Item context menu
 

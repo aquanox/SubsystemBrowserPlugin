@@ -33,7 +33,7 @@ private:
 };
 
 /**
- * 
+ *
  */
 class SUBSYSTEMBROWSER_API FSubsystemTableItemTooltipBuilder
 {
@@ -55,13 +55,13 @@ public:
 
 	void AddPrimary(const FText& Key, const FText& Value, uint32 DisplayFlags = DF_NONE);
 	void EmptyPrimary() { Primary.Reset(); }
-	
+
 	void AddSecondary(const FText& Key, const FText& Value, uint32 DisplayFlags = DF_NONE);
 	void EmptySecondary() { Secondary.Reset(); }
-	
+
 	void SetUserTooltip(const FText& Value);
 	void EmptyUserTooltip() { UserTooltip.Reset(); }
-	
+
 	bool HasAnyData() const;
 
 private:

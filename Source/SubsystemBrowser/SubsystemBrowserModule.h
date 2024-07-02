@@ -7,10 +7,13 @@
 #include "Modules/ModuleManager.h"
 #include "Model/SubsystemBrowserCategory.h" // [no-fwd]
 #include "Model/SubsystemBrowserColumn.h" // [no-fwd]
+#include "SubsystemSettingsManager.h"
 
 class FSpawnTabArgs;
 class USubsystemBrowserSettings;
 class UToolMenu;
+class SDockTab;
+class SWidget;
 struct ISubsystemTreeItem;
 
 class FSubsystemBrowserModule : public IModuleInterface
@@ -18,10 +21,15 @@ class FSubsystemBrowserModule : public IModuleInterface
 public:
 	static const FName SubsystemBrowserTabName;
 	static const FName SubsystemBrowserContextMenuName;
-public:
-	static FSubsystemBrowserModule& Get()
+
+	SUBSYSTEMBROWSER_API static FSubsystemBrowserModule& Get()
 	{
 		return FModuleManager::GetModuleChecked<FSubsystemBrowserModule>(TEXT("SubsystemBrowser"));
+	}
+
+	FSubsystemSettingsManager& GetSettingsManager()
+	{
+		return SettingsManager;
 	}
 
 	virtual void StartupModule() override;
@@ -73,11 +81,6 @@ public:
 	static void AddPermanentColumns(TArray<SubsystemColumnPtr>& Columns);
 
 	/**
-	 * Open editor settings tab with plugin settings pre-selected
-	 */
-	void SummonPluginSettingsTab();
-
-	/**
 	 * Open subsystems tab
 	 */
 	void SummonSubsystemTab();
@@ -97,11 +100,12 @@ public:
 	static SUBSYSTEMBROWSER_API FOnGenerateMenu OnGenerateContextMenu;
 
 private:
-	static TSharedRef<class SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args);
-	static TSharedRef<class SWidget> CreateSubsystemBrowser(const FSpawnTabArgs& Args);
+	/** Handles creating the subsystem browser tab. */
+	TSharedRef<SDockTab> HandleSpawnBrowserTab(const FSpawnTabArgs& Args);
 
-	// Saved instance of Settings section
-	TSharedPtr<class ISettingsSection> SettingsSection;
+	// Settings manager
+	FSubsystemSettingsManager SettingsManager;
+
 	// Instances of subsystem categories
 	TArray<SubsystemCategoryPtr> Categories;
 	// Instances of dynamic subsystem columns
@@ -120,7 +124,7 @@ void FSubsystemBrowserModule::RegisterDynamicColumn(TArgs&&... InArgs)
 	RegisterDynamicColumn(MakeShared<TColumn>(Forward<TArgs>(InArgs)...));
 }
 
-#if UE_BUILD_DEBUG
+#if UE_BUILD_DEBUG || defined(WITH_SB_HOST_PROJECT)
 DECLARE_LOG_CATEGORY_EXTERN(LogSubsystemBrowser, Log, All);
 #else
 DECLARE_LOG_CATEGORY_EXTERN(LogSubsystemBrowser, Log, Warning);

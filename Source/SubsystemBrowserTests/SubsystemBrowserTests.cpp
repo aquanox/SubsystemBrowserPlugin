@@ -8,7 +8,7 @@
 #if 0
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPropertyCountTest, "SubsystemBrowser.Util.PropertyCounter",
-	EAutomationTestFlags::EditorContext | 
+	EAutomationTestFlags::EditorContext |
 	EAutomationTestFlags::ProductFilter);
 
 bool FPropertyCountTest::RunTest(const FString& Parameters)

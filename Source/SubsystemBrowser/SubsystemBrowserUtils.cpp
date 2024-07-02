@@ -17,17 +17,17 @@
 #include "Misc/EngineVersionComparison.h"
 
 static FAutoConsoleCommandWithWorldArgsAndOutputDevice CmdPrintClassData(
-	TEXT("SB.PrintClass"), TEXT("Dump class details"),
+	TEXT("SB.PrintClass"), TEXT("Print class details"),
 	FConsoleCommandWithWorldArgsAndOutputDeviceDelegate::CreateStatic(&FSubsystemBrowserUtils::PrintClassDetails)
 );
 static FAutoConsoleCommandWithWorldArgsAndOutputDevice CmdPrintPropertyData(
-	TEXT("SB.PrintProperty"), TEXT("Dump property details"),
+	TEXT("SB.PrintProperty"), TEXT("Print property details"),
 	FConsoleCommandWithWorldArgsAndOutputDeviceDelegate::CreateStatic(&FSubsystemBrowserUtils::PrintPropertyDetails)
 );
 
 FString FSubsystemBrowserUtils::GetSubsystemOwnerName(UObject* Instance)
 {
-	// First try searching for user function or 
+	// First try searching for user function or
 	TOptional<FString> UserSource = GetMetadataHierarchical(Instance->GetClass(), FSubsystemBrowserUserMeta::MD_SBOwnerName);
 	if (UserSource.IsSet())
 	{
@@ -50,7 +50,7 @@ FString FSubsystemBrowserUtils::GetSubsystemOwnerName(UObject* Instance)
 				return CastFieldChecked<FStrProperty>(Prop)->GetPropertyValue(Instance);
 			}
 		}
-		
+
 		UE_LOG(LogSubsystemBrowser, Warning, TEXT("%s specifies OwnerSource %s but it is neither valid function or property"),
 				*GetNameSafe(Instance), *UserSource.GetValue());
 	}
@@ -84,7 +84,7 @@ bool FSubsystemBrowserUtils::GetModuleDetailsForClass(UClass* InClass, FString& 
 {
 	OutName = TEXT("Unknown");
 	OutGameFlag = false;
-	
+
 	// Find module name from class
 	if( InClass )
 	{
@@ -198,6 +198,10 @@ FSubsystemBrowserUtils::FClassFieldStats FSubsystemBrowserUtils::GetClassFieldSt
 		if (Property->HasAnyPropertyFlags(CPF_Config|CPF_GlobalConfig))
 		{
 			Stats.NumConfig ++;
+			if (Property->HasAnyPropertyFlags(CPF_Edit))
+			{
+				Stats.NumConfigWithEdit ++;
+			}
 		}
 	}
 
@@ -219,6 +223,15 @@ FSubsystemBrowserUtils::FClassFieldStats FSubsystemBrowserUtils::GetClassFieldSt
 	return Stats;
 }
 
+TOptional<FString> FSubsystemBrowserUtils::GetMetadataOptional(UClass* InClass, FName InKey)
+{
+	if (const FString* Value = InClass->FindMetaData(InKey))
+	{
+		return *Value;
+	}
+	return TOptional<FString>();
+}
+
 TOptional<FString> FSubsystemBrowserUtils::GetMetadataHierarchical(UClass* InClass, FName InKey)
 {
 	UClass* CurrentClass = InClass;
@@ -228,7 +241,7 @@ TOptional<FString> FSubsystemBrowserUtils::GetMetadataHierarchical(UClass* InCla
 		{
 			return *Value;
 		}
-		
+
 		CurrentClass = CurrentClass->GetSuperClass();
 	}
 
@@ -244,17 +257,22 @@ void FSubsystemBrowserUtils::SetClipboardText(const FString& ClipboardText)
 
 FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsystemItem* SelectedSubsystem, bool bModifiedOnly)
 {
+	if (SelectedSubsystem->IsStale())
+		return FString();
+
+	return GenerateConfigExport(SelectedSubsystem->GetObjectForDetails(), bModifiedOnly);
+}
+
+FString FSubsystemBrowserUtils::GenerateConfigExport(UObject* Subsystem, bool bModifiedOnly)
+{
+	UClass* const Class = Subsystem->GetClass();
+
 	FString ConfigBlock;
 	ConfigBlock.Reserve(256);
-	ConfigBlock += FString::Printf(TEXT("; Should be in %s%s.ini"),
-		SelectedSubsystem->bIsDefaultConfig ? TEXT("Default") : TEXT(""),
-		*SelectedSubsystem->ConfigName.ToString());
-	ConfigBlock += LINE_TERMINATOR;
-	ConfigBlock += FString::Printf(TEXT("[%s]"), *SelectedSubsystem->ScriptName);
-	ConfigBlock += LINE_TERMINATOR;
+	ConfigBlock += FString::Printf(TEXT("; Should be in %s%s"), *Class->GetConfigName(), LINE_TERMINATOR);
+	ConfigBlock += FString::Printf(TEXT("; or defaults %s%s"), *Class->GetDefaultConfigFilename(), LINE_TERMINATOR);
+	ConfigBlock += FString::Printf(TEXT("[%s.%s]%s"), *Class->GetOuterUPackage()->GetName(), *Class->GetName(), LINE_TERMINATOR);
 
-	UObject* const Subsystem  = SelectedSubsystem->Subsystem.Get();
-	UClass* const Class = SelectedSubsystem->Class.Get();
 	UObject* const SubsystemDefaults  = Class ? Class->GetDefaultObject() : nullptr;
 
 	if (Subsystem && SubsystemDefaults && Class)
@@ -271,9 +289,9 @@ FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsyst
 			{
 				for( int32 Idx=0; Idx<Property->ArrayDim; Idx++ )
 				{
-					uint8* DataPtr      = Property->ContainerPtrToValuePtr           <uint8>((uint8*)Subsystem, Idx);
-					uint8* DefaultValue = Property->ContainerPtrToValuePtrForDefaults<uint8>(Class, (uint8*)SubsystemDefaults, Idx);
-					if (bModifiedOnly == false || !Property->Identical( DataPtr, DefaultValue, PPF_DeepCompareInstances))
+					const uint8* DataPtr = Property->ContainerPtrToValuePtr<uint8>(Subsystem, Idx);
+					const uint8* DefaultValue = Property->ContainerPtrToValuePtrForDefaults<uint8>(Class, SubsystemDefaults, Idx);
+					if (bModifiedOnly == false || !Property->Identical(DataPtr, DefaultValue, PPF_DeepCompareInstances))
 					{
 						ModifiedProperties.Add(Property);
 						break;
@@ -301,8 +319,8 @@ FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsyst
 
 			for( int32 Idx=0; Idx< Property->ArrayDim; Idx++ )
 			{
-				uint8* DataPtr      = Property->ContainerPtrToValuePtr           <uint8>(Subsystem, Idx);
-				uint8* DefaultValue = Property->ContainerPtrToValuePtrForDefaults<uint8>(Class, SubsystemDefaults, Idx);
+				const uint8* DataPtr = Property->ContainerPtrToValuePtr<uint8>(Subsystem, Idx);
+				const uint8* DefaultValue = Property->ContainerPtrToValuePtrForDefaults<uint8>(Class, SubsystemDefaults, Idx);
 
 				FString ExportValue;
 #if UE_VERSION_OLDER_THAN(5,1,0)
@@ -414,7 +432,7 @@ const TMap<EClassFlags, FString>& GetClassFlagsMap()
 		ADD_FLAG(CLASS_ConfigDoNotCheckDefaults);
 		ADD_FLAG(CLASS_NewerVersionExists);
 
-#if SINCE_UE_VERSION(5, 0, 0)
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 		ADD_FLAG(CLASS_Optional);
 		ADD_FLAG(CLASS_ProjectUserConfig);
 		ADD_FLAG(CLASS_NeedsDeferredDependencyLoading);
@@ -502,6 +520,9 @@ void FSubsystemBrowserUtils::PrintClassDetails(const TArray<FString>& InArgs, UW
 		return;
 	}
 
+	InLog.Logf(TEXT("Class: %s"), *Class->GetName());
+	InLog.Logf(TEXT("Class Flags: %s"), *FlagsToString(Class->GetClassFlags(), GetClassFlagsMap()));
+
 	for (TPropertyValueIterator<FProperty> It(Class, Class->GetDefaultObject()); It; ++It)
 	{
 		const FProperty* Property = It->Key;
@@ -510,7 +531,7 @@ void FSubsystemBrowserUtils::PrintClassDetails(const TArray<FString>& InArgs, UW
 	}
 }
 
-void FSubsystemBrowserUtils::PrintPropertyDetails(const TArray< FString >& InArgs, UWorld* InWorld, FOutputDevice& InLog)
+void FSubsystemBrowserUtils::PrintPropertyDetails(const TArray<FString>& InArgs, UWorld* InWorld, FOutputDevice& InLog)
 {
 	if (InArgs.Num() != 2)
 	{

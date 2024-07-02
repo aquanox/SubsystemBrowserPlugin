@@ -29,10 +29,14 @@ struct FSubsystemBrowserUserMeta
 {
 	// Subsystem name color in list
 	static const FName MD_SBColor;
-	// Extra tooltip text when hovering 
+	// Extra tooltip text when hovering
 	static const FName MD_SBTooltip;
 	// Owner name provider function/property name (will be called on subsystem)
 	static const FName MD_SBOwnerName;
+	// Subsystem Settings - Section name override (default is Class::GetDisplayNameText)
+	static const FName MD_SBSection;
+	// Subsystem Settings - Section description override (default is Class::GetTooltipText)
+	static const FName MD_SBSectionDesc;
 };
 
 struct FSubsystemBrowserConfigMeta
@@ -40,6 +44,7 @@ struct FSubsystemBrowserConfigMeta
 	static const FName MD_ConfigAffectsView;
 	static const FName MD_ConfigAffectsColumns;
 	static const FName MD_ConfigAffectsDetails;
+	static const FName MD_ConfigAffectsSettings;
 };
 
 /**
@@ -96,11 +101,15 @@ public:
 	FSlateColor GetStaleColor() const;
 	FSlateColor GetModuleColor(bool bGameModule);
 
-	bool ShouldShowHiddenProperties() const { return bShowHiddenProperties; }
-	void SetShowHiddenProperties(bool bNewValue);
-	void ToggleShouldShowHiddenProperties() { SetShowHiddenProperties(!bShowHiddenProperties); }
+	bool ShouldForceHiddenPropertyVisibility() const { return bForceHiddenPropertyVisibility; }
+	void SetForceHiddenPropertyVisibility(bool bNewValue);
+	void ToggleForceHiddenPropertyVisibility() { SetForceHiddenPropertyVisibility(!bForceHiddenPropertyVisibility); }
+
+	bool ShouldShowAnyProperties() const { return bShowAnyProperties; }
+	bool ShouldShowAnyConfigProperties() const { return bShowAnyConfigProperties; }
 
 	bool ShouldEditAnyProperties() const { return bEditAnyProperties; }
+	bool ShouldEditAnyConfigProperties() const { return bEditAnyConfigProperties; }
 
 	bool ShouldShowOnlyGame() const { return bShowOnlyGameModules; }
 	void SetShouldShowOnlyGame(bool bNewValue);
@@ -113,9 +122,12 @@ public:
 	bool ShouldShowOnlyViewable() const { return bShowOnlyWithViewableElements; }
 	void SetShouldShowOnlyViewable(bool bNewValue);
 	void ToggleShouldShowOnlyViewable() { SetShouldShowOnlyViewable(!bShowOnlyWithViewableElements); }
-	
+
 	int32 GetMaxColumnTogglesToShow() const { return MaxColumnTogglesToShow; }
 	int32 GetMaxCategoryTogglesToShow() const { return MaxCategoryTogglesToShow; }
+
+	bool ShouldUseCustomSettingsWidget() const { return bUseCustomSettingsWidget; }
+	bool ShouldUseCustomPropertyFilter() const { return bUseCustomPropertyFilter; }
 
 private:
 
@@ -131,77 +143,96 @@ private:
 protected:
 
 	// Should show subsystems only from Game Modules?
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bShowOnlyGameModules = false;
 
 	// Should show subsystems only from Plugins?
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bShowOnlyPluginModules = false;
 
 	// Should show subsystems that have Edit or Visible properties or callable functions?
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsView))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bShowOnlyWithViewableElements = false;
-	
-	// Should show hidden properties in Details View?
-	// Enforces display of all hidden object properties in details panel.
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
-	bool bShowHiddenProperties = false;
 
-	// Should force editing of all properties in Details View?
-	// Enforces editing of all visible object properties in details panel.
-	UPROPERTY(config, EditAnywhere, Category=General, meta=(ConfigAffectsDetails))
+	// Enforces display of all hidden object properties in details panel. Results filtered with options below.
+	// WARNING: May be unsafe in some use cases.
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
+	bool bForceHiddenPropertyVisibility = false;
+
+	// Should include properties without Edit specifier
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditCondition="bForceHiddenPropertyVisibility"))
+	bool bShowAnyProperties = false;
+	// Should include properties with Config specifier
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditCondition="bForceHiddenPropertyVisibility"))
+	bool bShowAnyConfigProperties = false;
+
+	// Enforces editing of all object properties in details panel.
+	// WARNING: May be unsafe in some use cases.
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
 	bool bEditAnyProperties = false;
+
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
+	bool bEditAnyConfigProperties = false;
 
 	// Maximum number of column toggles to show in menu before folding into submenu
 	// Specify 0 to always fold
-	UPROPERTY(config, EditAnywhere, Category=Visuals)
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")
 	int32 MaxColumnTogglesToShow = 4;
 
 	// Maximum number of category toggles to show in menu before folding into submenu
 	// Specify 0 to always fold
-	UPROPERTY(config, EditAnywhere, Category=Visuals)
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")
 	int32 MaxCategoryTogglesToShow = 6;
 
 	// Should color some data in table?
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(ConfigAffectsView))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(ConfigAffectsView))
 	bool bEnableColoring = false;
 
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(InlineEditConditionToggle))
 	bool bEnableStaleColor = false;
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableStaleColor"))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableStaleColor"))
 	FLinearColor StaleStateColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
-	
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
+
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(InlineEditConditionToggle))
 	bool bEnableSelectedColor = false;
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableSelectedColor"))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableSelectedColor"))
 	FLinearColor SelectedStateColor = FLinearColor(0.828, 0.364, 0.003, 1.0);
 
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(InlineEditConditionToggle))
 	bool bEnableColoringGameModule = false;
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableColoringGameModule"))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableColoringGameModule"))
 	FLinearColor GameModuleColor = FLinearColor(0.4, 0.4, 1.0, 1.0);
 
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(InlineEditConditionToggle))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(InlineEditConditionToggle))
 	bool bEnableColoringEngineModule = false;
-	UPROPERTY(config, EditAnywhere, Category=Visuals, meta=(EditCondition="bEnableColoringEngineModule"))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableColoringEngineModule"))
 	FLinearColor EngineModuleColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
 
-	// 
-	UPROPERTY(config, EditAnywhere, Category=State, meta=(ConfigAffectsView, TitleProperty="Name"))
+	//
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel State", meta=(ConfigAffectsView, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> CategoryVisibilityState;
 
-	// 
-	UPROPERTY(config, VisibleAnywhere, Category=State, meta=(ConfigAffectsView, TitleProperty="Name"))
+	//
+	UPROPERTY(config, VisibleAnywhere, Category="Browser Panel State", meta=(ConfigAffectsView, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> TreeExpansionState;
 
 	//
-	UPROPERTY(config, EditAnywhere, Category=State, meta=(ConfigAffectsColumns, TitleProperty="Name"))
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel State", meta=(ConfigAffectsColumns, TitleProperty="Name"))
 	TArray<FSubsystemBrowserConfigItem> TableColumnVisibilityState;
 
 	//
-	UPROPERTY(config, EditAnywhere, Category=State)
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel State")
 	float HorizontalSeparatorLocation = 0.33f;
-	
+
+	// Enables use of custom settings widget in Settings panel.
+	// Will enable display of built-in subsystems that are configurable but not editable
+	UPROPERTY(config, EditAnywhere, Category="Settings Panel")
+	bool bUseCustomSettingsWidget = true;
+	// Enables use of custom property filter in Settings panel.
+	// Will display only properties that have Config flag instead of normal "anything editable" behavior
+	UPROPERTY(config, EditAnywhere, Category="Settings Panel")
+	bool bUseCustomPropertyFilter = true;
+
 private:
 	void NotifyPropertyChange(FName PropertyName);
 

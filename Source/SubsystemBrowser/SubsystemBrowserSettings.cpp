@@ -9,10 +9,13 @@ USubsystemBrowserSettings::FSettingChangedEvent USubsystemBrowserSettings::Setti
 const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsView(TEXT("ConfigAffectsView"));
 const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsColumns(TEXT("ConfigAffectsColumns"));
 const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsDetails(TEXT("ConfigAffectsDetails"));
+const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsSettings(TEXT("ConfigAffectsSettings"));
 
 const FName FSubsystemBrowserUserMeta::MD_SBColor(TEXT("SBColor"));
 const FName FSubsystemBrowserUserMeta::MD_SBTooltip(TEXT("SBTooltip"));
 const FName FSubsystemBrowserUserMeta::MD_SBOwnerName(TEXT("SBOwnerName"));
+const FName FSubsystemBrowserUserMeta::MD_SBSection(TEXT("SBSettingsSection"));
+const FName FSubsystemBrowserUserMeta::MD_SBSectionDesc(TEXT("SBSettingsSectionDesc"));
 
 USubsystemBrowserSettings::USubsystemBrowserSettings()
 {
@@ -39,18 +42,18 @@ bool USubsystemBrowserSettings::OnSettingsReset()
 	CategoryVisibilityState.Empty();
 	TreeExpansionState.Empty();
 	TableColumnVisibilityState.Empty();
-	
+
 	bShowOnlyGameModules = false;
 	bShowOnlyPluginModules = false;
-	bShowHiddenProperties = false;
+	bShowAnyProperties = false;
 	bEditAnyProperties = false;
 	bShowOnlyWithViewableElements = false;
-	
+
 	MaxColumnTogglesToShow = 4;
 	MaxCategoryTogglesToShow = 6;
-	
+
 	bEnableColoring = false;
-	
+
 	bEnableStaleColor = false;
 	StaleStateColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
 	bEnableSelectedColor = false;
@@ -62,7 +65,7 @@ bool USubsystemBrowserSettings::OnSettingsReset()
 
 
 	NotifyPropertyChange(NAME_All);
-	
+
 	return true;
 }
 
@@ -162,11 +165,17 @@ FSlateColor USubsystemBrowserSettings::GetModuleColor(bool bGameModule)
 	return FSlateColor::UseForeground();
 }
 
-void USubsystemBrowserSettings::SetShowHiddenProperties(bool bNewValue)
+void USubsystemBrowserSettings::SetForceHiddenPropertyVisibility(bool bNewValue)
 {
-	bShowHiddenProperties = bNewValue;
-	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowHiddenProperties));
+	bForceHiddenPropertyVisibility = bNewValue;
+	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bForceHiddenPropertyVisibility));
 }
+
+//void USubsystemBrowserSettings::SetShowHiddenProperties(bool bNewValue)
+//{
+//	bShowAnyProperties = bNewValue;
+	//NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowAnyProperties));
+//}
 
 void USubsystemBrowserSettings::SetShouldShowOnlyGame(bool bNewValue)
 {

@@ -6,19 +6,19 @@
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
+#include "Components/SlateWrapperTypes.h"
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Views/STableRow.h"
+#include "Widgets/Input/SComboButton.h"
 #include "SlateOptMacros.h"
 #include "ToolMenus.h"
-#include "Components/SlateWrapperTypes.h"
 #include "Editor.h"
 #include "Engine/MemberReference.h"
-#include "HAL/PlatformApplicationMisc.h"
 #include "IDetailsView.h"
 #include "PropertyEditorModule.h"
-#include "Widgets/Input/SComboButton.h"
+#include "HAL/PlatformApplicationMisc.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -30,7 +30,7 @@ SSubsystemBrowserPanel::~SSubsystemBrowserPanel()
 {
 	FEditorDelegates::PostPIEStarted.RemoveAll(this);
 	FEditorDelegates::PrePIEEnded.RemoveAll(this);
-	
+
 	GEngine->OnWorldAdded().RemoveAll(this);
 	GEngine->OnWorldDestroyed().RemoveAll(this);
 }
@@ -346,11 +346,11 @@ void SSubsystemBrowserPanel::Populate()
 			if (!bLoadedExpansionSettings || !ExpansionStateInfo.Num())
 			{
 				bool bExpanded = USubsystemBrowserSettings::Get()->GetTreeExpansionState(Category->GetID());
-				
+
 				Category->bExpanded = bExpanded;
 				ExpansionStateInfo.Add(Category->GetID(), bExpanded);
 			}
-			
+
 			TreeItemMap.Add(Category->GetID(), Category);
 
 			SubsystemModel->GetFilteredSubsystems(Category, Category->Children);
@@ -440,11 +440,11 @@ FText SSubsystemBrowserPanel::GetFilterStatusText() const
 	{
 		if ( FilteredSubsystemsCount == 0)
 		{   // all subsystems were filtered out
-			return FText::Format( LOCTEXT("ShowSubsystemsCounterFmt", "No matching subsystems out of {0} total"), FText::AsNumber( SubsystemTotalCount ) );
+			return FText::Format( LOCTEXT("ShowNoSubsystemsCounterFmt", "No matching subsystems out of {0} total"), FText::AsNumber( SubsystemTotalCount ) );
 		}
 		else
 		{   // got something to display
-			return FText::Format( LOCTEXT("ShowingOnlySomeActorsFmt", "Showing {0} of {1} subsystems"), FText::AsNumber( FilteredSubsystemsCount ), FText::AsNumber( SubsystemTotalCount ) );
+			return FText::Format( LOCTEXT("ShowingOnlySomeSubsystemsFmt", "Showing {0} of {1} subsystems"), FText::AsNumber( FilteredSubsystemsCount ), FText::AsNumber( SubsystemTotalCount ) );
 		}
 	}
 }
@@ -470,10 +470,10 @@ FSlateColor SSubsystemBrowserPanel::GetFilterStatusTextColor() const
 
 void SSubsystemBrowserPanel::BrowserSplitterFinishedResizing()
 {
-#if SINCE_UE_VERSION(5, 0, 0)
-	float NewValue = BrowserSplitter->SlotAt(0).GetSizeValue();
-#else
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
 	float NewValue = BrowserSplitter->SlotAt(0).SizeValue.Get();
+#else
+	float NewValue = BrowserSplitter->SlotAt(0).GetSizeValue();
 #endif
 	USubsystemBrowserSettings::Get()->SetSeparatorLocation(NewValue);
 }
@@ -531,18 +531,6 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewOptionsGroup", "Options"));
 	{
 		MenuBuilder.AddMenuEntry(
-			LOCTEXT("ToggleColoring", "Table Coloring"),
-			LOCTEXT("ToggleColoring_Tooltip", "Toggles coloring in subsystem browser tree."),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleTableColoring),
-				FCanExecuteAction(),
-				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::IsColoringEnabled)
-			),
-			NAME_None,
-			EUserInterfaceActionType::ToggleButton
-		);
-		MenuBuilder.AddMenuEntry(
 			LOCTEXT("ToggleGameOnly", "Only Game Modules"),
 			LOCTEXT("ToggleGameOnly_Tooltip", "Show only subsystems that are within Game Modules."),
 			FSlateIcon(),
@@ -554,20 +542,6 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
-#if 0
-		MenuBuilder.AddMenuEntry(
-			LOCTEXT("TogglePluginOnly", "Only Plugin Modules"),
-			LOCTEXT("TogglePluginOnly_Tooltip", "Show only subsystems that are within plugins."),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleShouldShowOnlyPlugins),
-				FCanExecuteAction(),
-				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldShowOnlyPlugins)
-			),
-			NAME_None,
-			EUserInterfaceActionType::ToggleButton
-		);
-#endif
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("ToggleViewableOnly", "Only With Properties"),
 			LOCTEXT("ToggleViewableOnly_Tooltip", "Show only subsystems that have viewable elements."),
@@ -580,21 +554,30 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
-		
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("ToggleHiddenProps", "Show Hidden Properties"),
 			LOCTEXT("ToggleHiddenProps_Tooltip", "Enforces display of all hidden object properties in details panel."),
 			FSlateIcon(),
 			FUIAction(
-				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleShowHiddenProperties),
+				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleForceHiddenPropertyVisibility),
 				FCanExecuteAction(),
-				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldShowHiddenProperties)
+				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldForceHiddenPropertyVisibility)
 			),
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
 		MenuBuilder.AddMenuEntry(
-			LOCTEXT("OpenSettingsPanel", "All Options"),
+        	LOCTEXT("OpenSubsystemSettingsPanel", "Subsystem Settings"),
+        	LOCTEXT("OpenSubsystemSettingsPanel_Tooltip", "Open subsystem settings panel."),
+        	FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
+        	FUIAction(
+        		FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowSubsystemSettingsTab)
+        	),
+        	NAME_None,
+        	EUserInterfaceActionType::Button
+        );
+		MenuBuilder.AddMenuEntry(
+			LOCTEXT("OpenSettingsPanel", "Browser Settings"),
 			LOCTEXT("OpenSettingsPanel_Tooltip", "Open plugin settings panel."),
 			FStyleHelper::GetSlateIcon("EditorPreferences.TabIcon"),
 			FUIAction(
@@ -775,9 +758,9 @@ void SSubsystemBrowserPanel::ToggleTableColoring()
 	RefreshView();
 }
 
-void SSubsystemBrowserPanel::ToggleShowHiddenProperties()
+void SSubsystemBrowserPanel::ToggleForceHiddenPropertyVisibility()
 {
-	USubsystemBrowserSettings::Get()->ToggleShouldShowHiddenProperties();
+	USubsystemBrowserSettings::Get()->ToggleForceHiddenPropertyVisibility();
 
 	RefreshView();
 	RecreateDetails();
@@ -806,7 +789,12 @@ void SSubsystemBrowserPanel::ToggleShouldShowOnlyViewable()
 
 void SSubsystemBrowserPanel::ShowPluginSettingsTab() const
 {
-	FSubsystemBrowserModule::Get().SummonPluginSettingsTab();
+	FSubsystemBrowserModule::Get().GetSettingsManager().SummonPluginSettingsTab();
+}
+
+void SSubsystemBrowserPanel::ShowSubsystemSettingsTab() const
+{
+	FSubsystemBrowserModule::Get().GetSettingsManager().SummonSubsystemSettingsTab();
 }
 
 void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item, ESelectInfo::Type SelectInfo)
@@ -982,33 +970,30 @@ void SSubsystemBrowserPanel::HandleWorldChange(UWorld* InWorld)
 
 TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
 {
-	bool bShowHidden = USubsystemBrowserSettings::Get()->ShouldShowHiddenProperties();
+	bool bHiddenPropertyVisibility = USubsystemBrowserSettings::Get()->ShouldForceHiddenPropertyVisibility();
 
 	FDetailsViewArgs DetailsViewArgs;
+	DetailsViewArgs.ViewIdentifier = TEXT("SubsystemBrowserDetailsPanel");
 	DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
-	DetailsViewArgs.ViewIdentifier = TEXT("SubsystemBrowserDetailsView");
 	DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Show;
 	DetailsViewArgs.bShowPropertyMatrixButton = false;
 	DetailsViewArgs.bShowAnimatedPropertiesOption = false;
 	DetailsViewArgs.bShowKeyablePropertiesOption = false;
 	DetailsViewArgs.bHideSelectionTip = true;
-	DetailsViewArgs.bAllowFavoriteSystem = false; // no favorites here
+	DetailsViewArgs.bAllowFavoriteSystem = false;
+	DetailsViewArgs.bUpdatesFromSelection = false;
+	DetailsViewArgs.bLockable = false;
+	DetailsViewArgs.bShowOptions = true;
 	// show All properties. possibly apply custom property filter or custom checkbox.
 	// but there is no way to change its value via IDetailsView interface
 	// so show all and filter visibility by IsPropertyVisible
-	DetailsViewArgs.bForceHiddenPropertyVisibility = bShowHidden;
+	DetailsViewArgs.bForceHiddenPropertyVisibility = bHiddenPropertyVisibility;
 
-	FPropertyEditorModule& EditModule = FModuleManager::Get().GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
-	TSharedRef<IDetailsView> DetailViewWidget = EditModule.CreateDetailView( DetailsViewArgs );
+	FPropertyEditorModule& EditModule = FModuleManager::Get().GetModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor"));
+	TSharedRef<IDetailsView> DetailViewWidget = EditModule.CreateDetailView(DetailsViewArgs);
 
-	DetailViewWidget->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyEditingEnabled));
-	DetailViewWidget->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyReadOnly));
-	DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyVisible));
-
-	// DetailViewWidget->SetCustomFilterLabel(LOCTEXT("ShowAllParameters", "Show All Parameters"));
-	// DetailViewWidget->SetCustomFilterDelegate(FSimpleDelegate::CreateSP(this, &SSubsystemBrowserPanel::ToggleShowingOnlyAllowedProperties));
-	// DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateSP(this, &SSubsystemBrowserPanel::GetIsPropertyVisible));
-	// DetailViewWidget->SetIsCustomRowVisibleDelegate(FIsCustomRowVisible::CreateSP(this, &SSubsystemBrowserPanel::GetIsRowVisible));
+	DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemBrowserPanel::IsDetailsPropertyVisible));
+	DetailViewWidget->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateStatic(&SSubsystemBrowserPanel::IsDetailsPropertyReadOnly));
 
 	return DetailViewWidget;
 }
@@ -1057,48 +1042,57 @@ void SSubsystemBrowserPanel::ResetSelectedObject()
 	}
 }
 
-bool SSubsystemBrowserPanel::IsDetailsPropertyEditingEnabled()
+bool SSubsystemBrowserPanel::IsDetailsPropertyVisible(const FPropertyAndParent& InProperty)
 {
-	// Always allow editing
-	return true;
+	const FProperty* Property = InProperty.ParentProperties.Num() > 0 ? InProperty.ParentProperties.Last() : &InProperty.Property;
+
+	// always hide blueprint delegate properties
+	if (Property->IsA(FDelegateProperty::StaticClass()) || Property->IsA(FMulticastDelegateProperty::StaticClass()))
+	{
+		return false;
+	}
+
+	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+	if (Settings->ShouldForceHiddenPropertyVisibility())
+	{
+		// hidden properties filter
+		if (Settings->ShouldShowAnyProperties())
+		{
+			return true;
+		}
+
+		// hidden config properties filter
+		if (Property->HasAnyPropertyFlags(CPF_Config) && Settings->ShouldShowAnyConfigProperties())
+		{
+			return true;
+		}
+	}
+
+	// by default any property with EDIT can be edited
+	return Property->HasAnyPropertyFlags(CPF_Edit);
 }
 
 bool SSubsystemBrowserPanel::IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty)
 {
-	if (USubsystemBrowserSettings::Get()->ShouldEditAnyProperties())
-	{
-		return false;
-	}
-
 	const FProperty* Property = InProperty.ParentProperties.Num() > 0 ? InProperty.ParentProperties.Last() : &InProperty.Property;
 
-	bool bReadOnly = Property->HasAnyPropertyFlags(CPF_EditConst) || !Property->HasAnyPropertyFlags(CPF_Edit);
-
-	if (Property->HasAnyPropertyFlags(CPF_Config))
-	{ // config always editable
-		return false;
-	}
-
-
-
-	return bReadOnly;
-}
-
-bool SSubsystemBrowserPanel::IsDetailsPropertyVisible(const FPropertyAndParent& InProperty)
-{
-	if (USubsystemBrowserSettings::Get()->ShouldShowHiddenProperties())
+	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+	if (Settings->ShouldForceHiddenPropertyVisibility())
 	{
-		return true;
+		if (Settings->ShouldEditAnyProperties())
+		{
+			return false;
+		}
+
+		// allow editing hidden config properties
+		if (Property->HasAnyPropertyFlags(CPF_Config) && Settings->ShouldEditAnyConfigProperties())
+		{
+			return false;
+		}
 	}
 
-	const FProperty* Property = InProperty.ParentProperties.Num() > 0 ? InProperty.ParentProperties.Last() : &InProperty.Property;
-
-	if (CastField<FDelegateProperty>(Property) || CastField<FMulticastDelegateProperty>(Property))
-	{ // hide blueprint delegate properties
-		return false;
-	}
-
-	return true;
+	// by default any property with EditConst or DisableEditOnInstance is readonly (as SS is an instance)
+	return Property->HasAnyPropertyFlags(CPF_EditConst|CPF_DisableEditOnInstance);
 }
 
 SubsystemTreeItemPtr SSubsystemBrowserPanel::GetFirstSelectedItem() const
@@ -1214,7 +1208,7 @@ void SSubsystemBrowserPanel::OnSettingsChanged(FName InPropertyName)
 		ResetParentsExpansionState();
 		return;
 	}
-	
+
 	if (FProperty* Property = USubsystemBrowserSettings::StaticClass()->FindPropertyByName(InPropertyName))
 	{
 		if (Property->HasMetaData(FSubsystemBrowserConfigMeta::MD_ConfigAffectsView))

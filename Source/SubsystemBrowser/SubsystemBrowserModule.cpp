@@ -1,6 +1,7 @@
 // Copyright 2022, Aquanox.
 
 #include "SubsystemBrowserModule.h"
+
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
@@ -15,10 +16,8 @@
 #include "Model/Category/SubsystemBrowserCategory_World.h"
 #include "UI/SubsystemBrowserPanel.h"
 #include "ISettingsModule.h"
-#include "ISettingsSection.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "LevelEditor.h"
-#include "ToolMenu.h"
 #include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
@@ -41,30 +40,20 @@ void FSubsystemBrowserModule::StartupModule()
 	{
 		FSubsystemBrowserStyle::Register();
 
-		USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
-
-		ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
-		SettingsSection = SettingsModule.RegisterSettings(
-			TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"),
-			LOCTEXT("SubsystemBrowserSettingsName", "Subsystem Browser"),
-			LOCTEXT("SubsystemBrowserSettingsDescription", "Settings for Subsystem Browser Plugin"),
-			SettingsObject
-		);
-		SettingsSection->OnSelect().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsSelected);
-		SettingsSection->OnResetDefaults().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsReset);
+		SettingsManager.Register();
 
 		FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-		LevelEditorModule.OnTabManagerChanged().AddLambda([]()
+		LevelEditorModule.OnTabManagerChanged().AddLambda([Module = this]()
 		{
 			FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 			TSharedPtr<FTabManager> LevelEditorTabManager = LevelEditorModule.GetLevelEditorTabManager();
 			if (LevelEditorTabManager.IsValid())
 			{
-				LevelEditorTabManager->RegisterTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateStatic(&FSubsystemBrowserModule::HandleTabManagerSpawnTab))
+				LevelEditorTabManager->RegisterTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(Module, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
 					.SetDisplayName(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 					.SetTooltipText(LOCTEXT("SubsystemBrowserTooltip", "Open the Subsystem Browser tab."))
-					.SetGroup( WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory() )
-					.SetIcon( FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName) );
+					.SetGroup(WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory())
+					.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
 			}
 		});
 
@@ -86,48 +75,34 @@ void FSubsystemBrowserModule::ShutdownModule()
 			LevelEditorModule->GetLevelEditorTabManager()->UnregisterTabSpawner(SubsystemBrowserTabName);
 		}
 
+		SettingsManager.Unregister();
+
 		FSubsystemBrowserStyle::UnRegister();
 	}
 }
 
-TSharedRef<SDockTab> FSubsystemBrowserModule::HandleTabManagerSpawnTab(const FSpawnTabArgs& Args)
+TSharedRef<SDockTab> FSubsystemBrowserModule::HandleSpawnBrowserTab(const FSpawnTabArgs& Args)
 {
+	UWorld* EditorWorld = GEditor ? GEditor->GetEditorWorldContext().World() : nullptr;
+
 	return SNew(SDockTab)
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-		.Icon(FStyleHelper::GetBrush(FSubsystemBrowserStyle::PanelIconName))
-#endif
 		.Label(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
 	[
 		SNew(SBorder)
-		//.Padding(4)
-		.BorderImage( FStyleHelper::GetBrush("ToolPanel.GroupBorder") )
+		.BorderImage( FStyleHelper::GetBrush(TEXT("ToolPanel.GroupBorder")) )
 		[
-			CreateSubsystemBrowser(Args)
+			SNew(SSubsystemBrowserPanel).InWorld(EditorWorld)
 		]
 	];
 }
 
-TSharedRef<SWidget> FSubsystemBrowserModule::CreateSubsystemBrowser(const FSpawnTabArgs& Args)
-{
-	UWorld* EditorWorld = GEditor ? GEditor->GetEditorWorldContext().World() : nullptr;
-	return SNew(SSubsystemBrowserPanel).InWorld(EditorWorld);
-}
-
 void FSubsystemBrowserModule::SummonSubsystemTab()
 {
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-	TSharedPtr<ILevelEditor> LevelEditorInstance = LevelEditorModule.GetLevelEditorInstance().Pin();
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
 	FGlobalTabmanager::Get()->InvokeTab(SubsystemBrowserTabName);
 #else
 	FGlobalTabmanager::Get()->TryInvokeTab(SubsystemBrowserTabName);
 #endif
-}
-
-void FSubsystemBrowserModule::SummonPluginSettingsTab()
-{
-	ISettingsModule& Module = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
-	Module.ShowViewer(TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"));
 }
 
 const TArray<SubsystemCategoryPtr>& FSubsystemBrowserModule::GetCategories() const
@@ -180,6 +155,14 @@ void FSubsystemBrowserModule::RegisterCategory(TSharedRef<FSubsystemCategory> In
 	}
 
 	Categories.Add(InCategory);
+
+	// Sort categories according to their order
+	Categories.Sort([](const SubsystemCategoryPtr& A, const SubsystemCategoryPtr& B)
+	{
+		return A->GetSortOrder() < B->GetSortOrder();
+	});
+
+	SettingsManager.HandleCategoriesChanged();
 }
 
 void FSubsystemBrowserModule::RemoveCategory(FName CategoryName)

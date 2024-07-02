@@ -10,8 +10,14 @@
 FSubsystemCategory_Player::FSubsystemCategory_Player()
 {
 	Name = TEXT("PlayerCategory");
+	SettingsName = TEXT("LocalPlayer");
 	Label = NSLOCTEXT("SubsystemBrowser", "SubsystemBrowser_Player", "Player Subsystems");
 	SortOrder = 500;
+}
+
+UClass* FSubsystemCategory_Player::GetSubsystemClass() const
+{
+	return ULocalPlayerSubsystem::StaticClass();
 }
 
 void FSubsystemCategory_Player::Select(UWorld* InContext, TArray<UObject*>& OutData) const

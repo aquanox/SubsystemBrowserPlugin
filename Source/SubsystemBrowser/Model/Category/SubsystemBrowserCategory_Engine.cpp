@@ -8,8 +8,14 @@
 FSubsystemCategory_Engine::FSubsystemCategory_Engine()
 {
 	Name = TEXT("EngineSubsystemCategory");
+	SettingsName = TEXT("Engine");
 	Label = NSLOCTEXT("SubsystemBrowser", "SubsystemBrowser_Engine", "Engine Subsystems");
 	SortOrder = 100;
+}
+
+UClass* FSubsystemCategory_Engine::GetSubsystemClass() const
+{
+	return UEngineSubsystem::StaticClass();
 }
 
 void FSubsystemCategory_Engine::Select(UWorld* InContext, TArray<UObject*>& OutData) const
