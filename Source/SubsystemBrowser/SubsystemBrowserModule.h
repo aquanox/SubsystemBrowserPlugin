@@ -99,10 +99,14 @@ public:
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateMenu, TSharedRef<const ISubsystemTreeItem>, UToolMenu*);
 	static SUBSYSTEMBROWSER_API FOnGenerateMenu OnGenerateContextMenu;
 
-private:
+protected:
+	/** */
+	void RegisterMenus();
+
 	/** Handles creating the subsystem browser tab. */
 	TSharedRef<SDockTab> HandleSpawnBrowserTab(const FSpawnTabArgs& Args);
 
+private:
 	// Settings manager
 	FSubsystemSettingsManager SettingsManager;
 

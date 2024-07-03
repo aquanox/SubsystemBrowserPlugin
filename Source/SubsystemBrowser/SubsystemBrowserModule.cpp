@@ -40,7 +40,7 @@ void FSubsystemBrowserModule::StartupModule()
 	{
 		FSubsystemBrowserStyle::Register();
 
-		SettingsManager.Register();
+#if !SUBSYSTEM_BROWSER_NOMAD_MODE
 
 		FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 		LevelEditorModule.OnTabManagerChanged().AddLambda([Module = this]()
@@ -57,23 +57,86 @@ void FSubsystemBrowserModule::StartupModule()
 			}
 		});
 
-		// Register tool menu
-		UToolMenus::Get()->RegisterMenu(SubsystemBrowserContextMenuName);
+#else
+
+		FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(this, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
+				.SetDisplayName(LOCTEXT("SubsystemBrowserTitle", "Subsystem Browser"))
+				.SetTooltipText(LOCTEXT("SubsystemBrowserTooltip", "Open the Subsystem Browser tab."))
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				.SetGroup(WorkspaceMenu::GetMenuStructure().GetDeveloperToolsMiscCategory())
+#else
+				.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory())
+#endif
+				.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
+
+#endif
+
+		SettingsManager.Register();
 
 		// Register default columns and categories on startup
 		RegisterDefaultDynamicColumns();
 		RegisterDefaultCategories();
+
+		//
+		UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FSubsystemBrowserModule::RegisterMenus));
 	}
+}
+
+void FSubsystemBrowserModule::RegisterMenus()
+{
+	UToolMenus* const ToolMenus = UToolMenus::Get();
+
+	struct Local
+	{
+		static void OpenSettings()
+		{
+			Get().GetSettingsManager().SummonSubsystemSettingsTab();
+		}
+	};
+
+	ToolMenus->RegisterMenu(SubsystemBrowserContextMenuName);
+
+	{ // Edit -> Configuration menu
+		UToolMenu* Menu = ToolMenus->ExtendMenu(TEXT("MainFrame.MainMenu.Edit"));
+		FToolMenuSection& Section = Menu->FindOrAddSection(TEXT("Configuration"));
+
+		Section.AddMenuEntry(
+			TEXT("SubsystemSettings"),
+			LOCTEXT("SubsystemSettingsMenuLabel", "Subsystem Settings"),
+			LOCTEXT("SubsystemSettingsMenuToolTip", "Change subsystem settings"),
+			FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
+			FUIAction(FExecuteAction::CreateStatic(&Local::OpenSettings))
+		);
+	}
+
+#if !UE_VERSION_OLDER_THAN(5,0,0)
+	{ // Project Quick Settings on right side in UE 5
+		UToolMenu* Menu = ToolMenus->ExtendMenu(TEXT("LevelEditor.LevelEditorToolBar.LevelToolbarQuickSettings"));
+		FToolMenuSection& Section = Menu->FindOrAddSection(TEXT("ProjectSettingsSection"));
+
+		Section.AddMenuEntry(
+			TEXT("SubsystemSettings"),
+			LOCTEXT("SubsystemSettingsMenuLabel", "Subsystem Settings"),
+			LOCTEXT("SubsystemSettingsMenuToolTip", "Change subsystem settings"),
+			FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
+			FUIAction(FExecuteAction::CreateStatic(&Local::OpenSettings))
+		);
+	}
+#endif
 }
 
 void FSubsystemBrowserModule::ShutdownModule()
 {
 	if (GIsEditor && !IsRunningCommandlet())
 	{
+#if !SUBSYSTEM_BROWSER_NOMAD_MODE
 		if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>(TEXT("LevelEditor")))
 		{
 			LevelEditorModule->GetLevelEditorTabManager()->UnregisterTabSpawner(SubsystemBrowserTabName);
 		}
+#else
+		FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SubsystemBrowserTabName);
+#endif
 
 		SettingsManager.Unregister();
 
@@ -87,6 +150,9 @@ TSharedRef<SDockTab> FSubsystemBrowserModule::HandleSpawnBrowserTab(const FSpawn
 
 	return SNew(SDockTab)
 		.Label(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
+#if SUBSYSTEM_BROWSER_NOMAD_MODE
+		.TabRole(ETabRole::NomadTab)
+#endif
 	[
 		SNew(SBorder)
 		.BorderImage( FStyleHelper::GetBrush(TEXT("ToolPanel.GroupBorder")) )

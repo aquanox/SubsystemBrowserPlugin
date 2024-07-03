@@ -12,6 +12,8 @@
 #include "ISettingsEditorModule.h"
 #include "ISettingsEditorModel.h"
 #include "IDetailsView.h"
+#include "WorkspaceMenuStructure.h"
+#include "WorkspaceMenuStructureModule.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Framework/Docking/TabManager.h"
 #include "Modules/ModuleManager.h"
@@ -70,7 +72,13 @@ void FSubsystemSettingsManager::Register()
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SubsystemSettingsTabName, FOnSpawnTab::CreateRaw(this, &FSubsystemSettingsManager::HandleSpawnSettingsTab))
 		.SetDisplayName(LOCTEXT("SubsystemBrowserSettingsTabTitle", "Subsystem Settings"))
-		.SetMenuType(ETabSpawnerMenuType::Hidden)
+		.SetTooltipText(LOCTEXT("SubsystemBrowserSettingsTabTooltip", "Open the Subsystem Settings tab."))
+		.SetMenuType(ETabSpawnerMenuType::Hidden) // Hide for now, got menu extenders to access it plus browser menu
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+		.SetGroup(WorkspaceMenu::GetMenuStructure().GetDeveloperToolsMiscCategory())
+#else
+		.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory())
+#endif
 		.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
 
 	//
@@ -85,6 +93,8 @@ void FSubsystemSettingsManager::Unregister()
 	}
 
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SubsystemSettingsTabName);
+
+	FModuleManager::Get().OnModulesChanged().RemoveAll(this);
 }
 
 void FSubsystemSettingsManager::SummonPluginSettingsTab()
