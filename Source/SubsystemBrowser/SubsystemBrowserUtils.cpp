@@ -16,6 +16,8 @@
 #include "UObject/Package.h"
 #include "Misc/EngineVersionComparison.h"
 
+#define LOCTEXT_NAMESPACE "SubsystemBrowser"
+
 static FAutoConsoleCommandWithWorldArgsAndOutputDevice CmdPrintClassData(
 	TEXT("SB.PrintClass"), TEXT("Print class details"),
 	FConsoleCommandWithWorldArgsAndOutputDeviceDelegate::CreateStatic(&FSubsystemBrowserUtils::PrintClassDetails)
@@ -25,34 +27,65 @@ static FAutoConsoleCommandWithWorldArgsAndOutputDevice CmdPrintPropertyData(
 	FConsoleCommandWithWorldArgsAndOutputDeviceDelegate::CreateStatic(&FSubsystemBrowserUtils::PrintPropertyDetails)
 );
 
-FString FSubsystemBrowserUtils::GetSubsystemOwnerName(UObject* Instance)
+TOptional<FString> FSubsystemBrowserUtils::GetSmartMetaValue(UObject* InObject, const FName& InName, bool bHierarchical, bool bWarn)
 {
-	// First try searching for user function or
-	TOptional<FString> UserSource = GetMetadataHierarchical(Instance->GetClass(), FSubsystemBrowserUserMeta::MD_SBOwnerName);
-	if (UserSource.IsSet())
+	TOptional<FString> UserSource;
+
+	if (bHierarchical)
+		UserSource = GetMetadataHierarchical(InObject->GetClass(), InName);
+	else
+		UserSource = GetMetadataOptional(InObject->GetClass(), InName);
+
+	if (UserSource.IsSet() && FName::IsValidXName(UserSource.GetValue(), INVALID_OBJECTNAME_CHARACTERS))
 	{
 		const FName Name ( *UserSource.GetValue() );
-		if (const UFunction* Func = Instance->GetClass()->FindFunctionByName(Name))
+		if (const UFunction* Func = InObject->GetClass()->FindFunctionByName(Name))
 		{
-			if (Func->GetReturnProperty()->IsA(FStrProperty::StaticClass())
-				&& Func->HasAllFunctionFlags(FUNC_Native)
-				&& !Func->HasAnyFunctionFlags(FUNC_Static))
+			if (Func->HasAllFunctionFlags(FUNC_Native) && !Func->HasAnyFunctionFlags(FUNC_Static) && Func->GetReturnProperty())
 			{
-				FSubsystemBrowserGetOwnerName Delegate;
-				Delegate.BindUFunction(Instance, Name);
-				return Delegate.Execute();
+				if (Func->GetReturnProperty()->IsA(FStrProperty::StaticClass()))
+				{
+					FSubsystemBrowserGetStringProperty Delegate;
+					Delegate.BindUFunction(InObject, Name);
+					return Delegate.Execute();
+				}
+				else if (Func->GetReturnProperty()->IsA(FTextProperty::StaticClass()))
+				{
+					FSubsystemBrowserGetTextProperty Delegate;
+					Delegate.BindUFunction(InObject, Name);
+					return Delegate.Execute().ToString();
+				}
 			}
 		}
-		else if (const FProperty* Prop = Instance->GetClass()->FindPropertyByName(Name))
+		else if (const FProperty* Prop = InObject->GetClass()->FindPropertyByName(Name))
 		{
 			if (Prop->IsA(FStrProperty::StaticClass()))
 			{
-				return CastFieldChecked<FStrProperty>(Prop)->GetPropertyValue(Instance);
+				return CastFieldChecked<FStrProperty>(Prop)->GetPropertyValue(InObject);
+			}
+			else if (Prop->IsA(FTextProperty::StaticClass()))
+			{
+				return CastFieldChecked<FTextProperty>(Prop)->GetPropertyValue(InObject).ToString();
 			}
 		}
 
-		UE_LOG(LogSubsystemBrowser, Warning, TEXT("%s specifies OwnerSource %s but it is neither valid function or property"),
-				*GetNameSafe(Instance), *UserSource.GetValue());
+		if (bWarn)
+		{
+			UE_LOG(LogSubsystemBrowser, Warning, TEXT("%s specifies source %s but it is neither valid function or property"),
+				*GetNameSafe(InObject), *UserSource.GetValue());
+		}
+	}
+
+	return UserSource;
+}
+
+FString FSubsystemBrowserUtils::GetSubsystemOwnerName(UObject* Instance)
+{
+	// First try searching for user function or
+	TOptional<FString> UserSource = GetSmartMetaValue(Instance, FSubsystemBrowserUserMeta::MD_SBOwnerName, true);
+	if (UserSource.IsSet())
+	{
+		return UserSource.GetValue();
 	}
 
 	if (ULocalPlayerSubsystem* PlayerSubsystem = Cast<ULocalPlayerSubsystem>(Instance))
@@ -61,6 +94,10 @@ FString FSubsystemBrowserUtils::GetSubsystemOwnerName(UObject* Instance)
 		{
 			return LocalPlayer->GetName();
 		}
+	}
+	else if (UWorldSubsystem* WorldSubsystem = Cast<UWorldSubsystem>(Instance))
+	{
+		return GetWorldDescription(WorldSubsystem->GetWorld()).ToString();
 	}
 	else if (UObject* Outer = Instance->GetOuter())
 	{
@@ -556,3 +593,57 @@ void FSubsystemBrowserUtils::PrintPropertyDetails(const TArray<FString>& InArgs,
 	InLog.Logf(TEXT("Type: %s"), *Property->GetClass()->GetName());
 	InLog.Logf(TEXT("Flags: %s"), *FlagsToString(Property->GetPropertyFlags(), GetPropertyFlagsMap()));
 }
+
+FText FSubsystemBrowserUtils::GetWorldDescription(const UWorld* World)
+{
+	FText Description;
+	if(World)
+	{
+		FText PostFix;
+		const FWorldContext* WorldContext = nullptr;
+		for (const FWorldContext& Context : GEngine->GetWorldContexts())
+		{
+			if(Context.World() == World)
+			{
+				WorldContext = &Context;
+				break;
+			}
+		}
+
+		if (World->WorldType == EWorldType::PIE)
+		{
+			switch(World->GetNetMode())
+			{
+				case NM_Client:
+					if (WorldContext)
+					{
+						PostFix = FText::Format(LOCTEXT("ClientPostfixFormat", "(Client {0})"), FText::AsNumber(WorldContext->PIEInstance - 1));
+					}
+					else
+					{
+						PostFix = LOCTEXT("ClientPostfix", "(Client)");
+					}
+					break;
+				case NM_DedicatedServer:
+				case NM_ListenServer:
+					PostFix = LOCTEXT("ServerPostfix", "(Server)");
+					break;
+				case NM_Standalone:
+					PostFix = LOCTEXT("PlayInEditorPostfix", "(Play In Editor)");
+					break;
+				default:
+					break;
+			}
+		}
+		else if(World->WorldType == EWorldType::Editor)
+		{
+			PostFix = LOCTEXT("EditorPostfix", "(Editor)");
+		}
+
+		Description = FText::Format(LOCTEXT("WorldFormat", "{0} {1}"), FText::FromString(World->GetFName().GetPlainNameString()), PostFix);
+	}
+
+	return Description;
+}
+
+#undef LOCTEXT_NAMESPACE

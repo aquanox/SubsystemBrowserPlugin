@@ -11,6 +11,17 @@
 struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 {
 	/**
+	 * Get "Smart metadata" property.
+	 *
+	 * Performs a lookup for possible function/property match, if none found uses raw string value.
+	 *
+	 * Functions should be a UFUNCTION() returning FString or FText
+	 * Properties should be a UPROPERTY() of FString or FText type
+	 *
+ 	 */
+	static TOptional<FString> GetSmartMetaValue(UObject* InObject, const FName& InName, bool bHierarchical = false, bool bWarn = false);
+
+	/**
 	 * Get info about subsystem "Owner"
 	 */
 	static FString GetSubsystemOwnerName(UObject* InObject);
@@ -109,4 +120,9 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * Example: `SB.PrintProperty /Script/SubsystemBrowser.SubsystemBrowserTestSubsystem SingleDelegate`
 	 */
 	static void PrintPropertyDetails(const TArray< FString >& InArgs, UWorld* InWorld, FOutputDevice& InLog);
+
+	/**
+	 * Build a text description for a world
+	 */
+	static FText GetWorldDescription(const UWorld* World);
 };

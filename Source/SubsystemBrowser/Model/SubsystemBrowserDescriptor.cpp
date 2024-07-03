@@ -85,7 +85,7 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 		}
 	}
 
-	TOptional<FString> UserTooltipValue = FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBTooltip);
+	TOptional<FString> UserTooltipValue = FSubsystemBrowserUtils::GetSmartMetaValue(Instance, FSubsystemBrowserUserMeta::MD_SBTooltip, true);
 	if (UserTooltipValue.IsSet())
 	{
 		UserTooltip = UserTooltipValue;

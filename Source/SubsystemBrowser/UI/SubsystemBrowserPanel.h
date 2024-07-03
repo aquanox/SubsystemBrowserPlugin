@@ -105,7 +105,6 @@ protected:
 
 	const FSlateBrush* GetWorldsMenuBrush() const;
 	FText GetCurrentWorldText() const;
-	FText GetWorldDescription(const UWorld* World) const;
 	void OnSelectWorld(TWeakObjectPtr<UWorld> InWorld);
 	bool IsWorldChecked(TWeakObjectPtr<UWorld> InWorld);
 	TSharedRef<SWidget> GetWorldsButtonContent();

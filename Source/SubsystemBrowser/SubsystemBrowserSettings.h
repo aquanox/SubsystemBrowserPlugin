@@ -22,8 +22,8 @@ struct FSubsystemBrowserConfigItem
 	bool operator==(const FName& OtherName) const { return Name == OtherName; }
 };
 
-// Dynamic delegate for owner name requesting
-DECLARE_DYNAMIC_DELEGATE_RetVal(FString, FSubsystemBrowserGetOwnerName);
+DECLARE_DYNAMIC_DELEGATE_RetVal(FString, FSubsystemBrowserGetStringProperty);
+DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FSubsystemBrowserGetTextProperty);
 
 struct FSubsystemBrowserUserMeta
 {

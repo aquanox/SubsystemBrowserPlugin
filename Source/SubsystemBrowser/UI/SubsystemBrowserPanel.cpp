@@ -6,6 +6,7 @@
 #include "SubsystemBrowserModule.h"
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
+#include "SubsystemBrowserUtils.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
@@ -821,61 +822,16 @@ const FSlateBrush* SSubsystemBrowserPanel::GetWorldsMenuBrush() const
 
 FText SSubsystemBrowserPanel::GetCurrentWorldText() const
 {
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("World"), GetWorldDescription(SubsystemModel->GetCurrentWorld().Get()));
-	return FText::Format(LOCTEXT("WorldsSelectButton", "World: {World}"), Args);
-}
-
-FText SSubsystemBrowserPanel::GetWorldDescription(const UWorld* World) const
-{
-	FText Description;
-	if(World)
+	if (SubsystemModel->GetCurrentWorld().IsValid())
 	{
-		FText PostFix;
-		const FWorldContext* WorldContext = nullptr;
-		for (const FWorldContext& Context : GEngine->GetWorldContexts())
-		{
-			if(Context.World() == World)
-			{
-				WorldContext = &Context;
-				break;
-			}
-		}
-
-		if (World->WorldType == EWorldType::PIE)
-		{
-			switch(World->GetNetMode())
-			{
-				case NM_Client:
-					if (WorldContext)
-					{
-						PostFix = FText::Format(LOCTEXT("ClientPostfixFormat", "(Client {0})"), FText::AsNumber(WorldContext->PIEInstance - 1));
-					}
-					else
-					{
-						PostFix = LOCTEXT("ClientPostfix", "(Client)");
-					}
-					break;
-				case NM_DedicatedServer:
-				case NM_ListenServer:
-					PostFix = LOCTEXT("ServerPostfix", "(Server)");
-					break;
-				case NM_Standalone:
-					PostFix = LOCTEXT("PlayInEditorPostfix", "(Play In Editor)");
-					break;
-				default:
-					break;
-			}
-		}
-		else if(World->WorldType == EWorldType::Editor)
-		{
-			PostFix = LOCTEXT("EditorPostfix", "(Editor)");
-		}
-
-		Description = FText::Format(LOCTEXT("WorldFormat", "{0} {1}"), FText::FromString(World->GetFName().GetPlainNameString()), PostFix);
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("World"), FSubsystemBrowserUtils::GetWorldDescription(SubsystemModel->GetCurrentWorld().Get()));
+		return FText::Format(LOCTEXT("WorldsSelectButton", "World: {World}"), Args);
 	}
-
-	return Description;
+	else
+	{
+		return LOCTEXT("WorldsSelectButton_Bad", "World: Invalid");
+	}
 }
 
 void SSubsystemBrowserPanel::OnSelectWorld(TWeakObjectPtr<UWorld> InWorld)
@@ -903,7 +859,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetWorldsButtonContent()
 		if (World && (World->WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Editor))
 		{
 			MenuBuilder.AddMenuEntry(
-				GetWorldDescription(World),
+				FSubsystemBrowserUtils::GetWorldDescription(World),
 				LOCTEXT("ChooseWorldToolTip", "Display subsystems for this world."),
 				FSlateIcon(),
 				FUIAction(
