@@ -113,7 +113,10 @@ bool FSubsystemTreeSubsystemItem::HasViewableElements() const
 
 void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
 {
-	//TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Path", "Path"), FText::FromString(LongPackage));
+	if (TooltipBuilder.IsInAdvancedMode())
+	{
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_ScriptName", "Script Name"), FText::FromString(ScriptName));
+	}
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Class", "Class"), FText::FromName(ClassName));
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Module", "Module"), FText::FromString(ModuleName));
 	if (IsPluginModule())
@@ -129,9 +132,13 @@ void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuil
 		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Owner", "Owned by"), FText::FromString(OwnerName));
 	}
 
-	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Props", "Num Properties"), FText::AsNumber(PropertyStats.NumProperties));
-	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsEditable", "Num Editable Properties"), FText::AsNumber(PropertyStats.NumEditable));
-	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsConfig", "Num Config Properties"), FText::AsNumber(PropertyStats.NumConfig));
+	if (TooltipBuilder.IsInAdvancedMode())
+	{
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Props", "Num Properties"), FText::AsNumber(PropertyStats.NumProperties));
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsEditable", "Num Editable Properties"), FText::AsNumber(PropertyStats.NumEditable));
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_PropsConfig", "Num Config Properties"), FText::AsNumber(PropertyStats.NumConfig));
+		TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Funcs", "Num Callables"), FText::AsNumber(PropertyStats.NumCallable));
+	}
 
 	if (UserTooltip.IsSet())
 	{

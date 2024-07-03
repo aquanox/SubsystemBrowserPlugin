@@ -126,6 +126,8 @@ public:
 	int32 GetMaxColumnTogglesToShow() const { return MaxColumnTogglesToShow; }
 	int32 GetMaxCategoryTogglesToShow() const { return MaxCategoryTogglesToShow; }
 
+	bool ShouldShowDetailsTooltips() const { return bShowDetailedTooltips; }
+
 	bool ShouldUseCustomSettingsWidget() const { return bUseCustomSettingsWidget; }
 	bool ShouldUseCustomPropertyFilter() const { return bUseCustomPropertyFilter; }
 
@@ -207,6 +209,10 @@ protected:
 	bool bEnableColoringEngineModule = false;
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableColoringEngineModule"))
 	FLinearColor EngineModuleColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
+
+	// Display additional information in subsystem tooltips
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")
+	bool bShowDetailedTooltips = false;
 
 	//
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel State", meta=(ConfigAffectsView, TitleProperty="Name"))

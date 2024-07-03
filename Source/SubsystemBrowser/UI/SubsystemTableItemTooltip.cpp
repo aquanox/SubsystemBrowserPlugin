@@ -1,6 +1,7 @@
 ﻿#include "UI/SubsystemTableItemTooltip.h"
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserModule.h"
+#include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -173,6 +174,11 @@ void FSubsystemTableItemTooltipBuilder::SetUserTooltip(const FText& Value)
 bool FSubsystemTableItemTooltipBuilder::HasAnyData() const
 {
 	return Primary.IsValid() || Secondary.IsValid() || UserTooltip.IsValid();
+}
+
+bool FSubsystemTableItemTooltipBuilder::IsInAdvancedMode() const
+{
+	return USubsystemBrowserSettings::Get()->ShouldShowDetailsTooltips(); // || IsKeyPressed(LCtrl/LAlt)?
 }
 
 void FSubsystemTableItemTooltipBuilder::AddBox(TSharedRef<SVerticalBox> Target, const FText& Key, const FText& Value, uint32 DisplayFlags)

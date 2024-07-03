@@ -63,7 +63,7 @@ public:
 	void EmptyUserTooltip() { UserTooltip.Reset(); }
 
 	bool HasAnyData() const;
-
+	bool IsInAdvancedMode() const;
 private:
 	void AddBox(TSharedRef<SVerticalBox> Target, const FText& Key, const FText& Value, uint32 DisplayFlags);
 };
