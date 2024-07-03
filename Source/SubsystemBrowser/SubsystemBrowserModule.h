@@ -10,10 +10,8 @@
 #include "SubsystemSettingsManager.h"
 
 class FSpawnTabArgs;
-class USubsystemBrowserSettings;
 class UToolMenu;
 class SDockTab;
-class SWidget;
 struct ISubsystemTreeItem;
 
 class FSubsystemBrowserModule : public IModuleInterface

@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/Optional.h"
+#include "Misc/OutputDevice.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
 /**
