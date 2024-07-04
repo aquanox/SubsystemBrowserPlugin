@@ -50,8 +50,8 @@ void FSubsystemBrowserModule::StartupModule()
 			if (LevelEditorTabManager.IsValid())
 			{
 				LevelEditorTabManager->RegisterTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(Module, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
-					.SetDisplayName(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
-					.SetTooltipText(LOCTEXT("SubsystemBrowserTooltip", "Open the Subsystem Browser tab."))
+					.SetDisplayName(LOCTEXT("SubsystemBrowserTabTitle", "Subsystems"))
+					.SetTooltipText(LOCTEXT("SubsystemBrowserTabTooltip", "Open the Subsystem Browser tab."))
 					.SetGroup(WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory())
 					.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
 			}
@@ -60,8 +60,8 @@ void FSubsystemBrowserModule::StartupModule()
 #else
 
 		FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(this, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
-				.SetDisplayName(LOCTEXT("SubsystemBrowserTitle", "Subsystem Browser"))
-				.SetTooltipText(LOCTEXT("SubsystemBrowserTooltip", "Open the Subsystem Browser tab."))
+				.SetDisplayName(LOCTEXT("SubsystemBrowserNTabTitle", "Subsystem Browser"))
+				.SetTooltipText(LOCTEXT("SubsystemBrowserNTabTooltip", "Open the Subsystem Browser tab."))
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 				.SetGroup(WorkspaceMenu::GetMenuStructure().GetDeveloperToolsMiscCategory())
 #else
