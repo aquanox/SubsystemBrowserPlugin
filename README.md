@@ -12,7 +12,9 @@ Check [Programming Subsystems](https://docs.unrealengine.com/4.27/en-US/Programm
 
 With Subsystems being a great tool, Unreal Engine Editor does not have a default method to visualize them or allow changing their properties at runtime.
 
-The Subsystem Browser Plugin comes to rescue with a dedicated panel displaying active subsystems and enabling viewing and editing of their properties.
+Plugin provides a dedicated Subsystem Browser panel to display active subsystems with property editor.
+
+New Subsystem Settings panel provides an easy way to interact with config properties within Subsystem-derived classes without need to create a standalone UDeveloperSettings class.
 
 ## Key Features
 
@@ -31,6 +33,8 @@ The Subsystem Browser Plugin comes to rescue with a dedicated panel displaying a
  * Support for custom categories: ![Customizing Categories](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Categories)
  * Support for custom table colums: ![Customizing Columns](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Columns)
  * Support for custom tooltips: ![Customizing Tooltips](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Tooltips)
+ * Various ![Metadata Specifiers](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Plugin-Metadata-Specifiers-Reference) for Subsystem classes
+ * Subsystem Settings Panel to interact with config properties.
  
 ## Unreal Engine Versions
 
