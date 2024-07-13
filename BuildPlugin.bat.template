@@ -1,8 +1,8 @@
 @echo off
 
-set PLUGIN_PATH="%cd%\..\SubsystemBrowserPlugin.uplugin"
+set PLUGIN_PATH="%cd%\SubsystemBrowserPlugin.uplugin"
 set RUNUAT_PATH="%EPIC_LIBRARY%\UE_%VERSION%\Engine\Build\BatchFiles\RunUAT.bat"
-set PACKAGE_PATH="%cd%\..\Intermediate\%VERSION%"
+set PACKAGE_PATH="%WORK_TEMP%\SBP_%VERSION%"
 
 set EXTRA_PARAMS= -StrictIncludes
 
