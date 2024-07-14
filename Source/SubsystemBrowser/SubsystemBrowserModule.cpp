@@ -14,6 +14,7 @@
 #include "Model/Category/SubsystemBrowserCategory_GameInstance.h"
 #include "Model/Category/SubsystemBrowserCategory_Player.h"
 #include "Model/Category/SubsystemBrowserCategory_World.h"
+#include "Model/Category/SubsystemBrowserCategory_AudioEngine.h"
 #include "UI/SubsystemBrowserPanel.h"
 #include "ISettingsModule.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -184,6 +185,10 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	RegisterCategory<FSubsystemCategory_World>();
 	// RegisterCategory<FSubsystemCategory_Game>();
 	RegisterCategory<FSubsystemCategory_Player>();
+
+#if UE_VERSION_NEWER_THAN(5, 1, 0)
+	// RegisterCategory<FSubsystemCategory_AudioEngine>();
+#endif
 }
 
 const TArray<SubsystemColumnPtr>& FSubsystemBrowserModule::GetDynamicColumns() const
