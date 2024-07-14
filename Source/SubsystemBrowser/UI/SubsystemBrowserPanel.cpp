@@ -7,6 +7,7 @@
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
 #include "SubsystemBrowserUtils.h"
+#include "SubsystemDetailsCustomizations.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
@@ -966,6 +967,8 @@ TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
 
 	DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemBrowserPanel::IsDetailsPropertyVisible));
 	DetailViewWidget->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateStatic(&SSubsystemBrowserPanel::IsDetailsPropertyReadOnly));
+
+	SBHacks::CustomizeDetailsView(DetailViewWidget);
 
 	return DetailViewWidget;
 }
