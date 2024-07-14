@@ -34,6 +34,7 @@ public class SubsystemBrowserTests : ModuleRules
             "Engine",
             "Slate",
             "SlateCore",
+            "UMG",
             "SubsystemBrowser"
         });
     }

@@ -3,10 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "Engine/DataAsset.h"
+#include "Engine/World.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Blueprint/UserWidget.h"
 #include "SubsystemBrowserTestSubsystem.generated.h"
 
-UENUM(meta=(Experimental))
+class USBDemoObject;
+
+UENUM()
 enum class ESBDemoEnum : uint8
 {
 	Alpha,
@@ -16,7 +22,7 @@ enum class ESBDemoEnum : uint8
 	Epsilon
 };
 
-USTRUCT(meta=(Experimental))
+USTRUCT()
 struct SUBSYSTEMBROWSERTESTS_API FSBDemoStruct
 {
 	GENERATED_BODY()
@@ -29,7 +35,7 @@ struct SUBSYSTEMBROWSERTESTS_API FSBDemoStruct
 	ESBDemoEnum Baz = ESBDemoEnum::Alpha;
 };
 
-UCLASS(DefaultToInstanced, EditInlineNew, meta=(Experimental))
+UCLASS(EditInlineNew)
 class SUBSYSTEMBROWSERTESTS_API USBDemoObject : public UObject
 {
 	GENERATED_BODY()
@@ -40,6 +46,21 @@ public:
 	int32 Bar;
 	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
 	ESBDemoEnum Baz;
+	UPROPERTY(EditAnywhere, Category="SubsystemBrowserTest")
+	FSBDemoStruct Structz;
+	UPROPERTY(EditAnywhere, Instanced, Category="SubsystemBrowserTest")
+	USBDemoObject* Obz = nullptr;
+};
+
+UCLASS()
+class USBDemoWidget : public UUserWidget
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(VisibleAnywhere, meta=(BindWidgetOptional))
+	class UButton* SampleButton;
+	UPROPERTY(VisibleAnywhere, meta=(BindWidgetOptional))
+	class UTextBlock* SampleTextBlock;
 };
 
 DECLARE_DYNAMIC_DELEGATE(FSBTestDynamicDelegate);
@@ -49,7 +70,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSBTestDynamicMCDelegate);
  *
  */
 UCLASS(Abstract, Config=Test, DefaultConfig,
-	meta=(Experimental, SBTooltip="SB Tooltip Text", SBColor="(R=255,G=128,B=0)", SBOwnerName="GetSBOwnerName"))
+	meta=(SBTooltip="SB Tooltip Text", SBColor="(R=255,G=128,B=0)", SBOwnerName="GetSBOwnerName"))
 class SUBSYSTEMBROWSERTESTS_API USubsystemBrowserTestSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
@@ -84,9 +105,9 @@ public:
 	int32 VisibleInstanceOnlyProperty;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=General)
-	TSubclassOf<class AActor> GeneralClassProperty;
+	TSubclassOf<AActor> GeneralClassProperty;
 	UPROPERTY(EditAnywhere, Category=General)
-	TSoftObjectPtr<class ULevel> GeneralAssetProperty;
+	TSoftObjectPtr<UWorld> GeneralAssetProperty;
 	UPROPERTY(EditAnywhere, Instanced, Category=General)
 	USBDemoObject* GeneralInstancedProperty;
 	UPROPERTY(EditAnywhere, Category=General)
@@ -105,9 +126,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category=Config)
 	FString ConfigStringProperty;
 	UPROPERTY(Config, EditAnywhere, Category=Config)
-	TSoftClassPtr<class AActor> ConfigClassProperty;
+	TSoftClassPtr<AActor> ConfigClassProperty;
 	UPROPERTY(Config, EditAnywhere, Category=Config)
-	TSoftObjectPtr<class UDataAsset> ConfigAssetProperty;
+	TSoftObjectPtr<UDataAsset> ConfigAssetProperty;
 	UPROPERTY(Config, EditAnywhere, Category=Config)
 	TArray<FSBDemoStruct> ConfigArrayOfStructsProperty;
 	UPROPERTY(Config, EditAnywhere, Category=Config)
@@ -120,17 +141,44 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Tools)
 	int32 EditorFunctionCallCounter = 0;
 
-	UFUNCTION(CallInEditor, Category=Settings)
-	void RegisterSettings();
-	UFUNCTION(CallInEditor, Category=Settings)
-	void UnRegisterSettings();
-	UFUNCTION(CallInEditor, Category=Settings)
-	void KillSettings();
-
 	UPROPERTY(VisibleAnywhere, Category=Delegates)
 	FSBTestDynamicDelegate SingleDelegate;
 	UPROPERTY(VisibleAnywhere, Category=Delegates)
 	FSBTestDynamicMCDelegate MulticastDelegate;
 	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category=Delegates)
 	FSBTestDynamicMCDelegate MulticastAssignableDelegate;
+
+	UPROPERTY(EditAnywhere, Category=ArrayInt)
+	uint32 ArrayIntegersFillValue = 100;
+	UPROPERTY(VisibleAnywhere, Category=ArrayInt)
+	TArray<int32> ArrayIntegers;
+
+	UFUNCTION(CallInEditor, Category=ArrayInt)
+	void FillArrays();
+	UFUNCTION(CallInEditor, Category=ArrayInt)
+	void EmptyArrays();
+
+	UPROPERTY(EditAnywhere, Category=ArrayObj)
+	uint32 ArrayObjectsFillValue = 1;
+	UPROPERTY(VisibleAnywhere, Category=ArrayObj)
+	USBDemoObject* ChainObjects = nullptr;
+	UPROPERTY(VisibleAnywhere, Category=ArrayObj)
+	TArray<USBDemoObject*> ArrayObjects;
+
+	UFUNCTION(CallInEditor, Category=ArrayObj)
+	void FillArrayObjs();
+	UFUNCTION(CallInEditor, Category=ArrayObj)
+	void EmptyArrayObjs();
+
+	UPROPERTY(EditAnywhere, Category=ArrayWidget)
+	uint32 ArrayWidgetsFillValue = 1;
+	UPROPERTY(VisibleAnywhere, Category=ArrayWidget)
+	TArray<USBDemoWidget*> ArrayWidgets;
+
+	UFUNCTION(CallInEditor, Category=ArrayWidget)
+	void FillArrayWidgets();
+	UFUNCTION(CallInEditor, Category=ArrayWidget)
+	void EmptyArrayWidgets();
 };
+
+

@@ -5,6 +5,8 @@
 #include "ISettingsModule.h"
 #include "Modules/ModuleManager.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Blueprint/UserWidget.h"
+#include "UObject/Package.h"
 
 USubsystemBrowserTestSubsystem::USubsystemBrowserTestSubsystem()
 {
@@ -13,7 +15,7 @@ USubsystemBrowserTestSubsystem::USubsystemBrowserTestSubsystem()
 bool USubsystemBrowserTestSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
 #ifdef WITH_SB_HOST_PROJECT
-	return WITH_SB_HOST_PROJECT && Super::ShouldCreateSubsystem(Outer);
+	return Super::ShouldCreateSubsystem(Outer);
 #else
 	return GetClass() != USubsystemBrowserTestSubsystem::StaticClass() && Super::ShouldCreateSubsystem(Outer);
 #endif
@@ -44,29 +46,46 @@ void USubsystemBrowserTestSubsystem::EditorFunctionReset()
 	EditorFunctionCallCounter = 0;
 }
 
-void USubsystemBrowserTestSubsystem::RegisterSettings()
+void USubsystemBrowserTestSubsystem::FillArrays()
 {
-	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
-
-	SettingsModule.RegisterSettings(TEXT("Subsystem"), TEXT("Sample"),
-		GetClass()->GetFName(),
-		GetClass()->GetDisplayNameText(),
-		INVTEXT("Sample subsystem self-registered"),
-		this);
+	for (uint32 Idx = 0; Idx < ArrayIntegersFillValue; ++Idx)
+	{
+		ArrayIntegers.Add(FMath::RandHelper(100000));
+	}
 }
 
-void USubsystemBrowserTestSubsystem::UnRegisterSettings()
+void USubsystemBrowserTestSubsystem::EmptyArrays()
 {
-	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
-
-	SettingsModule.UnregisterSettings(TEXT("Subsystem"), TEXT("Sample"), GetClass()->GetFName());
+	ArrayIntegers.Empty();
 }
 
-void USubsystemBrowserTestSubsystem::KillSettings()
+void USubsystemBrowserTestSubsystem::FillArrayObjs()
 {
-#if UE_VERSION_OLDER_THAN(5,0,0)
-	MarkPendingKill();
-#else
-	MarkAsGarbage();
-#endif
+	for (uint32 Idx = 0; Idx < ArrayObjectsFillValue; ++Idx)
+	{
+		auto Object = NewObject<USBDemoObject>(GetTransientPackage(), NAME_None, RF_Transient, nullptr);
+		Object->Obz = ChainObjects;
+		ChainObjects = Object;
+
+		ArrayObjects.Add(Object);
+	}
+}
+
+void USubsystemBrowserTestSubsystem::EmptyArrayObjs()
+{
+	ChainObjects = nullptr;
+}
+
+void USubsystemBrowserTestSubsystem::FillArrayWidgets()
+{
+	for (uint32 Idx = 0; Idx < ArrayWidgetsFillValue; ++Idx)
+	{
+		auto Widget = CreateWidget<USBDemoWidget>(GetWorld());
+		ArrayWidgets.Add(Widget);
+	}
+}
+
+void USubsystemBrowserTestSubsystem::EmptyArrayWidgets()
+{
+	ArrayWidgets.Empty();
 }

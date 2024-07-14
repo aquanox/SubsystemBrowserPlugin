@@ -164,6 +164,8 @@ private:
 
 	TSharedPtr<SSubsystemsTreeWidget> TreeWidget;
 
+	TOptional<TWeakObjectPtr<UObject>> PendingSelectionObject;
+
 	bool bIsReentrant = false;
 	bool bFullRefresh = true;
 	bool bNeedsRefresh = true; // needs initial update

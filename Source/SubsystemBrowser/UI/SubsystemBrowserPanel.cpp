@@ -20,6 +20,7 @@
 #include "IDetailsView.h"
 #include "PropertyEditorModule.h"
 #include "HAL/PlatformApplicationMisc.h"
+#include "ProfilingDebugging/CpuProfilerTrace.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -81,10 +82,6 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 	// Build the details viewer
 	DetailsView = CreateDetails();
 	check(DetailsView.IsValid());
-
-	// Context menu
-
-	FOnContextMenuOpening ContextMenuEvent = FOnContextMenuOpening::CreateSP(this, &SSubsystemBrowserPanel::ConstructSubsystemContextMenu);
 
 	// Build the actual subsystem browser view panel
 	ChildSlot
@@ -199,7 +196,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 							.OnSelectionChanged(this, &SSubsystemBrowserPanel::OnSelectionChanged)
 							.OnExpansionChanged(this, &SSubsystemBrowserPanel::OnExpansionChanged)
 							.OnMouseButtonDoubleClick(this, &SSubsystemBrowserPanel::OnTreeViewMouseButtonDoubleClick)
-							.OnContextMenuOpening(ContextMenuEvent)
+							.OnContextMenuOpening(this, &SSubsystemBrowserPanel::ConstructSubsystemContextMenu)
 							.HighlightParentNodesForSelection(true)
 							.ClearSelectionOnClick(true)
 							.HeaderRow(HeaderRowWidget.ToSharedRef())
@@ -282,6 +279,8 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SSubsystemBrowserPanel::Tick(const FGeometry& AllotedGeometry, const double InCurrentTime, const float InDeltaTime)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(SSubsystemBrowserPanel::Tick);
+
 	SCompoundWidget::Tick(AllotedGeometry, InCurrentTime, InDeltaTime);
 
 	if (bNeedsRefresh)
@@ -294,6 +293,8 @@ void SSubsystemBrowserPanel::Tick(const FGeometry& AllotedGeometry, const double
 
 	if (bSortDirty)
 	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(SSubsystemBrowserPanel::RequestTreeRefresh);
+
 		// SortItems(RootTreeItems);
 		for (const auto& Pair : TreeItemMap)
 		{
@@ -307,16 +308,29 @@ void SSubsystemBrowserPanel::Tick(const FGeometry& AllotedGeometry, const double
 
 	if (bNeedsColumnRefresh)
 	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(SSubsystemBrowserPanel::RefreshColumns);
+
 		bNeedsColumnRefresh = false;
 		HeaderRowWidget->RefreshColumns();
 	}
 
-	if (bNeedRefreshDetails)
+	if (bNeedRefreshDetails || PendingSelectionObject.IsSet())
 	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(SSubsystemBrowserPanel::RefreshDetails);
+
 		if (DetailsView.IsValid())
 		{
-			DetailsView->ForceRefresh();
+			if (PendingSelectionObject.IsSet())
+			{
+				DetailsView->SetObject(PendingSelectionObject.GetValue().Get(), true);
+			}
+			else
+			{
+				DetailsView->ForceRefresh();
+			}
 		}
+
+		PendingSelectionObject.Reset();
 		bNeedRefreshDetails = false;
 	}
 
@@ -329,6 +343,8 @@ void SSubsystemBrowserPanel::Tick(const FGeometry& AllotedGeometry, const double
 
 void SSubsystemBrowserPanel::Populate()
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(SSubsystemBrowserPanel::Populate);
+
 	TGuardValue<bool> ReentrantGuard(bIsReentrant, true);
 
 	TMap<FSubsystemTreeItemID, bool> ExpansionStateInfo = GetParentsExpansionState();
@@ -973,6 +989,8 @@ void SSubsystemBrowserPanel::RecreateDetails()
 
 void SSubsystemBrowserPanel::SetSelectedObject(SubsystemTreeItemPtr Item)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(SSubsystemBrowserPanel::SetSelectedObject);
+
 	UObject* InObject = Item.IsValid() ? Item->GetObjectForDetails() : nullptr;
 	UE_LOG(LogSubsystemBrowser, Log, TEXT("Selected object %s"), *GetNameSafe(InObject));
 
@@ -980,20 +998,22 @@ void SSubsystemBrowserPanel::SetSelectedObject(SubsystemTreeItemPtr Item)
 
 	if (DetailsView.IsValid())
 	{
-		DetailsView->SetObject(InObject);
+		PendingSelectionObject = InObject;
 		RefreshDetails();
 	}
 }
 
 void SSubsystemBrowserPanel::ResetSelectedObject()
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(SSubsystemBrowserPanel::ResetSelectedObject);
+
 	UE_LOG(LogSubsystemBrowser, Log, TEXT("Reset selected object"));
 
 	SubsystemModel->NotifySelected(nullptr);
 
 	if (DetailsView.IsValid())
 	{
-		DetailsView->SetObject(nullptr);
+		PendingSelectionObject = nullptr;
 		RefreshDetails();
 	}
 }
