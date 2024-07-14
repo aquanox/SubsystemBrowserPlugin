@@ -57,9 +57,9 @@ class USBDemoWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(VisibleAnywhere, meta=(BindWidgetOptional))
+	UPROPERTY(VisibleAnywhere, meta=(BindWidgetOptional), Category="SubsystemBrowserTest")
 	class UButton* SampleButton;
-	UPROPERTY(VisibleAnywhere, meta=(BindWidgetOptional))
+	UPROPERTY(VisibleAnywhere, meta=(BindWidgetOptional), Category="SubsystemBrowserTest")
 	class UTextBlock* SampleTextBlock;
 };
 

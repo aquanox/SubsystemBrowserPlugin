@@ -15,13 +15,13 @@ static UClass* TryFindClassByName(const FString& ClassName)
 {
 	UClass* ResultClass = nullptr;
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-	if (FPackageName::IsShortPackageName(TargetName))
+	if (FPackageName::IsShortPackageName(ClassName))
 	{
-		ResultClass = FindObject<UClass>(ANY_PACKAGE, *TargetName);
+		ResultClass = FindObject<UClass>(ANY_PACKAGE, *ClassName);
 	}
 	else
 	{
-		ResultClass = FindObject<UClass>(nullptr, *TargetName);
+		ResultClass = FindObject<UClass>(nullptr, *ClassName);
 	}
 #else
 	ResultClass =  UClass::TryFindTypeSlow<UClass>(ClassName, EFindFirstObjectOptions::EnsureIfAmbiguous);
