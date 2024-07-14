@@ -1008,6 +1008,11 @@ bool SSubsystemBrowserPanel::IsDetailsPropertyVisible(const FPropertyAndParent& 
 		return false;
 	}
 
+	if (Property->FindMetaData(FSubsystemBrowserUserMeta::MD_SBHidden) != nullptr)
+	{
+		return false;
+	}
+
 	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
 	if (Settings->ShouldForceHiddenPropertyVisibility())
 	{

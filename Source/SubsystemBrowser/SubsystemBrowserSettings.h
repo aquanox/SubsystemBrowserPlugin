@@ -27,12 +27,14 @@ DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FSubsystemBrowserGetTextProperty);
 
 struct FSubsystemBrowserUserMeta
 {
-	// Subsystem name color in list
+	// Subsystem Browser - Subsystem name color in list
 	static const FName MD_SBColor;
-	// Extra tooltip text when hovering
+	// Subsystem Browser - Extra tooltip text when hovering
 	static const FName MD_SBTooltip;
-	// Owner name provider function/property name (will be called on subsystem)
+	// Subsystem Browser - Owner name provider function/property name (will be called on subsystem)
 	static const FName MD_SBOwnerName;
+	// Subsystem Browser Details - Hide property from display
+	static const FName MD_SBHidden;
 	// Subsystem Settings - Section name override (default is Class::GetDisplayNameText)
 	static const FName MD_SBSection;
 	// Subsystem Settings - Section description override (default is Class::GetTooltipText)

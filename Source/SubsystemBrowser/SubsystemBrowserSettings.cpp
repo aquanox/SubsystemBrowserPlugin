@@ -14,6 +14,7 @@ const FName FSubsystemBrowserConfigMeta::MD_ConfigAffectsSettings(TEXT("ConfigAf
 const FName FSubsystemBrowserUserMeta::MD_SBColor(TEXT("SBColor"));
 const FName FSubsystemBrowserUserMeta::MD_SBTooltip(TEXT("SBTooltip"));
 const FName FSubsystemBrowserUserMeta::MD_SBOwnerName(TEXT("SBOwnerName"));
+const FName FSubsystemBrowserUserMeta::MD_SBHidden(TEXT("SBHidden"));
 const FName FSubsystemBrowserUserMeta::MD_SBSection(TEXT("SBSettingsSection"));
 const FName FSubsystemBrowserUserMeta::MD_SBSectionDesc(TEXT("SBSettingsSectionDesc"));
 
