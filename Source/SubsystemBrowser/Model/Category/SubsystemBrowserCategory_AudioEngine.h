@@ -10,7 +10,7 @@
 /**
  *
  */
-struct FSubsystemCategory_AudioEngine : public FSubsystemCategory
+struct SUBSYSTEMBROWSER_API FSubsystemCategory_AudioEngine : public FSubsystemCategory
 {
 	FSubsystemCategory_AudioEngine();
 	virtual UClass* GetSubsystemClass() const override;

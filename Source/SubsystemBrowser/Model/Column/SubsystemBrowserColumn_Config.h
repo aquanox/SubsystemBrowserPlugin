@@ -7,7 +7,7 @@
 /**
  * "Config" column implementation
  */
-struct FSubsystemDynamicColumn_Config : public FSubsystemDynamicTextColumn
+struct SUBSYSTEMBROWSER_API FSubsystemDynamicColumn_Config : public FSubsystemDynamicTextColumn
 {
 	using Super = FSubsystemDynamicTextColumn;
 

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+class UWorld;
+
 /**
  * Subsystem data provider delegate
  */

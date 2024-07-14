@@ -4,7 +4,7 @@
 
 #include "Model/SubsystemBrowserCategory.h"
 
-struct FSubsystemCategory_Engine : public FSubsystemCategory
+struct SUBSYSTEMBROWSER_API FSubsystemCategory_Engine : public FSubsystemCategory
 {
 	FSubsystemCategory_Engine();
 

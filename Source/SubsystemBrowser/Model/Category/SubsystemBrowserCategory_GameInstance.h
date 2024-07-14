@@ -1,9 +1,10 @@
 ﻿// Copyright 2022, Aquanox.
 
 #pragma once
+
 #include "Model/SubsystemBrowserCategory.h"
 
-struct FSubsystemCategory_GameInstance : public FSubsystemCategory
+struct SUBSYSTEMBROWSER_API FSubsystemCategory_GameInstance : public FSubsystemCategory
 {
 	FSubsystemCategory_GameInstance();
 	virtual UClass* GetSubsystemClass() const override;
