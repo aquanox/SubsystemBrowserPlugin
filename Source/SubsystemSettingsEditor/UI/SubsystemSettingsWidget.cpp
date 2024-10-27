@@ -25,14 +25,6 @@ void SSubsystemSettingsWidget::Construct(const FArguments& InArgs, UObject* InOb
 		InArgs._SectionDisplayName.Get()
 	);
 
-	/*{
-		auto DefaultFile = GetDefaultConfigFilePath();
-		auto TargetFile = GetTargetObjectConfigFilePath();
-		auto ShortFile = FPaths::GetCleanFilename(TargetFile);
-
-		UE_LOG(LogSubsystemBrowser, Log, TEXT("%s: default=%s target=%s short=%s"), *GetNameSafe(InObject), *DefaultFile, *TargetFile, *ShortFile);
-	}*/
-
 	// initialize settings view
 	FDetailsViewArgs DetailsViewArgs;
 	{
@@ -57,12 +49,18 @@ void SSubsystemSettingsWidget::Construct(const FArguments& InArgs, UObject* InOb
 		DetailsViewArgs.bForceHiddenPropertyVisibility = true;
 	}
 
-	SettingsView = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor").CreateDetailView(DetailsViewArgs);
-	if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilter())
 	{
-		SettingsView->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));
+		TSharedRef<IDetailsView> View = FModuleManager::GetModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor")).CreateDetailView(DetailsViewArgs);
+		if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilter())
+		{
+			View->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));
+		}
+		View->SetObject(InObject);
+
+		FSubsystemBrowserModule::CustomizeDetailsView(View, TEXT("SubsystemSettingsPanel"));
+
+		SettingsView = View;
 	}
-	SettingsView->SetObject(InObject);
 
 	ChildSlot
 	.Padding(0, 8, 16, 5)

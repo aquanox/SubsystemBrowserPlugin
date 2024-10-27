@@ -102,7 +102,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * @param bModifiedOnly
 	 * @return
 	 */
-	static FString GenerateConfigExport(UObject* Item, bool bModifiedOnly);
+	static FString GenerateConfigExport(const UObject* Item, bool bModifiedOnly);
 
 	/**
 	 *
@@ -114,17 +114,24 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 *
 	 * Example: `SB.PrintClass /Script/SubsystemBrowser.SubsystemBrowserTestSubsystem`
 	 */
-	static void PrintClassDetails(const TArray< FString >& InArgs, UWorld* InWorld, FOutputDevice& InLog);
+	static void PrintClassDetails(const TArray<FString>& InArgs, UWorld* InWorld, FOutputDevice& InLog);
 
 	/**
 	 * Dump property flags to output
 	 *
 	 * Example: `SB.PrintProperty /Script/SubsystemBrowser.SubsystemBrowserTestSubsystem SingleDelegate`
 	 */
-	static void PrintPropertyDetails(const TArray< FString >& InArgs, UWorld* InWorld, FOutputDevice& InLog);
+	static void PrintPropertyDetails(const TArray<FString>& InArgs, UWorld* InWorld, FOutputDevice& InLog);
 
 	/**
 	 * Build a text description for a world
 	 */
 	static FText GetWorldDescription(const UWorld* World);
+
+	/**
+	 * Locate class by name (engine-independent version)
+	 * @param ClassName class package path to find
+	 * @return found class instance, or null
+	 */
+	static UClass* TryFindClassByName(const FString& ClassName);
 };

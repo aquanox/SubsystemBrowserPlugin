@@ -60,6 +60,8 @@ public:
 
 	void GetFilteredSubsystems(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const;
 
+	/* get total number of subsystems in category */
+	int32 GetNumSubsystemsFromCategory(SubsystemTreeItemConstPtr Category) const;
 	/* get total number of subsystems in visible categories */
 	int32 GetNumSubsystemsFromVisibleCategories() const;
 

@@ -23,6 +23,9 @@
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
+const FName FSubsystemSettingsUserMeta::MD_SBSection(TEXT("SBSettingsSection"));
+const FName FSubsystemSettingsUserMeta::MD_SBSectionDesc(TEXT("SBSettingsSectionDesc"));
+
 const FName FSubsystemSettingsManager::SubsystemSettingsTabName = TEXT("SubsystemSettings");
 
 class SBTrackableDockTab : public SDockTab
@@ -52,22 +55,11 @@ TSharedPtr<T> RecursiveFindWidget(const TSharedRef<SWidget>& InWidget, const FNa
 
 void FSubsystemSettingsManager::Register()
 {
-	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
-
-	// Setup plugin settings panel in Editor Settings
 	USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
-	PluginSettingsSection = SettingsModule.RegisterSettings(
-		TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"),
-		LOCTEXT("SubsystemBrowserSettingsName", "Subsystem Browser"),
-		LOCTEXT("SubsystemBrowserSettingsDescription", "Settings for Subsystem Browser Plugin"),
-		SettingsObject
-	);
-	PluginSettingsSection->OnSelect().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsSelected);
-	PluginSettingsSection->OnResetDefaults().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsReset);
-
 	SettingsObject->OnSettingChanged().AddRaw(this, &FSubsystemSettingsManager::HandleSettingsChanged);
 
 	// Create Subsystem Settings viewer and viewer tab spawner
+	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
 	SettingsModule.RegisterViewer(TEXT("Subsystem"), *this);
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SubsystemSettingsTabName, FOnSpawnTab::CreateRaw(this, &FSubsystemSettingsManager::HandleSpawnSettingsTab))
@@ -95,18 +87,6 @@ void FSubsystemSettingsManager::Unregister()
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SubsystemSettingsTabName);
 
 	FModuleManager::Get().OnModulesChanged().RemoveAll(this);
-}
-
-void FSubsystemSettingsManager::SummonPluginSettingsTab()
-{
-	ISettingsModule& Module = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
-    Module.ShowViewer(TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"));
-}
-
-void FSubsystemSettingsManager::SummonSubsystemSettingsTab()
-{
-	ISettingsModule& Module = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
-	Module.ShowViewer(TEXT("Subsystem"), TEXT(""), TEXT(""));
 }
 
 void FSubsystemSettingsManager::ShowSettings(const FName& CategoryName, const FName& SectionName)
@@ -207,15 +187,17 @@ void FSubsystemSettingsManager::RegisterDiscoveredSubsystems(ISettingsModule& Se
 
 		for (UObject* Subsystem : ObjectArray)
 		{
+			UClass* SSClass = Subsystem->GetClass();
+
 			if (!Subsystem->HasAnyFlags(RF_ClassDefaultObject))
 				continue;
-			if (!Subsystem->GetClass()->HasAnyClassFlags(CLASS_Config))
+			if (!SSClass->HasAnyClassFlags(CLASS_Config))
 				continue;
-			if (Subsystem->GetClass()->HasAnyClassFlags(CLASS_Deprecated|CLASS_Abstract))
+			if (SSClass->HasAnyClassFlags(CLASS_Deprecated|CLASS_Abstract))
 				continue;
 			if (!AllKnownSubsystems.Contains(Subsystem))
 			{
-				auto ClassFieldStats = FSubsystemBrowserUtils::GetClassFieldStats(Subsystem->GetClass());
+				auto ClassFieldStats = FSubsystemBrowserUtils::GetClassFieldStats(SSClass);
 
 				bool bNeedsCustom = ClassFieldStats.NumConfig && !ClassFieldStats.NumConfigWithEdit;
 				bool bCanUseCustom = USubsystemBrowserSettings::Get()->ShouldUseCustomSettingsWidget();
@@ -237,10 +219,10 @@ void FSubsystemSettingsManager::RegisterSubsystemSettings(ISettingsModule& Setti
 	Registered.CategoryName = Category;
 	Registered.SectionName = Class->GetFName();
 
-	TOptional<FString> OptionalSection = FSubsystemBrowserUtils::GetMetadataOptional(Class, FSubsystemBrowserUserMeta::MD_SBSection);
+	TOptional<FString> OptionalSection = FSubsystemBrowserUtils::GetMetadataOptional(Class, FSubsystemSettingsUserMeta::MD_SBSection);
 	FText DisplayName = OptionalSection.IsSet() ? FText::FromString(OptionalSection.GetValue()) : Class->GetDisplayNameText();
 
-	TOptional<FString> OptionalSectionDesc = FSubsystemBrowserUtils::GetMetadataOptional(Class, FSubsystemBrowserUserMeta::MD_SBSectionDesc);
+	TOptional<FString> OptionalSectionDesc = FSubsystemBrowserUtils::GetMetadataOptional(Class, FSubsystemSettingsUserMeta::MD_SBSectionDesc);
 	FText DisplayTooltip = OptionalSectionDesc.IsSet() ? FText::FromString(OptionalSectionDesc.GetValue()) : Class->GetToolTipText();
 
 	if (bCustomUI)

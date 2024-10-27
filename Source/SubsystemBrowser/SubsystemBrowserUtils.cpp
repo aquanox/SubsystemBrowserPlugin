@@ -304,7 +304,7 @@ FString FSubsystemBrowserUtils::GenerateConfigExport(const FSubsystemTreeSubsyst
 	return GenerateConfigExport(SelectedSubsystem->GetObjectForDetails(), bModifiedOnly);
 }
 
-FString FSubsystemBrowserUtils::GenerateConfigExport(UObject* Subsystem, bool bModifiedOnly)
+FString FSubsystemBrowserUtils::GenerateConfigExport(const UObject* Subsystem, bool bModifiedOnly)
 {
 	UClass* const Class = Subsystem->GetClass();
 
@@ -648,6 +648,28 @@ FText FSubsystemBrowserUtils::GetWorldDescription(const UWorld* World)
 	}
 
 	return Description;
+}
+
+UClass* FSubsystemBrowserUtils::TryFindClassByName(const FString& ClassName)
+{
+	UClass* ResultClass = nullptr;
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	if (FPackageName::IsShortPackageName(ClassName))
+	{
+		ResultClass = FindObject<UClass>(ANY_PACKAGE, *ClassName);
+	}
+	else
+	{
+		ResultClass = FindObject<UClass>(nullptr, *ClassName);
+	}
+#else
+	ResultClass =  UClass::TryFindTypeSlow<UClass>(ClassName, EFindFirstObjectOptions::EnsureIfAmbiguous);
+	if (!ResultClass)
+	{
+		ResultClass = LoadObject<UClass>(nullptr, *ClassName);
+	}
+#endif
+	return ResultClass;
 }
 
 #undef LOCTEXT_NAMESPACE

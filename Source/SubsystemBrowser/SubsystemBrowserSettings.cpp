@@ -15,8 +15,6 @@ const FName FSubsystemBrowserUserMeta::MD_SBColor(TEXT("SBColor"));
 const FName FSubsystemBrowserUserMeta::MD_SBTooltip(TEXT("SBTooltip"));
 const FName FSubsystemBrowserUserMeta::MD_SBOwnerName(TEXT("SBOwnerName"));
 const FName FSubsystemBrowserUserMeta::MD_SBHidden(TEXT("SBHidden"));
-const FName FSubsystemBrowserUserMeta::MD_SBSection(TEXT("SBSettingsSection"));
-const FName FSubsystemBrowserUserMeta::MD_SBSectionDesc(TEXT("SBSettingsSectionDesc"));
 
 USubsystemBrowserSettings::USubsystemBrowserSettings()
 {
@@ -171,13 +169,6 @@ void USubsystemBrowserSettings::SetForceHiddenPropertyVisibility(bool bNewValue)
 	bForceHiddenPropertyVisibility = bNewValue;
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bForceHiddenPropertyVisibility));
 }
-
-//void USubsystemBrowserSettings::SetShowHiddenProperties(bool bNewValue)
-//{
-//	bShowAnyProperties = bNewValue;
-	//NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowAnyProperties));
-//}
-
 void USubsystemBrowserSettings::SetShouldShowOnlyGame(bool bNewValue)
 {
 	bShowOnlyGameModules = bNewValue;
@@ -194,6 +185,12 @@ void USubsystemBrowserSettings::SetShouldShowOnlyViewable(bool bNewValue)
 {
 	bShowOnlyWithViewableElements = bNewValue;
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowOnlyWithViewableElements));
+}
+
+void USubsystemBrowserSettings::SetShouldHideEmptyCategories(bool bNewValue)
+{
+	bHideEmptyCategories = bNewValue;
+	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bHideEmptyCategories));
 }
 
 void USubsystemBrowserSettings::SyncColumnSettings()

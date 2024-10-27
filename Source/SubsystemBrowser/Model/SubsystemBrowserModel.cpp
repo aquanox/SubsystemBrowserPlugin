@@ -79,10 +79,18 @@ void FSubsystemModel::GetFilteredCategories(TArray<SubsystemTreeItemPtr>& OutCat
 	for (const SubsystemTreeItemPtr& Item : GetAllCategories())
 	{
 		check(Item->GetAsCategoryDescriptor());
-		if (!CategoryFilter.IsValid() || CategoryFilter->PassesFilter(*Item))
+		if (CategoryFilter.IsValid() && !CategoryFilter->PassesFilter(*Item))
 		{
-			OutCategories.Add(Item);
+			continue;
 		}
+
+		if (USubsystemBrowserSettings::Get()->ShouldHideEmptyCategories()
+			&& !GetNumSubsystemsFromCategory(Item))
+		{
+			continue;
+		}
+
+		OutCategories.Add(Item);
 	}
 }
 
@@ -131,6 +139,13 @@ void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemConstPtr Category, 
 			}
 		}
 	}
+}
+
+int32 FSubsystemModel::GetNumSubsystemsFromCategory(SubsystemTreeItemConstPtr Category) const
+{
+	TArray<SubsystemTreeItemPtr> Subsystems;
+	GetFilteredSubsystems(Category, Subsystems);
+	return Subsystems.Num();
 }
 
 

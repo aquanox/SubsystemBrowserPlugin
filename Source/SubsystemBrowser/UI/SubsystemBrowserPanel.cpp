@@ -7,7 +7,6 @@
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
 #include "SubsystemBrowserUtils.h"
-#include "SubsystemDetailsCustomizations.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
@@ -584,16 +583,19 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
-		MenuBuilder.AddMenuEntry(
-        	LOCTEXT("OpenSubsystemSettingsPanel", "Subsystem Settings"),
-        	LOCTEXT("OpenSubsystemSettingsPanel_Tooltip", "Open subsystem settings panel."),
-        	FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
-        	FUIAction(
-        		FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowSubsystemSettingsTab)
-        	),
-        	NAME_None,
-        	EUserInterfaceActionType::Button
-        );
+		if (USubsystemBrowserSettings::Get()->ShouldUseSubsystemSettings())
+		{
+			MenuBuilder.AddMenuEntry(
+        		LOCTEXT("OpenSubsystemSettingsPanel", "Subsystem Settings"),
+        		LOCTEXT("OpenSubsystemSettingsPanel_Tooltip", "Open subsystem settings panel."),
+        		FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
+        		FUIAction(
+        			FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowSubsystemSettingsTab)
+        		),
+        		NAME_None,
+        		EUserInterfaceActionType::Button
+	        );
+		}
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("OpenSettingsPanel", "Browser Settings"),
 			LOCTEXT("OpenSettingsPanel_Tooltip", "Open plugin settings panel."),
@@ -807,12 +809,12 @@ void SSubsystemBrowserPanel::ToggleShouldShowOnlyViewable()
 
 void SSubsystemBrowserPanel::ShowPluginSettingsTab() const
 {
-	FSubsystemBrowserModule::Get().GetSettingsManager().SummonPluginSettingsTab();
+	FSubsystemBrowserModule::Get().SummonPluginSettingsTab();
 }
 
 void SSubsystemBrowserPanel::ShowSubsystemSettingsTab() const
 {
-	FSubsystemBrowserModule::Get().GetSettingsManager().SummonSubsystemSettingsTab();
+	FSubsystemBrowserModule::Get().SummonSubsystemSettingsTab();
 }
 
 void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item, ESelectInfo::Type SelectInfo)
@@ -968,7 +970,7 @@ TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
 	DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemBrowserPanel::IsDetailsPropertyVisible));
 	DetailViewWidget->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateStatic(&SSubsystemBrowserPanel::IsDetailsPropertyReadOnly));
 
-	SBHacks::CustomizeDetailsView(DetailViewWidget);
+	FSubsystemBrowserModule::CustomizeDetailsView(DetailViewWidget, TEXT("SubsystemBrowserPanel"));
 
 	return DetailViewWidget;
 }

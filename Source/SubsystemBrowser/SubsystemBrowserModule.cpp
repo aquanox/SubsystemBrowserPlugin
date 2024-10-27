@@ -17,6 +17,7 @@
 #include "Model/Category/SubsystemBrowserCategory_AudioEngine.h"
 #include "UI/SubsystemBrowserPanel.h"
 #include "ISettingsModule.h"
+#include "ISettingsSection.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "LevelEditor.h"
 #include "ToolMenus.h"
@@ -72,64 +73,47 @@ void FSubsystemBrowserModule::StartupModule()
 
 #endif
 
-		SettingsManager.Register();
-
 		// Register default columns and categories on startup
 		RegisterDefaultDynamicColumns();
 		RegisterDefaultCategories();
+
+		// Register plugin settings
+		RegisterSettings();
 
 		//
 		UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FSubsystemBrowserModule::RegisterMenus));
 	}
 }
 
+void FSubsystemBrowserModule::RegisterSettings()
+{
+	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
+
+	// Setup plugin settings panel in Editor Settings
+	USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
+	PluginSettingsSection = SettingsModule.RegisterSettings(
+		TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"),
+		LOCTEXT("SubsystemBrowserSettingsName", "Subsystem Browser"),
+		LOCTEXT("SubsystemBrowserSettingsDescription", "Settings for Subsystem Browser Plugin"),
+		SettingsObject
+	);
+	PluginSettingsSection->OnSelect().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsSelected);
+	PluginSettingsSection->OnResetDefaults().BindUObject(SettingsObject, &USubsystemBrowserSettings::OnSettingsReset);
+}
+
 void FSubsystemBrowserModule::RegisterMenus()
 {
 	UToolMenus* const ToolMenus = UToolMenus::Get();
 
-	struct Local
-	{
-		static void OpenSettings()
-		{
-			Get().GetSettingsManager().SummonSubsystemSettingsTab();
-		}
-	};
-
 	ToolMenus->RegisterMenu(SubsystemBrowserContextMenuName);
-
-	{ // Edit -> Configuration menu
-		UToolMenu* Menu = ToolMenus->ExtendMenu(TEXT("MainFrame.MainMenu.Edit"));
-		FToolMenuSection& Section = Menu->FindOrAddSection(TEXT("Configuration"));
-
-		Section.AddMenuEntry(
-			TEXT("SubsystemSettings"),
-			LOCTEXT("SubsystemSettingsMenuLabel", "Subsystem Settings"),
-			LOCTEXT("SubsystemSettingsMenuToolTip", "Change subsystem settings"),
-			FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
-			FUIAction(FExecuteAction::CreateStatic(&Local::OpenSettings))
-		);
-	}
-
-#if !UE_VERSION_OLDER_THAN(5,0,0)
-	{ // Project Quick Settings on right side in UE 5
-		UToolMenu* Menu = ToolMenus->ExtendMenu(TEXT("LevelEditor.LevelEditorToolBar.LevelToolbarQuickSettings"));
-		FToolMenuSection& Section = Menu->FindOrAddSection(TEXT("ProjectSettingsSection"));
-
-		Section.AddMenuEntry(
-			TEXT("SubsystemSettings"),
-			LOCTEXT("SubsystemSettingsMenuLabel", "Subsystem Settings"),
-			LOCTEXT("SubsystemSettingsMenuToolTip", "Change subsystem settings"),
-			FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
-			FUIAction(FExecuteAction::CreateStatic(&Local::OpenSettings))
-		);
-	}
-#endif
 }
 
 void FSubsystemBrowserModule::ShutdownModule()
 {
 	if (GIsEditor && !IsRunningCommandlet())
 	{
+		PluginSettingsSection.Reset();
+
 #if !SUBSYSTEM_BROWSER_NOMAD_MODE
 		if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>(TEXT("LevelEditor")))
 		{
@@ -138,8 +122,6 @@ void FSubsystemBrowserModule::ShutdownModule()
 #else
 		FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SubsystemBrowserTabName);
 #endif
-
-		SettingsManager.Unregister();
 
 		FSubsystemBrowserStyle::UnRegister();
 	}
@@ -170,6 +152,21 @@ void FSubsystemBrowserModule::SummonSubsystemTab()
 #else
 	FGlobalTabmanager::Get()->TryInvokeTab(SubsystemBrowserTabName);
 #endif
+}
+
+void FSubsystemBrowserModule::SummonPluginSettingsTab()
+{
+	ISettingsModule& Module = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
+    Module.ShowViewer(TEXT("Editor"), TEXT("Plugins"), TEXT("SubsystemBrowser"));
+}
+
+void FSubsystemBrowserModule::SummonSubsystemSettingsTab()
+{
+	if (USubsystemBrowserSettings::Get()->ShouldUseSubsystemSettings())
+	{
+		ISettingsModule& Module = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
+		Module.ShowViewer(TEXT("Subsystem"), TEXT(""), TEXT(""));
+	}
 }
 
 const TArray<SubsystemCategoryPtr>& FSubsystemBrowserModule::GetCategories() const
@@ -232,8 +229,6 @@ void FSubsystemBrowserModule::RegisterCategory(TSharedRef<FSubsystemCategory> In
 	{
 		return A->GetSortOrder() < B->GetSortOrder();
 	});
-
-	SettingsManager.HandleCategoriesChanged();
 }
 
 void FSubsystemBrowserModule::RemoveCategory(FName CategoryName)

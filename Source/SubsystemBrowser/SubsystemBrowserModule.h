@@ -7,11 +7,12 @@
 #include "Modules/ModuleManager.h"
 #include "Model/SubsystemBrowserCategory.h" // [no-fwd]
 #include "Model/SubsystemBrowserColumn.h" // [no-fwd]
-#include "SubsystemSettingsManager.h"
 
 class FSpawnTabArgs;
 class UToolMenu;
 class SDockTab;
+class IDetailsView;
+class ISettingsSection;
 struct ISubsystemTreeItem;
 
 class FSubsystemBrowserModule : public IModuleInterface
@@ -25,11 +26,6 @@ public:
 		return FModuleManager::GetModuleChecked<FSubsystemBrowserModule>(TEXT("SubsystemBrowser"));
 	}
 
-	FSubsystemSettingsManager& GetSettingsManager()
-	{
-		return SettingsManager;
-	}
-
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 	virtual bool SupportsDynamicReloading() override { return false; }
@@ -41,7 +37,7 @@ public:
 	/**
 	 * Register default subsystem categories
 	 */
-	void RegisterDefaultCategories();
+	SUBSYSTEMBROWSER_API void RegisterDefaultCategories();
 	/**
 	 * Register a new subsystem category
 	 */
@@ -59,11 +55,11 @@ public:
 	/**
 	 * Get a list of all custom dynamic columns
 	 */
-	const TArray<SubsystemColumnPtr>& GetDynamicColumns() const;
+	SUBSYSTEMBROWSER_API const TArray<SubsystemColumnPtr>& GetDynamicColumns() const;
 	/**
 	 *
 	 */
-	void RegisterDefaultDynamicColumns();
+	SUBSYSTEMBROWSER_API void RegisterDefaultDynamicColumns();
 	/**
 	 * Register a new custom dynamic column
 	 */
@@ -81,7 +77,17 @@ public:
 	/**
 	 * Open subsystems tab
 	 */
-	void SummonSubsystemTab();
+	SUBSYSTEMBROWSER_API void SummonSubsystemTab();
+
+	/**
+	 * Open editor settings tab with plugin settings pre-selected
+	 */
+	SUBSYSTEMBROWSER_API void SummonPluginSettingsTab();
+
+	/**
+	 * Open subsystem settings panel
+	 */
+	SUBSYSTEMBROWSER_API void SummonSubsystemSettingsTab();
 
 	/**
 	 * Callback that is called whenever a tooltip for item needs to be generated
@@ -97,21 +103,29 @@ public:
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateMenu, TSharedRef<const ISubsystemTreeItem>, UToolMenu*);
 	static SUBSYSTEMBROWSER_API FOnGenerateMenu OnGenerateContextMenu;
 
+	/**
+	 * Apply custom  subsystem  customizations to provided details view
+	 * @param DetailsView details view instance to patch
+	 * @param Usage
+	 */
+	static SUBSYSTEMBROWSER_API void CustomizeDetailsView(TSharedRef<IDetailsView> DetailsView, FName Usage);
+
 protected:
-	/** */
+	void RegisterSettings();
 	void RegisterMenus();
 
 	/** Handles creating the subsystem browser tab. */
 	TSharedRef<SDockTab> HandleSpawnBrowserTab(const FSpawnTabArgs& Args);
 
 private:
-	// Settings manager
-	FSubsystemSettingsManager SettingsManager;
-
 	// Instances of subsystem categories
 	TArray<SubsystemCategoryPtr> Categories;
 	// Instances of dynamic subsystem columns
 	TArray<SubsystemColumnPtr> DynamicColumns;
+
+
+	// Saved instance of Settings section
+	TSharedPtr<ISettingsSection> PluginSettingsSection;
 };
 
 template <typename TCategory, typename... TArgs>

@@ -14,6 +14,14 @@ class SSubsystemSettingsWidget;
 class ISettingsEditorModel;
 class ISettingsSection;
 
+struct FSubsystemSettingsUserMeta
+{
+	// Subsystem Settings - Section name override (default is Class::GetDisplayNameText)
+	static const FName MD_SBSection;
+	// Subsystem Settings - Section description override (default is Class::GetTooltipText)
+	static const FName MD_SBSectionDesc;
+};
+
 /** Holds auto-discovered subsystems with settings */
 struct FDiscoveredSubsystemInfo
 {
@@ -43,16 +51,6 @@ public:
 	void Unregister();
 
 	/**
-	 * Open editor settings tab with plugin settings pre-selected
-	 */
-	void SummonPluginSettingsTab();
-
-	/**
-	 * Open editor settings tab with plugin settings pre-selected
-	 */
-	void SummonSubsystemSettingsTab();
-
-	/**
 	 * Show a panel with subsystem settings
 	 */
 	virtual void ShowSettings(const FName& CategoryName, const FName& SectionName) override;
@@ -78,8 +76,6 @@ public:
 	TWeakPtr<SWidget> GetSettingsEditorWidget() const { return SettingsEditorPtr; }
 
 private:
-	// Saved instance of Settings section
-	TSharedPtr<ISettingsSection> PluginSettingsSection;
 
 	// Settings model
 	TWeakPtr<ISettingsEditorModel> SettingsEditorModelPtr;

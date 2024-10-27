@@ -25,7 +25,7 @@ struct FSubsystemBrowserConfigItem
 DECLARE_DYNAMIC_DELEGATE_RetVal(FString, FSubsystemBrowserGetStringProperty);
 DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FSubsystemBrowserGetTextProperty);
 
-struct FSubsystemBrowserUserMeta
+struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 {
 	// Subsystem Browser - Subsystem name color in list
 	static const FName MD_SBColor;
@@ -35,17 +35,17 @@ struct FSubsystemBrowserUserMeta
 	static const FName MD_SBOwnerName;
 	// Subsystem Browser Details - Hide property from display
 	static const FName MD_SBHidden;
-	// Subsystem Settings - Section name override (default is Class::GetDisplayNameText)
-	static const FName MD_SBSection;
-	// Subsystem Settings - Section description override (default is Class::GetTooltipText)
-	static const FName MD_SBSectionDesc;
 };
 
-struct FSubsystemBrowserConfigMeta
+struct SUBSYSTEMBROWSER_API FSubsystemBrowserConfigMeta
 {
+	// Config property affects subsystem table view and requires data refresh (no reconstruct)
 	static const FName MD_ConfigAffectsView;
+	// Config property affects subsystem table and requires table reconstruct
 	static const FName MD_ConfigAffectsColumns;
+	// Config property affects details view and requires details view refresh
 	static const FName MD_ConfigAffectsDetails;
+	// Config property affects subsystem settings panel
 	static const FName MD_ConfigAffectsSettings;
 };
 
@@ -55,7 +55,7 @@ struct FSubsystemBrowserConfigMeta
  * It is possible to register it within ISettingsModule to see in Editor Settings.
  */
 UCLASS(config=EditorPerProjectUserSettings, meta=(DisplayName="Subsystem Browser Settings"))
-class USubsystemBrowserSettings : public UObject
+class SUBSYSTEMBROWSER_API USubsystemBrowserSettings : public UObject
 {
 	GENERATED_BODY()
 public:
@@ -73,7 +73,7 @@ public:
 	// Called when settings reset is requested
 	bool OnSettingsReset();
 
-	DECLARE_EVENT_OneParam(USubsystemBrowserSettings, FSettingChangedEvent, FName /*PropertyName*/);
+	DECLARE_MULTICAST_DELEGATE_OneParam(FSettingChangedEvent, FName /* InPropertyName */);
 	static FSettingChangedEvent& OnSettingChanged() { return SettingChangedEvent; }
 
 	virtual void PostLoad() override;
@@ -125,11 +125,16 @@ public:
 	void SetShouldShowOnlyViewable(bool bNewValue);
 	void ToggleShouldShowOnlyViewable() { SetShouldShowOnlyViewable(!bShowOnlyWithViewableElements); }
 
+	bool ShouldHideEmptyCategories() const { return bHideEmptyCategories; }
+	void SetShouldHideEmptyCategories(bool bNewValue);
+	void ToggleShouldHideEmptyCategories() { SetShouldHideEmptyCategories(!bHideEmptyCategories); }
+
 	int32 GetMaxColumnTogglesToShow() const { return MaxColumnTogglesToShow; }
 	int32 GetMaxCategoryTogglesToShow() const { return MaxCategoryTogglesToShow; }
 
 	bool ShouldShowDetailsTooltips() const { return bShowDetailedTooltips; }
 
+	bool ShouldUseSubsystemSettings() const { return bUseSubsystemSettings; }
 	bool ShouldUseCustomSettingsWidget() const { return bUseCustomSettingsWidget; }
 	bool ShouldUseCustomPropertyFilter() const { return bUseCustomPropertyFilter; }
 
@@ -153,6 +158,10 @@ protected:
 	// Should show subsystems only from Plugins?
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bShowOnlyPluginModules = false;
+
+	// Should hide categories with no subsystems to show?
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
+	bool bHideEmptyCategories = false;
 
 	// Should show subsystems that have Edit or Visible properties or callable functions?
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
@@ -232,14 +241,17 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel State")
 	float HorizontalSeparatorLocation = 0.33f;
 
+	// Enables subsystem settings panel
+	UPROPERTY(config, EditAnywhere, Category="Settings Panel", meta=(ConfigRestartRequired))
+	bool bUseSubsystemSettings = false;
 	// Enables use of custom settings widget in Settings panel.
 	// Will enable display of built-in subsystems that are configurable but not editable
 	UPROPERTY(config, EditAnywhere, Category="Settings Panel")
-	bool bUseCustomSettingsWidget = true;
+	bool bUseCustomSettingsWidget = false;
 	// Enables use of custom property filter in Settings panel.
 	// Will display only properties that have Config flag instead of normal "anything editable" behavior
 	UPROPERTY(config, EditAnywhere, Category="Settings Panel")
-	bool bUseCustomPropertyFilter = true;
+	bool bUseCustomPropertyFilter = false;
 
 private:
 	void NotifyPropertyChange(FName PropertyName);

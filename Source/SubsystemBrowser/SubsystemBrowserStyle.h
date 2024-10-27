@@ -15,7 +15,7 @@
 #include "Styling/AppStyle.h"
 #endif
 
-class FSubsystemBrowserStyle final : public FSlateStyleSet
+class SUBSYSTEMBROWSER_API FSubsystemBrowserStyle final : public FSlateStyleSet
 {
 public:
 	static const FName StyleName;
@@ -40,7 +40,10 @@ private:
 	static TSharedPtr<FSubsystemBrowserStyle> StyleInstance;
 };
 
-struct FStyleHelper
+/**
+ * Internal class for style system compatibility between older and newer engines.
+ */
+struct SUBSYSTEMBROWSER_API FStyleHelper
 {
 	static const ISlateStyle& Get();
 	static const FSlateBrush* GetBrush(const FName& InName);
