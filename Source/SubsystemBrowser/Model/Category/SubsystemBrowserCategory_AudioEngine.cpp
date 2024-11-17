@@ -29,7 +29,11 @@ void FSubsystemCategory_AudioEngine::Select(UWorld* InContext, TArray<UObject*>&
 		FAudioDeviceHandle AudioDeviceHandle = InContext->GetAudioDevice();
 		if (AudioDeviceHandle.IsValid())
 		{
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 			OutData.Append(AudioDeviceHandle->GetSubsystemArray<UAudioEngineSubsystem>());
+#else
+			OutData.Append(AudioDeviceHandle->GetSubsystemArrayCopy<UAudioEngineSubsystem>());
+#endif
 		}
 	}
 }

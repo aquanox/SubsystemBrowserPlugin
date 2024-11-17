@@ -7,7 +7,7 @@ set PACKAGE_PATH="%WORK_TEMP%\SBP_%VERSION%"
 set EXTRA_PARAMS= -StrictIncludes
 
 echo.
-echo Compiling for %VERSION%
+echo Compiling for %VERSION% to %PACKAGE_PATH%
 echo.
 
 %RUNUAT_PATH% BuildPlugin -Plugin=%PLUGIN_PATH% -Package=%PACKAGE_PATH% -HostPlatforms=Win64 -NoTargetPlatforms %EXTRA_PARAMS%

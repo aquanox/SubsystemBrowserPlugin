@@ -2,6 +2,7 @@
 
 #include "Model/Category/SubsystemBrowserCategory_Engine.h"
 
+#include "Misc/EngineVersionComparison.h"
 #include "Engine/Engine.h"
 #include "Subsystems/EngineSubsystem.h"
 
@@ -22,6 +23,10 @@ void FSubsystemCategory_Engine::Select(UWorld* InContext, TArray<UObject*>& OutD
 {
 	if (GEngine)
 	{
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 		return OutData.Append(GEngine->GetEngineSubsystemArray<UEngineSubsystem>());
+#else
+		return OutData.Append(GEngine->GetEngineSubsystemArrayCopy<UEngineSubsystem>());
+#endif
 	}
 }

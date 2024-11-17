@@ -2,6 +2,7 @@
 
 #include "Model/Category/SubsystemBrowserCategory_GameInstance.h"
 
+#include "Misc/EngineVersionComparison.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -23,6 +24,10 @@ void FSubsystemCategory_GameInstance::Select(UWorld* InContext, TArray<UObject*>
 {
 	if (IsValid(InContext) && InContext->GetGameInstance())
 	{
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 		OutData.Append(InContext->GetGameInstance()->GetSubsystemArray<UGameInstanceSubsystem>());
+#else
+		OutData.Append(InContext->GetGameInstance()->GetSubsystemArrayCopy<UGameInstanceSubsystem>());
+#endif
 	}
 }

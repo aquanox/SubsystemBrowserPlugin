@@ -2,6 +2,7 @@
 
 #include "Model/Category/SubsystemBrowserCategory_Player.h"
 
+#include "Misc/EngineVersionComparison.h"
 #include "Engine/GameInstance.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Engine/LocalPlayer.h"
@@ -26,7 +27,11 @@ void FSubsystemCategory_Player::Select(UWorld* InContext, TArray<UObject*>& OutD
 	{
 		for (ULocalPlayer* const LocalPlayer : InContext->GetGameInstance()->GetLocalPlayers())
 		{
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 			OutData.Append(LocalPlayer->GetSubsystemArray<ULocalPlayerSubsystem>());
+#else
+			OutData.Append(LocalPlayer->GetSubsystemArrayCopy<ULocalPlayerSubsystem>());
+#endif
 		}
 	}
 }
