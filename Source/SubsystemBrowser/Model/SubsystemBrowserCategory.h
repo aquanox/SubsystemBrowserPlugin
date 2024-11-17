@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
-class UWorld;
+#include "Templates/SharedPointer.h"
+#include "Engine/World.h"
 
 /**
  * Subsystem data provider delegate

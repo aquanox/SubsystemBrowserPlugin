@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "CoreFwd.h"
 #include "GameFramework/Actor.h"
 #include "Engine/DataAsset.h"
 #include "Engine/World.h"
@@ -84,45 +84,45 @@ public:
 	FString GetSBOwnerName() const;
 
 	UPROPERTY(BlueprintReadWrite, Category="SubsystemBrowserTest")
-	int32 HiddenBlueprintOnlyProperty;
+	int32 HiddenBlueprintOnlyProperty = 0;
 	UPROPERTY(Config)
-	int32 HiddenConfigProperty;
+	int32 HiddenConfigProperty = 0;
 	UPROPERTY()
-	int32 HiddenProperty;
+	int32 HiddenProperty = 0;
 
 	UPROPERTY(EditAnywhere, Category=Edit)
-	int32 EditAnywhereProperty;
+	int32 EditAnywhereProperty = 0;
 	UPROPERTY(EditDefaultsOnly, Category=Edit)
-	int32 EditDefaultsOnlyProperty;
+	int32 EditDefaultsOnlyProperty = 0;
 	UPROPERTY(EditInstanceOnly, Category=Edit)
-	int32 EditInstanceOnlyProperty;
+	int32 EditInstanceOnlyProperty = 0;
 
 	UPROPERTY(VisibleAnywhere, Category=Visible)
-	int32 VisibleAnywhereProperty;
+	int32 VisibleAnywhereProperty = 0;
 	UPROPERTY(VisibleDefaultsOnly, Category=Visible)
-	int32 VisibleDefaultsOnlyProperty;
+	int32 VisibleDefaultsOnlyProperty = 0;
 	UPROPERTY(VisibleInstanceOnly, Category=Visible)
-	int32 VisibleInstanceOnlyProperty;
+	int32 VisibleInstanceOnlyProperty = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=General)
 	TSubclassOf<AActor> GeneralClassProperty;
 	UPROPERTY(EditAnywhere, Category=General)
 	TSoftObjectPtr<UWorld> GeneralAssetProperty;
 	UPROPERTY(EditAnywhere, Instanced, Category=General)
-	USBDemoObject* GeneralInstancedProperty;
+	USBDemoObject* GeneralInstancedProperty = nullptr;
 	UPROPERTY(EditAnywhere, Category=General)
-	int32 GeneralIntProperty;
+	int32 GeneralIntProperty = 0;
 	UPROPERTY(EditAnywhere, Category=General)
 	FSBDemoStruct GeneralStructProperty;
 	UPROPERTY(EditAnywhere, Category=General)
-	ESBDemoEnum GeneralEnumProperty;
+	ESBDemoEnum GeneralEnumProperty = ESBDemoEnum::Alpha;
 	UPROPERTY(EditAnywhere, Category=General)
 	FGuid GeneralGuidProperty;
 	UPROPERTY(EditAnywhere, Category=General, meta=(ForceInlineRow))
 	TMap<FGuid, USBDemoObject*> GeneralMapProperty;
 
 	UPROPERTY(Config, EditAnywhere, Category=Config)
-	int32 ConfigIntProperty;
+	int32 ConfigIntProperty = 0;
 	UPROPERTY(Config, EditAnywhere, Category=Config)
 	FString ConfigStringProperty;
 	UPROPERTY(Config, EditAnywhere, Category=Config)

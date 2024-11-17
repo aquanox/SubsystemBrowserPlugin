@@ -6,6 +6,7 @@
 #include "Model/SubsystemBrowserCategory.h"
 #include "Misc/TextFilter.h"
 #include "Misc/Optional.h"
+#include "Templates/SharedPointer.h"
 
 class FSubsystemModel;
 struct ISubsystemTreeItem;

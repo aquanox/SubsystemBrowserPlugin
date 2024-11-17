@@ -1,11 +1,10 @@
 // Copyright 2022, Aquanox.
 
-#include "CoreMinimal.h"
 #include "SubsystemBrowserUtils.h"
 #include "SubsystemBrowserTestSubsystem.h"
 #include "Misc/AutomationTest.h"
 
-#if 0
+#ifdef WITH_SB_TESTS
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPropertyCountTest, "SubsystemBrowser.Util.PropertyCounter",
 	EAutomationTestFlags::EditorContext |

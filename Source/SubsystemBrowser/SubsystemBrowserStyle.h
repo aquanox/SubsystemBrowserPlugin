@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "CoreFwd.h"
 #include "SubsystemBrowserFlags.h"
 #include "Styling/SlateStyle.h"
 #include "Styling/SlateColor.h"
