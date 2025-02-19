@@ -11,6 +11,7 @@
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Views/STableRow.h"
 #include "Widgets/Input/SComboButton.h"
 #include "SlateOptMacros.h"
@@ -134,6 +135,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 						]
 					]
 				]
+				
 			]
 		]
 
@@ -154,6 +156,27 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 						.ToolTipText(LOCTEXT("FilterSearchToolTip", "Type here to search Subsystems"))
 						.HintText(LOCTEXT("FilterSearchHint", "Search Subsystems"))
 						.OnTextChanged(this, &SSubsystemBrowserPanel::SetFilterText)
+				]
+
+				//Refresh Button
+				+SHorizontalBox::Slot()
+				.AutoWidth()
+				.VAlign(VAlign_Center)
+				.HAlign(HAlign_Left)
+				.Padding(4, 0, 0, 0)
+				[
+					SNew(SButton)
+					.HAlign(HAlign_Right)
+					.VAlign(VAlign_Center)
+					.ButtonStyle(FStyleHelper::GetWidgetStylePtr<FButtonStyle>("SimpleButton"))
+					.ContentPadding(FMargin(1, 0))
+					.OnClicked(this, &SSubsystemBrowserPanel::RequestRefresh)
+					.ToolTipText(LOCTEXT("SubsystemListRefresh", "Refresh displayed subsystems"))
+					[
+						SNew(SImage)
+						.Image(FStyleHelper::GetBrush("Icons.Refresh"))
+						.ColorAndOpacity(FSlateColor::UseForeground())
+					]
 				]
 			]
 		]
@@ -356,26 +379,31 @@ void SSubsystemBrowserPanel::Populate()
 		FilteredSubsystemsCount = 0;
 		EmptyTreeItems();
 		ResetSelectedObject();
-
+		
 		SubsystemModel->GetFilteredCategories(RootTreeItems);
-		for (SubsystemTreeItemPtr Category : RootTreeItems)
+		for (SubsystemTreeItemPtr CategoryItem : RootTreeItems)
 		{
 			if (!bLoadedExpansionSettings || !ExpansionStateInfo.Num())
 			{
-				bool bExpanded = USubsystemBrowserSettings::Get()->GetTreeExpansionState(Category->GetID());
+				bool bExpanded = USubsystemBrowserSettings::Get()->GetTreeExpansionState(CategoryItem->GetID());
 
-				Category->bExpanded = bExpanded;
-				ExpansionStateInfo.Add(Category->GetID(), bExpanded);
+				CategoryItem->bExpanded = bExpanded;
+				ExpansionStateInfo.Add(CategoryItem->GetID(), bExpanded);
 			}
 
-			TreeItemMap.Add(Category->GetID(), Category);
+			TreeItemMap.Add(CategoryItem->GetID(), CategoryItem);
 
-			SubsystemModel->GetFilteredSubsystems(Category, Category->Children);
-			for (SubsystemTreeItemPtr  Child : Category->GetChildren())
+			SubsystemModel->GetFilteredSubsystems(CategoryItem, CategoryItem->Children);
+			for (SubsystemTreeItemPtr  SubsystemItem : CategoryItem->GetChildren())
 			{
-				TreeItemMap.Add(Child->GetID(), Child);
+				TreeItemMap.Add(SubsystemItem->GetID(), SubsystemItem);
 
 				FilteredSubsystemsCount ++;
+				
+				//if (USubsystemBrowserSettings::Get()->ShouldShowSubobjbects())
+				//{
+					//SubsystemModel->GetSubsystemSubobjects(SubsystemItem, SubsystemItem->Children);
+				//}
 			}
 		}
 
@@ -737,7 +765,7 @@ void SSubsystemBrowserPanel::OnExpansionChanged(SubsystemTreeItemPtr Item, bool 
 {
 	Item->bExpanded = bIsItemExpanded;
 
-	if (FSubsystemTreeCategoryItem* Folder = Item->GetAsCategoryDescriptor())
+	if (const FSubsystemTreeCategoryItem* Folder = Item->GetAsCategoryDescriptor())
 	{
 		for (SubsystemTreeItemPtr Child : Folder->GetChildren())
 		{
@@ -815,6 +843,12 @@ void SSubsystemBrowserPanel::ShowPluginSettingsTab() const
 void SSubsystemBrowserPanel::ShowSubsystemSettingsTab() const
 {
 	FSubsystemBrowserModule::Get().SummonSubsystemSettingsTab();
+}
+
+FReply SSubsystemBrowserPanel::RequestRefresh()
+{
+	FullRefresh();
+	return FReply::Handled();
 }
 
 void SSubsystemBrowserPanel::OnSelectionChanged(const SubsystemTreeItemPtr Item, ESelectInfo::Type SelectInfo)

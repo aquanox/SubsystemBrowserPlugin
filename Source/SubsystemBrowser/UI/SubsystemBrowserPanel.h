@@ -91,6 +91,8 @@ protected:
 	void ShowPluginSettingsTab() const;
 	void ShowSubsystemSettingsTab() const;
 
+	FReply RequestRefresh();
+
 	// Selection and Expansion
 
 	TMap<FSubsystemTreeItemID, bool> GetParentsExpansionState() const;
