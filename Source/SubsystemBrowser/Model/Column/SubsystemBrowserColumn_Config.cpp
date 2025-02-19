@@ -18,7 +18,7 @@ FText FSubsystemDynamicColumn_Config::ExtractText(TSharedRef<const ISubsystemTre
 {
 	if (const FSubsystemTreeSubsystemItem* SubsystemItem = Item->GetAsSubsystemDescriptor())
 	{
-		return Item->IsConfigExportable() ? FText::FromName(SubsystemItem->ConfigName) : FText::GetEmpty();
+		return SubsystemItem->IsConfigExportable() ? FText::FromName(SubsystemItem->ConfigName) : FText::GetEmpty();
 	}
 
 	return FText::GetEmpty();
