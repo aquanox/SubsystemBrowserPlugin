@@ -38,7 +38,7 @@ void SSubsystemTableItemTooltip::OnClosed()
 
 TSharedRef<SWidget> SSubsystemTableItemTooltip::CreateToolTipWidget(TSharedRef<SSubsystemTableItem> TableItem) const
 {
-	if (TableItem->Item.IsValid())
+	if (TableItem->Item.IsValid() && !TableItem->Item->IsStale())
 	{
 		FSubsystemTableItemTooltipBuilder TooltipBuilder(TableItem);
 		TableItem->Item->GenerateTooltip(TooltipBuilder);
