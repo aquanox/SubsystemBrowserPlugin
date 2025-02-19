@@ -8,6 +8,7 @@
 #include "Engine/World.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Blueprint/UserWidget.h"
+#include "Misc/EngineVersionComparison.h"
 #include "SubsystemBrowserTestSubsystem.generated.h"
 
 class USBDemoObject;
@@ -53,6 +54,32 @@ public:
 };
 
 UCLASS()
+class USBDemoChunkAssistantManager : public UObject
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category="Manager")
+	TArray<FName> ChunkNames;
+
+	UFUNCTION(CallInEditor, Category="Manager")
+	void Selfdestruct()
+	{
+#if !UE_VERSION_OLDER_THAN(5,0,0)
+		MarkAsGarbage();
+#endif
+	}
+};
+
+UCLASS()
+class USBDemoInteractionAssistantObject : public UObject
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(VisibleAnywhere, Category="Manager")
+	TWeakObjectPtr<AActor> LastUsedObject;
+};
+
+UCLASS()
 class USBDemoWidget : public UUserWidget
 {
 	GENERATED_BODY()
@@ -70,18 +97,27 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSBTestDynamicMCDelegate);
  *
  */
 UCLASS(Abstract, Config=Test, DefaultConfig,
-	meta=(SBTooltip="SB Tooltip Text", SBColor="(R=255,G=128,B=0)", SBOwnerName="GetSBOwnerName"))
+	meta=(SBTooltip="SB Tooltip Text", SBColor="(R=255,G=128,B=0)", SBOwnerName="GetSBOwnerName", SBGetSubobjects="GetImportantSubobjectsToDisplay"))
 class SUBSYSTEMBROWSERTESTS_API USubsystemBrowserTestSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 public:
 	USubsystemBrowserTestSubsystem();
+	
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
 	UFUNCTION()
 	FString GetSBOwnerName() const;
+
+	UFUNCTION()
+	TArray<UObject*> GetImportantSubobjectsToDisplay() const;
+
+	UPROPERTY()
+	USBDemoInteractionAssistantObject* IAObject = nullptr;
+	UPROPERTY()
+	USBDemoChunkAssistantManager* CAObject = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category="SubsystemBrowserTest")
 	int32 HiddenBlueprintOnlyProperty = 0;

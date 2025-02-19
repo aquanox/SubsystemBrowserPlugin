@@ -3,6 +3,7 @@
 #include "Model/Column/SubsystemBrowserColumn_Name.h"
 
 #include "SubsystemBrowserSettings.h"
+#include "SubsystemBrowserStyle.h"
 #include "UI/SubsystemTableItem.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Text/STextBlock.h"
@@ -21,6 +22,8 @@ FSubsystemDynamicColumn_Name::FSubsystemDynamicColumn_Name()
 
 TSharedPtr<SWidget> FSubsystemDynamicColumn_Name::GenerateColumnWidget(TSharedRef<const ISubsystemTreeItem> Item, TSharedRef<SSubsystemTableItem> TableRow) const
 {
+	const bool bHasIcon = Item->CanHaveChildren() && ExtractIcon(Item) != nullptr;
+	
 	return SNew(SHorizontalBox)
 			+SHorizontalBox::Slot()
 			.AutoWidth()
@@ -36,10 +39,10 @@ TSharedPtr<SWidget> FSubsystemDynamicColumn_Name::GenerateColumnWidget(TSharedRe
 				SNew(SBox)
 				.VAlign(VAlign_Center)
 				.HeightOverride(22)
-				.WidthOverride(Item->CanHaveChildren() ? 16.f : 7.f)
+				.WidthOverride(bHasIcon ? 16.f : 7.f)
 				[
 					SNew(SImage)
-					.Image(TableRow, &SSubsystemTableItem::GetItemIconBrush)
+					.Image(this, &FSubsystemDynamicColumn_Name::ExtractIcon, Item)
 				]
 			]
 
@@ -55,6 +58,32 @@ TSharedPtr<SWidget> FSubsystemDynamicColumn_Name::GenerateColumnWidget(TSharedRe
 					.ToolTipText(this, &FSubsystemDynamicColumn_Name::ExtractTooltipText, Item)
 					.HighlightText(TableRow->HighlightText)
 			];
+}
+
+const FSlateBrush* FSubsystemDynamicColumn_Name::ExtractIcon(TSharedRef<const ISubsystemTreeItem> Item) const
+{
+	switch (Item->GetType())
+	{
+	case ISubsystemTreeItem::EItemType::Category:
+		{
+			return FStyleHelper::GetBrush(Item->bExpanded
+					? FSubsystemBrowserStyle::FolderOpenName
+					: FSubsystemBrowserStyle::FolderClosedName);
+		}
+	case ISubsystemTreeItem::EItemType::Subsystem:
+		{
+			//if (Item->CanHaveChildren() && Item->GetNumChildren() > 0)
+			//{
+			//	return FStyleHelper::GetBrush(Item->bExpanded
+			//		? FSubsystemBrowserStyle::FolderOpenName
+			//		: FSubsystemBrowserStyle::FolderClosedName);
+			//}
+			return Item->GetIcon();
+		}
+	case ISubsystemTreeItem::EItemType::Object:
+	default:
+		return Item->GetIcon();
+	}
 }
 
 FText FSubsystemDynamicColumn_Name::ExtractText(TSharedRef<const ISubsystemTreeItem> Item) const

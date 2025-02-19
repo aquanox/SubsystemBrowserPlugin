@@ -15,6 +15,8 @@ const FName FSubsystemBrowserUserMeta::MD_SBColor(TEXT("SBColor"));
 const FName FSubsystemBrowserUserMeta::MD_SBTooltip(TEXT("SBTooltip"));
 const FName FSubsystemBrowserUserMeta::MD_SBOwnerName(TEXT("SBOwnerName"));
 const FName FSubsystemBrowserUserMeta::MD_SBHidden(TEXT("SBHidden"));
+const FName FSubsystemBrowserUserMeta::MD_SBGetSubobjects(TEXT("SBGetSubobjects"));
+const FName FSubsystemBrowserUserMeta::MD_SBAutoGetSubobjects(TEXT("SBAutoGetSubobjects"));
 
 USubsystemBrowserSettings::USubsystemBrowserSettings()
 {
@@ -119,7 +121,7 @@ void USubsystemBrowserSettings::LoadTreeExpansionStates(TMap<FName, bool>& State
 void USubsystemBrowserSettings::SetTreeExpansionStates(TMap<FName, bool> const& States)
 {
 	StoreDataToConfig(States, TreeExpansionState);
-	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, TreeExpansionState));
+	//NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, TreeExpansionState));
 }
 
 void USubsystemBrowserSettings::SetSeparatorLocation(float NewValue)
@@ -162,6 +164,12 @@ FSlateColor USubsystemBrowserSettings::GetModuleColor(bool bGameModule)
 			return EngineModuleColor;
 	}
 	return FSlateColor::UseForeground();
+}
+
+void USubsystemBrowserSettings::SetShowSubobjects(bool bNewValue)
+{
+	bShowSubobjects = bNewValue;
+	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bShowSubobjects));
 }
 
 void USubsystemBrowserSettings::SetForceHiddenPropertyVisibility(bool bNewValue)

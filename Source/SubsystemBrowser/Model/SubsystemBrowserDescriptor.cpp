@@ -30,20 +30,57 @@ void FSubsystemTreeCategoryItem::GenerateTooltip(FSubsystemTableItemTooltipBuild
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_NumSub", "Num Subsystems"), FText::AsNumber(Subsystems.Num()));
 }
 
-FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem()
-{
-}
-
-FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)
+FSubsystemTreeObjectItem::FSubsystemTreeObjectItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)
 {
 	Model = InModel;
 	Parent = InParent;
 
 	check(Instance);
-	Subsystem = Instance;
+	Object = Instance;
+	ObjectClass = Instance->GetClass();
+}
 
+bool FSubsystemTreeObjectItem::IsSelected() const
+{
+	return Model.IsValid() && Model->IsItemSelected(SharedThis(this));
+}
+
+bool FSubsystemTreeObjectItem::IsStale() const
+{
+	return Object.IsStale() || ObjectClass.IsStale();
+}
+
+void FSubsystemTreeObjectItem::GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
+{
+	FName ClassName = ObjectClass->GetFName();
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Class", "Class"), FText::FromName(ClassName));
+
+	FString ModuleName = FPackageName::GetShortName(ObjectClass->GetOuterUPackage()->GetName());
+	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_Module", "Module"), FText::FromString(ModuleName));
+}
+
+FSubsystemTreeItemID FSubsystemTreeObjectItem::GetID() const
+{
+	if (Object.IsValid())
+	{
+		return Object->GetFName();
+	}
+	return FSubsystemTreeItemID();
+}
+
+FText FSubsystemTreeObjectItem::GetDisplayName() const
+{
+	if (Object.IsValid())
+	{
+		return FText::FromName(Object->GetFName());
+	}
+	return FText::GetEmpty();
+}
+
+FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)
+	: FSubsystemTreeObjectItem(InModel, InParent, Instance)
+{
 	UClass* const InClass = Instance->GetClass();
-	Class = InClass;
 
 	DisplayName = InClass->GetDisplayNameText();
 	ClassName = InClass->GetFName();
@@ -90,11 +127,9 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 	{
 		UserTooltip = UserTooltipValue;
 	}
-}
-
-bool FSubsystemTreeSubsystemItem::IsSelected() const
-{
-	return Model.IsValid() && Model->IsItemSelected(SharedThis(this));
+	
+	bHasSubobjectPicker = FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBGetSubobjects).IsSet()
+						|| FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBAutoGetSubobjects).IsSet();
 }
 
 FText FSubsystemTreeSubsystemItem::GetDisplayName() const
@@ -109,6 +144,11 @@ bool FSubsystemTreeSubsystemItem::HasViewableElements() const
 	if (PropertyStats.NumCallable)
 		return true;
 	return false;
+}
+
+const FSlateBrush* FSubsystemTreeSubsystemItem::GetIcon() const
+{
+	return nullptr;
 }
 
 void FSubsystemTreeSubsystemItem::GenerateTooltip(FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
@@ -313,6 +353,11 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 			)
 		);
 	}
+}
+
+bool FSubsystemTreeSubsystemItem::CanHaveChildren() const
+{
+	return USubsystemBrowserSettings::Get()->ShouldShowSubobjbects() && bHasSubobjectPicker;
 }
 
 #undef LOCTEXT_NAMESPACE

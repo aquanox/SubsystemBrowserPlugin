@@ -44,22 +44,4 @@ TSharedRef<SWidget> SSubsystemTableItem::GenerateWidgetForColumn(const FName& Co
 }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-const FSlateBrush* SSubsystemTableItem::GetItemIconBrush() const
-{
-	if (Item.IsValid() && Item->CanHaveChildren())
-	{
-		if (Item->GetNumChildren() > 0 && Item->bExpanded)
-		{
-			return FStyleHelper::GetBrush(FSubsystemBrowserStyle::FolderOpenName);
-		}
-		return FStyleHelper::GetBrush(FSubsystemBrowserStyle::FolderClosedName);
-	}
-	return nullptr;
-}
-
-bool SSubsystemTableItem::IsColoringEnabled() const
-{
-	return USubsystemBrowserSettings::Get()->IsColoringEnabled();
-}
-
 #undef LOCTEXT_NAMESPACE

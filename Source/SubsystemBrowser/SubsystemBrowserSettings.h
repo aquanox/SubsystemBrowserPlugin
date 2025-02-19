@@ -24,6 +24,7 @@ struct FSubsystemBrowserConfigItem
 
 DECLARE_DYNAMIC_DELEGATE_RetVal(FString, FSubsystemBrowserGetStringProperty);
 DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FSubsystemBrowserGetTextProperty);
+DECLARE_DYNAMIC_DELEGATE_RetVal(TArray<UObject*>, FSubsystemBrowserGetSubobjects);
 
 struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 {
@@ -35,6 +36,15 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 	static const FName MD_SBOwnerName;
 	// Subsystem Browser Details - Hide property from display
 	static const FName MD_SBHidden;
+
+	// Subsystem Browser Details - Subobject collection function
+	// Specifies a function name that will provide list of subobjects to display
+	// TArray<UObject*> MyGetSubobjectsFunction() const;
+	static const FName MD_SBGetSubobjects;
+	// Subsystem Browser Details - Subobject display
+	// Automatically gather market subobjbects for display
+	static const FName MD_SBAutoGetSubobjects;
+	
 };
 
 struct SUBSYSTEMBROWSER_API FSubsystemBrowserConfigMeta
@@ -103,6 +113,10 @@ public:
 	FSlateColor GetStaleColor() const;
 	FSlateColor GetModuleColor(bool bGameModule);
 
+	bool ShouldShowSubobjbects() const { return bShowSubobjects; }
+	void SetShowSubobjects(bool bNewValue);
+	void ToggleShowSubobjbects() { SetShowSubobjects(!bShowSubobjects); }
+	
 	bool ShouldForceHiddenPropertyVisibility() const { return bForceHiddenPropertyVisibility; }
 	void SetForceHiddenPropertyVisibility(bool bNewValue);
 	void ToggleForceHiddenPropertyVisibility() { SetForceHiddenPropertyVisibility(!bForceHiddenPropertyVisibility); }
@@ -166,6 +180,11 @@ protected:
 	// Should show subsystems that have Edit or Visible properties or callable functions?
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bShowOnlyWithViewableElements = false;
+	
+	// Should display subsystem important subobjects?
+	// List of subobjects controlled by metadata specifiers
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
+	bool bShowSubobjects = true;
 
 	// Enforces display of all hidden object properties in details panel. Results filtered with options below.
 	// WARNING: May be unsafe in some use cases.

@@ -19,6 +19,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "UObject/Package.h"
 #include "UObject/TextProperty.h"
+#include "UObject/UObjectHash.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -670,6 +671,58 @@ UClass* FSubsystemBrowserUtils::TryFindClassByName(const FString& ClassName)
 	}
 #endif
 	return ResultClass;
+}
+
+void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsystem, TArray<UObject*>& OutData)
+{
+	OutData.Empty();
+	
+	if (!IsValid(InSubsystem) || !IsValid(InSubsystem->GetClass()))
+	{
+		return;
+	}
+
+	// Option 1: reference to collector function
+	
+	TOptional<FString> UserFunc = GetMetadataHierarchical(InSubsystem->GetClass(), FSubsystemBrowserUserMeta::MD_SBGetSubobjects);
+	if (UserFunc.IsSet() && FName::IsValidXName(UserFunc.GetValue(), INVALID_OBJECTNAME_CHARACTERS))
+	{
+		const FName FuncName (UserFunc.GetValue());
+		
+		UFunction* Func = InSubsystem->GetClass()->FindFunctionByName(FuncName);
+		
+		if (Func && Func->HasAllFunctionFlags(FUNC_Native) && !Func->HasAnyFunctionFlags(FUNC_Static))
+		{
+			FSubsystemBrowserGetSubobjects Delegate;
+			Delegate.BindUFunction(InSubsystem, FuncName);
+			OutData = Delegate.Execute();
+		}
+		else
+		{
+			UE_LOG(LogSubsystemBrowser, Warning, TEXT("Invalid SBGetSubobjects value (%s) for type %s"), *FuncName.ToString(), *InSubsystem->GetClass()->GetName() );
+		}
+		
+		return;
+	}
+
+	TOptional<FString> UserFlag = GetMetadataHierarchical(InSubsystem->GetClass(), FSubsystemBrowserUserMeta::MD_SBAutoGetSubobjects);
+	if (UserFlag.IsSet())
+	{
+		// Option 2: collecting direct subobjects with display flag
+		constexpr bool bIncludeNested = false;
+		constexpr EObjectFlags Excluded = RF_ClassDefaultObject|RF_ArchetypeObject;
+		ForEachObjectWithOuter(InSubsystem, [&](UObject* SubObject)
+		{
+			if (SubObject->GetClass()->FindMetaData(FSubsystemBrowserUserMeta::MD_SBHidden))
+			{
+				return;
+			}
+
+			OutData.Add(SubObject);
+			
+		}, bIncludeNested, Excluded);
+
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

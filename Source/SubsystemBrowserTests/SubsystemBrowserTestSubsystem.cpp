@@ -10,6 +10,8 @@
 
 USubsystemBrowserTestSubsystem::USubsystemBrowserTestSubsystem()
 {
+	IAObject = CreateDefaultSubobject<USBDemoInteractionAssistantObject>("InteractionManager");
+	CAObject = CreateDefaultSubobject<USBDemoChunkAssistantManager>("ChunkManager");
 }
 
 bool USubsystemBrowserTestSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -34,6 +36,11 @@ void USubsystemBrowserTestSubsystem::Deinitialize()
 FString USubsystemBrowserTestSubsystem::GetSBOwnerName() const
 {
 	return TEXT("Hello from ") + GetNameSafe(GetOuter());
+}
+
+TArray<UObject*> USubsystemBrowserTestSubsystem::GetImportantSubobjectsToDisplay() const
+{
+	return TArray<UObject*>({ IAObject, CAObject });
 }
 
 void USubsystemBrowserTestSubsystem::EditorFunction()

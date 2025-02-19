@@ -400,10 +400,10 @@ void SSubsystemBrowserPanel::Populate()
 
 				FilteredSubsystemsCount ++;
 				
-				//if (USubsystemBrowserSettings::Get()->ShouldShowSubobjbects())
-				//{
-					//SubsystemModel->GetSubsystemSubobjects(SubsystemItem, SubsystemItem->Children);
-				//}
+				if (USubsystemBrowserSettings::Get()->ShouldShowSubobjbects())
+				{
+					SubsystemModel->GetSubsystemSubobjects(SubsystemItem, SubsystemItem->Children);
+				}
 			}
 		}
 
@@ -765,9 +765,9 @@ void SSubsystemBrowserPanel::OnExpansionChanged(SubsystemTreeItemPtr Item, bool 
 {
 	Item->bExpanded = bIsItemExpanded;
 
-	if (const FSubsystemTreeCategoryItem* Folder = Item->GetAsCategoryDescriptor())
+	if (Item->CanHaveChildren())
 	{
-		for (SubsystemTreeItemPtr Child : Folder->GetChildren())
+		for (SubsystemTreeItemPtr Child : Item->GetChildren())
 		{
 			Child->bExpanded = bIsItemExpanded;
 		}

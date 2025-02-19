@@ -38,10 +38,6 @@ public:
 
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn( const FName& ColumnName ) override;
 
-	const FSlateBrush* GetItemIconBrush() const;
-
-	bool IsColoringEnabled() const;
-
 public:
 	TSharedPtr<FSubsystemModel>			Model;
 	SubsystemTreeItemPtr				Item;

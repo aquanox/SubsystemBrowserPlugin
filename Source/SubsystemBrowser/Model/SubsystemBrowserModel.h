@@ -53,17 +53,19 @@ public:
 
 	int32 GetNumCategories() const;
 	const TArray<SubsystemTreeItemPtr>& GetAllCategories() const;
-	void GetFilteredCategories(TArray<SubsystemTreeItemPtr>& OutCategories) const;
+	void GetFilteredCategories(TArray<SubsystemTreeItemPtr>& OutCategories);
 
 	const TArray<SubsystemTreeItemPtr>& GetAllSubsystems() const;
-	void GetAllSubsystemsInCategory(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const;
+	void GetAllSubsystemsInCategory(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren);
 
-	void GetFilteredSubsystems(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren) const;
+	void GetFilteredSubsystems(SubsystemTreeItemConstPtr Category, TArray<SubsystemTreeItemPtr>& OutChildren);
+	
+	void GetSubsystemSubobjects(SubsystemTreeItemConstPtr Subsystem, TArray<SubsystemTreeItemPtr>& OutChildren);
 
 	/* get total number of subsystems in category */
-	int32 GetNumSubsystemsFromCategory(SubsystemTreeItemConstPtr Category) const;
+	int32 GetNumSubsystemsFromCategory(SubsystemTreeItemConstPtr Category);
 	/* get total number of subsystems in visible categories */
-	int32 GetNumSubsystemsFromVisibleCategories() const;
+	int32 GetNumSubsystemsFromVisibleCategories();
 
 	/* find a permanent or dynamic column by its name */
 	SubsystemColumnPtr FindTableColumn(const FName& ColumnName) const;

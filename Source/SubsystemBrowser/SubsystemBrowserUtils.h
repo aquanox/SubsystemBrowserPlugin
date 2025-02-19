@@ -133,4 +133,14 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * @return found class instance, or null
 	 */
 	static UClass* TryFindClassByName(const FString& ClassName);
+
+	/**
+	 * Default implementation of important subobject selection.
+	 *
+	 * This is to prevent inventing detail customization and other tricks to display subsystem subobject data
+	 *
+	 * @param InSubsystem input subsystem to request subobjects from
+	 * @param OutData collection of subobjects to display
+	 */
+	static void DefaultSelectSubsystemSubobjects(UObject* InSubsystem, TArray<UObject*>& OutData);
 };
