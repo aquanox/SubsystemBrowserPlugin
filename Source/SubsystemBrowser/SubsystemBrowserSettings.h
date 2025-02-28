@@ -294,7 +294,7 @@ protected:
 	bool bUseSubsystemSettings = false;
 	// Enables use of custom settings widget in Settings panel.
 	// Will enable display of built-in subsystems that are configurable but not editable
-	UPROPERTY(config, EditAnywhere, Category="Settings Panel")
+	UPROPERTY(config, EditAnywhere, Category="Settings Panel", meta=(ConfigAffectsSettings))
 	bool bUseCustomSettingsWidget = false;
 	// Enables use of custom property filter in Settings panel.
 	// Will display only properties that have Config flag instead of normal "anything editable" behavior

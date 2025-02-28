@@ -20,9 +20,11 @@
 #include "UObject/UObjectIterator.h"
 #include "UI/SubsystemBrowserPanel.h"
 #include "UI/SubsystemSettingsWidget.h"
+#include "SubsystemSettingsEditorModule.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
+const FName FSubsystemSettingsUserMeta::MD_SBHidden(TEXT("SBHidden"));
 const FName FSubsystemSettingsUserMeta::MD_SBSection(TEXT("SBSettingsSection"));
 const FName FSubsystemSettingsUserMeta::MD_SBSectionDesc(TEXT("SBSettingsSectionDesc"));
 
@@ -131,7 +133,7 @@ TSharedRef<SDockTab> FSubsystemSettingsManager::HandleSpawnSettingsTab(const FSp
 
 		if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilter())
 		{
-			auto InnerDetailsView = RecursiveFindWidget<IDetailsView>(SettingsEditor, TEXT("SDetailsView"));
+			TSharedPtr<IDetailsView> InnerDetailsView = RecursiveFindWidget<IDetailsView>(SettingsEditor, TEXT("SDetailsView"));
 			if (InnerDetailsView.IsValid())
 			{
 				InnerDetailsView->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));
@@ -176,8 +178,8 @@ void FSubsystemSettingsManager::RegisterDiscoveredSubsystems(ISettingsModule& Se
 {
 	TArray<UObject*> AllKnownSubsystems;
 
-	auto& LocalCopy = FSubsystemBrowserModule::Get().GetCategories();
-	for (const SubsystemCategoryPtr& Ptr : LocalCopy)
+	const TArray<SubsystemCategoryPtr>& RegisteredCategories = FSubsystemBrowserModule::Get().GetCategories();
+	for (const SubsystemCategoryPtr& Ptr : RegisteredCategories)
 	{
 		if (!Ptr->IsVisibleInSettings())
 			continue;
@@ -195,14 +197,24 @@ void FSubsystemSettingsManager::RegisterDiscoveredSubsystems(ISettingsModule& Se
 				continue;
 			if (SSClass->HasAnyClassFlags(CLASS_Deprecated|CLASS_Abstract))
 				continue;
+			if (SSClass->FindMetaData(FSubsystemSettingsUserMeta::MD_SBHidden) != nullptr)
+				continue;
 			if (!AllKnownSubsystems.Contains(Subsystem))
 			{
-				auto ClassFieldStats = FSubsystemBrowserUtils::GetClassFieldStats(SSClass);
+				FSubsystemBrowserUtils::FClassFieldStats ClassFieldStats = FSubsystemBrowserUtils::GetClassFieldStats(SSClass);
+				// ignore entries with Class-level config specifier but no actual Config properties
+				if (!ClassFieldStats.NumConfig)
+					continue;
 
-				bool bNeedsCustom = ClassFieldStats.NumConfig && !ClassFieldStats.NumConfigWithEdit;
-				bool bCanUseCustom = USubsystemBrowserSettings::Get()->ShouldUseCustomSettingsWidget();
+				// custom mode allows showing props without Edit specifier, if there's none - ignore object
+				bool bUseCustom = USubsystemBrowserSettings::Get()->ShouldUseCustomSettingsWidget();
+				if (!bUseCustom && !ClassFieldStats.NumConfigWithEdit)
+					continue;
 
-				RegisterSubsystemSettings(SettingsModule, Ptr->GetSettingsName(), Subsystem, bNeedsCustom && bCanUseCustom);
+				UE_LOG(LogSubsystemSettingsEditor, Verbose, TEXT("Discovered object %s [%s] (editable=%d, total=%d, customui=%d)"),
+					*GetNameSafe(Subsystem), *GetNameSafe(SSClass), ClassFieldStats.NumConfigWithEdit, ClassFieldStats.NumConfig, (int32)bUseCustom);
+
+				RegisterSubsystemSettings(SettingsModule, Ptr->GetSettingsName(), Subsystem, bUseCustom);
 
 				AllKnownSubsystems.Add(Subsystem);
 			}

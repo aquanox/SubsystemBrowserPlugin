@@ -16,6 +16,8 @@ class ISettingsSection;
 
 struct FSubsystemSettingsUserMeta
 {
+	// Subsystem Settings - Hide type from display
+	static const FName MD_SBHidden;
 	// Subsystem Settings - Section name override (default is Class::GetDisplayNameText)
 	static const FName MD_SBSection;
 	// Subsystem Settings - Section description override (default is Class::GetTooltipText)
