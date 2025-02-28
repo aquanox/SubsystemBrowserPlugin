@@ -22,9 +22,18 @@ struct FSubsystemBrowserConfigItem
 	bool operator==(const FName& OtherName) const { return Name == OtherName; }
 };
 
-DECLARE_DYNAMIC_DELEGATE_RetVal(FString, FSubsystemBrowserGetStringProperty);
-DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FSubsystemBrowserGetTextProperty);
-DECLARE_DYNAMIC_DELEGATE_RetVal(TArray<UObject*>, FSubsystemBrowserGetSubobjects);
+UENUM()
+enum class ESubsystemBrowserSplitterOrientation
+{
+	Horizontal,
+	Vertical,
+	// Vertical in Panel mode, Horizontal in Nomad mode
+	Auto
+};
+
+DECLARE_DELEGATE_RetVal(FString, FSubsystemBrowserGetStringProperty);
+DECLARE_DELEGATE_RetVal(FText, FSubsystemBrowserGetTextProperty);
+DECLARE_DELEGATE_RetVal(TArray<UObject*>, FSubsystemBrowserGetSubobjects);
 
 struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 {
@@ -102,7 +111,8 @@ public:
 	void LoadTreeExpansionStates(TMap<FName, bool>& States);
 	void SetTreeExpansionStates(const TMap<FName, bool>& States);
 
-	float GetSeparatorLocation() const { return HorizontalSeparatorLocation; }
+	ESubsystemBrowserSplitterOrientation GetSeparatorOrientation() const;
+	float GetSeparatorLocation() const { return SeparatorLocation; }
 	void SetSeparatorLocation(float NewValue);
 
 	bool IsColoringEnabled() const { return bEnableColoring; }
@@ -152,6 +162,8 @@ public:
 	bool ShouldUseCustomSettingsWidget() const { return bUseCustomSettingsWidget; }
 	bool ShouldUseCustomPropertyFilter() const { return bUseCustomPropertyFilter; }
 
+	bool ShouldUseNomadMode() const { return bUseNomadMode; }
+
 private:
 
 	template<typename TList, typename TMap>
@@ -164,6 +176,11 @@ private:
 	void SetConfigFlag(TMap& InMap, FName Category, bool State);
 
 protected:
+	
+	// Should spawn Subsystem Browser Panel as a nomad tab insteaf of Level Editor Panel tab?
+	// Editor Restart is required to apply value change. Default is False. 
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigRestartRequired=true))
+	bool bUseNomadMode = false;
 
 	// Should show subsystems only from Game Modules?
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
@@ -177,7 +194,7 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bHideEmptyCategories = false;
 
-	// Should show subsystems that have Edit or Visible properties or callable functions?
+	// Should show subsystems that have at least one viewable property or callable function?
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bShowOnlyWithViewableElements = false;
 	
@@ -191,10 +208,11 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
 	bool bForceHiddenPropertyVisibility = false;
 
-	// Should include properties without Edit specifier
+	// Should display hidden properties (without Edit property specifier)
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditCondition="bForceHiddenPropertyVisibility"))
 	bool bShowAnyProperties = false;
-	// Should include properties with Config specifier
+	
+	// Should display hidden properties with Config property specifier
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditCondition="bForceHiddenPropertyVisibility"))
 	bool bShowAnyConfigProperties = false;
 
@@ -203,6 +221,7 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
 	bool bEditAnyProperties = false;
 
+	// Enforces editing of all object properties that have Config specifier.
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
 	bool bEditAnyConfigProperties = false;
 
@@ -244,24 +263,34 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")
 	bool bShowDetailedTooltips = false;
 
+	// Control TreeView|DetailsView splitter mode
+	// Respawning panel or restarting editor is required to apply change. 
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(ConfigRestartRequired=true))
+	ESubsystemBrowserSplitterOrientation SeparatorOrientation = ESubsystemBrowserSplitterOrientation::Auto;
+	
 	//
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel State", meta=(ConfigAffectsView, TitleProperty="Name"))
+	//UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")
+	UPROPERTY(config)
+	float SeparatorLocation = 0.33f;
+	
+	//
+	//UPROPERTY(config, EditAnywhere, Category="Browser Panel State", meta=(ConfigAffectsView, TitleProperty="Name"))
+	UPROPERTY(config)
 	TArray<FSubsystemBrowserConfigItem> CategoryVisibilityState;
 
 	//
-	UPROPERTY(config, VisibleAnywhere, Category="Browser Panel State", meta=(ConfigAffectsView, TitleProperty="Name"))
+	//UPROPERTY(config, VisibleAnywhere, Category="Browser Panel State", meta=(ConfigAffectsView, TitleProperty="Name"))
+	UPROPERTY(config)
 	TArray<FSubsystemBrowserConfigItem> TreeExpansionState;
 
 	//
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel State", meta=(ConfigAffectsColumns, TitleProperty="Name"))
+	//UPROPERTY(config, EditAnywhere, Category="Browser Panel State", meta=(ConfigAffectsColumns, TitleProperty="Name"))
+	UPROPERTY(config)
 	TArray<FSubsystemBrowserConfigItem> TableColumnVisibilityState;
 
-	//
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel State")
-	float HorizontalSeparatorLocation = 0.33f;
-
-	// Enables subsystem settings panel
-	UPROPERTY(config, EditAnywhere, Category="Settings Panel", meta=(ConfigRestartRequired))
+	// Enables subsystem settings panel.
+	// Requires editor restart to apply value change.
+	UPROPERTY(config, EditAnywhere, Category="Settings Panel", meta=(ConfigRestartRequired=true))
 	bool bUseSubsystemSettings = false;
 	// Enables use of custom settings widget in Settings panel.
 	// Will enable display of built-in subsystems that are configurable but not editable

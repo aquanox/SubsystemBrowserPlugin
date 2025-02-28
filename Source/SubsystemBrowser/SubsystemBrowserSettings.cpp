@@ -124,10 +124,19 @@ void USubsystemBrowserSettings::SetTreeExpansionStates(TMap<FName, bool> const& 
 	//NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, TreeExpansionState));
 }
 
+ESubsystemBrowserSplitterOrientation USubsystemBrowserSettings::GetSeparatorOrientation() const
+{
+	if (SeparatorOrientation == ESubsystemBrowserSplitterOrientation::Auto)
+	{
+		return bUseNomadMode ? ESubsystemBrowserSplitterOrientation::Horizontal : ESubsystemBrowserSplitterOrientation::Vertical;
+	}
+	return SeparatorOrientation;
+}
+
 void USubsystemBrowserSettings::SetSeparatorLocation(float NewValue)
 {
-	HorizontalSeparatorLocation = NewValue;
-	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, HorizontalSeparatorLocation));
+	SeparatorLocation = NewValue;
+	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, SeparatorLocation));
 }
 
 void USubsystemBrowserSettings::SetColoringEnabled(bool bNewValue)

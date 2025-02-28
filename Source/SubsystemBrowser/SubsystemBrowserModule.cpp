@@ -42,36 +42,37 @@ void FSubsystemBrowserModule::StartupModule()
 	{
 		FSubsystemBrowserStyle::Register();
 
-#if !SUBSYSTEM_BROWSER_NOMAD_MODE
+		bNomadModeActive = USubsystemBrowserSettings::Get()->ShouldUseNomadMode();
 
-		FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-		LevelEditorModule.OnTabManagerChanged().AddLambda([Module = this]()
-		{
+		if (!bNomadModeActive)
+		{ // register as a normal panel within level editor 
 			FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-			TSharedPtr<FTabManager> LevelEditorTabManager = LevelEditorModule.GetLevelEditorTabManager();
-			if (LevelEditorTabManager.IsValid())
+			LevelEditorModule.OnTabManagerChanged().AddLambda([Module = this]()
 			{
-				LevelEditorTabManager->RegisterTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(Module, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
-					.SetDisplayName(LOCTEXT("SubsystemBrowserTabTitle", "Subsystems"))
-					.SetTooltipText(LOCTEXT("SubsystemBrowserTabTooltip", "Open the Subsystem Browser tab."))
-					.SetGroup(WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory())
+				FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
+				TSharedPtr<FTabManager> LevelEditorTabManager = LevelEditorModule.GetLevelEditorTabManager();
+				if (LevelEditorTabManager.IsValid())
+				{
+					LevelEditorTabManager->RegisterTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(Module, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
+						.SetDisplayName(LOCTEXT("SubsystemBrowserTabTitle", "Subsystems"))
+						.SetTooltipText(LOCTEXT("SubsystemBrowserTabTooltip", "Open the Subsystem Browser tab."))
+						.SetGroup(WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory())
+						.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
+				}
+			});
+		}
+		else
+		{ // register as a nomad tab within global tab manager
+			FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(this, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
+					.SetDisplayName(LOCTEXT("SubsystemBrowserNomadTabTitle", "Subsystem Browser"))
+					.SetTooltipText(LOCTEXT("SubsystemBrowserNomadTabTooltip", "Open the Subsystem Browser tab."))
+	#if UE_VERSION_OLDER_THAN(5, 0, 0)
+					.SetGroup(WorkspaceMenu::GetMenuStructure().GetDeveloperToolsMiscCategory())
+	#else
+					.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory())
+	#endif
 					.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
-			}
-		});
-
-#else
-
-		FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(this, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
-				.SetDisplayName(LOCTEXT("SubsystemBrowserNTabTitle", "Subsystem Browser"))
-				.SetTooltipText(LOCTEXT("SubsystemBrowserNTabTooltip", "Open the Subsystem Browser tab."))
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-				.SetGroup(WorkspaceMenu::GetMenuStructure().GetDeveloperToolsMiscCategory())
-#else
-				.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory())
-#endif
-				.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
-
-#endif
+		}
 
 		// Register default columns and categories on startup
 		RegisterDefaultDynamicColumns();
@@ -114,15 +115,18 @@ void FSubsystemBrowserModule::ShutdownModule()
 	{
 		PluginSettingsSection.Reset();
 
-#if !SUBSYSTEM_BROWSER_NOMAD_MODE
-		if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>(TEXT("LevelEditor")))
+		if (!bNomadModeActive)
 		{
-			LevelEditorModule->GetLevelEditorTabManager()->UnregisterTabSpawner(SubsystemBrowserTabName);
+			if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>(TEXT("LevelEditor")))
+			{
+				LevelEditorModule->GetLevelEditorTabManager()->UnregisterTabSpawner(SubsystemBrowserTabName);
+			}
 		}
-#else
-		FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SubsystemBrowserTabName);
-#endif
-
+		else
+		{
+			FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SubsystemBrowserTabName);
+		}
+		
 		FSubsystemBrowserStyle::UnRegister();
 	}
 }
@@ -133,9 +137,7 @@ TSharedRef<SDockTab> FSubsystemBrowserModule::HandleSpawnBrowserTab(const FSpawn
 
 	return SNew(SDockTab)
 		.Label(LOCTEXT("SubsystemBrowserTitle", "Subsystems"))
-#if SUBSYSTEM_BROWSER_NOMAD_MODE
-		.TabRole(ETabRole::NomadTab)
-#endif
+		.TabRole(bNomadModeActive ? ETabRole::NomadTab : ETabRole::PanelTab)
 	[
 		SNew(SBorder)
 		.BorderImage( FStyleHelper::GetBrush(TEXT("ToolPanel.GroupBorder")) )
@@ -184,7 +186,7 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	RegisterCategory<FSubsystemCategory_Player>();
 
 #if UE_VERSION_NEWER_THAN(5, 1, 0)
-	// RegisterCategory<FSubsystemCategory_AudioEngine>();
+	RegisterCategory<FSubsystemCategory_AudioEngine>();
 #endif
 }
 

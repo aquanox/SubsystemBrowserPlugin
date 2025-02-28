@@ -118,6 +118,8 @@ protected:
 	TSharedRef<SDockTab> HandleSpawnBrowserTab(const FSpawnTabArgs& Args);
 
 private:
+	// Is nomad mode enabled
+	bool bNomadModeActive = false;
 	// Instances of subsystem categories
 	TArray<SubsystemCategoryPtr> Categories;
 	// Instances of dynamic subsystem columns

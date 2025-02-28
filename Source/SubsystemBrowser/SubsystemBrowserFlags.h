@@ -13,13 +13,6 @@
 		!UE_VERSION_NEWER_THAN(MajorVersion, MinorVersion, PatchVersion)
 
 /**
- * Should tab be a nomad or level editor tab?
- * 0 = Tab is bound to Level Editor
- * 1 = Tab is free
- */
-#define SUBSYSTEM_BROWSER_NOMAD_MODE 0
-
-/**
  * Toggle example code validation
  */
 #define ENABLE_SUBSYSTEM_BROWSER_EXAMPLES 0

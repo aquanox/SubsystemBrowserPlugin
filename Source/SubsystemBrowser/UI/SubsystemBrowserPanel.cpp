@@ -191,7 +191,7 @@ void SSubsystemBrowserPanel::Construct(const FArguments& InArgs)
 			[
 				SAssignNew(BrowserSplitter, SSplitter)
 				.MinimumSlotHeight(100.f)
-				.Orientation(Orient_Vertical)
+				.Orientation(Settings->GetSeparatorOrientation() == ESubsystemBrowserSplitterOrientation::Horizontal ? Orient_Horizontal : Orient_Vertical)
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 				.Style(FStyleHelper::GetWidgetStylePtr<FSplitterStyle>("Splitter"))
 #else
