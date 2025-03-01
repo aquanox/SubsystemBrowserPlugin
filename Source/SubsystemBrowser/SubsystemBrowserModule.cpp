@@ -31,6 +31,7 @@ DEFINE_LOG_CATEGORY(LogSubsystemBrowser);
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
 const FName FSubsystemBrowserModule::SubsystemBrowserTabName = TEXT("SubsystemBrowserTab");
+const FName FSubsystemBrowserModule::SubsystemBrowserNomadTabName = TEXT("SubsystemBrowserNomadTab");
 const FName FSubsystemBrowserModule::SubsystemBrowserContextMenuName = TEXT("SubsystemBrowser.ContextMenu");
 
 FSubsystemBrowserModule::FOnGenerateTooltip FSubsystemBrowserModule::OnGenerateTooltip;
@@ -63,7 +64,7 @@ void FSubsystemBrowserModule::StartupModule()
 		}
 		else
 		{ // register as a nomad tab within global tab manager
-			FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(this, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
+			FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SubsystemBrowserNomadTabName, FOnSpawnTab::CreateRaw(this, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
 					.SetDisplayName(LOCTEXT("SubsystemBrowserNomadTabTitle", "Subsystem Browser"))
 					.SetTooltipText(LOCTEXT("SubsystemBrowserNomadTabTooltip", "Open the Subsystem Browser tab."))
 	#if UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -124,7 +125,7 @@ void FSubsystemBrowserModule::ShutdownModule()
 		}
 		else
 		{
-			FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SubsystemBrowserTabName);
+			FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SubsystemBrowserNomadTabName);
 		}
 		
 		FSubsystemBrowserStyle::UnRegister();
@@ -149,10 +150,12 @@ TSharedRef<SDockTab> FSubsystemBrowserModule::HandleSpawnBrowserTab(const FSpawn
 
 void FSubsystemBrowserModule::SummonSubsystemTab()
 {
+	const FName& TabName = bNomadModeActive ? SubsystemBrowserNomadTabName : SubsystemBrowserTabName;
+	
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
-	FGlobalTabmanager::Get()->InvokeTab(SubsystemBrowserTabName);
+	FGlobalTabmanager::Get()->InvokeTab(TabName);
 #else
-	FGlobalTabmanager::Get()->TryInvokeTab(SubsystemBrowserTabName);
+	FGlobalTabmanager::Get()->TryInvokeTab(TabName);
 #endif
 }
 

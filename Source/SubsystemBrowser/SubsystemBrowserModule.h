@@ -19,6 +19,7 @@ class FSubsystemBrowserModule : public IModuleInterface
 {
 public:
 	static const FName SubsystemBrowserTabName;
+	static const FName SubsystemBrowserNomadTabName;
 	static const FName SubsystemBrowserContextMenuName;
 
 	SUBSYSTEMBROWSER_API static FSubsystemBrowserModule& Get()
