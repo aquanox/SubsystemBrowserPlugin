@@ -115,10 +115,10 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 	TOptional<FString> UserColorValue = FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBColor);
 	if (UserColorValue.IsSet())
 	{
-		FLinearColor Value(ForceInit);
-		if (Value.InitFromString(*UserColorValue))
+		FLinearColor Result;
+		if (FSubsystemBrowserUtils::TryParseColor(UserColorValue.GetValue(), Result))
 		{
-			UserColor = Value;
+			UserColor = Result;
 		}
 	}
 

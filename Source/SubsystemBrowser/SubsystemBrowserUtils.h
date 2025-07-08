@@ -143,4 +143,9 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * @param OutData collection of subobjects to display
 	 */
 	static void DefaultSelectSubsystemSubobjects(UObject* InSubsystem, TArray<UObject*>& OutData);
+
+	/**
+	 *
+	 */
+	static bool TryParseColor(const FString& InColor, FLinearColor& OutColor);
 };

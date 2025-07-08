@@ -725,4 +725,71 @@ void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsyst
 	}
 }
 
+bool FSubsystemBrowserUtils::TryParseColor(const FString& InColor, FLinearColor& OutColor)
+{
+	static TMap<FName, FLinearColor> NamedColors;
+
+	if (!NamedColors.Num())
+	{
+		NamedColors.Add(TEXT("white"), FColor::White);
+		NamedColors.Add(TEXT("gray"), FLinearColor::Gray);
+		NamedColors.Add(TEXT("black"), FColor::Black);
+		NamedColors.Add(TEXT("red"), FColor::Red);
+		NamedColors.Add(TEXT("green"), FColor::Green);
+		NamedColors.Add(TEXT("blue"), FColor::Blue);
+		NamedColors.Add(TEXT("yellow"), FColor::Yellow);
+		NamedColors.Add(TEXT("cyan"), FColor::Cyan);
+		NamedColors.Add(TEXT("magenta"), FColor::Magenta);
+		NamedColors.Add(TEXT("orange"), FColor::Orange);
+		NamedColors.Add(TEXT("purple"), FColor::Purple);
+		NamedColors.Add(TEXT("turquoise"), FColor::Turquoise);
+		NamedColors.Add(TEXT("silver"), FColor::Silver);
+		NamedColors.Add(TEXT("emerald"), FColor::Emerald);
+		
+		//NamedColors.Add(TEXT("category_game"), FColor(200, 20, 61));
+		//NamedColors.Add(TEXT("category_ui"), FColor(9, 96, 200));
+		//NamedColors.Add(TEXT("category_editor"), FColor(164, 4, 200));
+		//NamedColors.Add(TEXT("category_misc"), FColor(120, 200, 3));
+	}
+	
+	FString StrValue = InColor.TrimStartAndEnd();
+	if (!StrValue.Len())
+	{
+		return false;
+	}
+
+	FLinearColor TempValue(ForceInit);
+
+	// #RGB #RRGGBB #RRGGBBAA
+	if (StrValue[0] == TEXT('#') || StrValue.Len() == 3 || StrValue.Len() == 6 || StrValue.Len() == 8)
+	{
+		OutColor = FLinearColor::FromSRGBColor(FColor::FromHex(*StrValue));
+		return true;
+	}
+	
+	// "(R=0,G=0,B=0)" "(R=255,G=255,B=255)" 
+	if ((StrValue[0] == TEXT('(') || StrValue.Len() > 4) && TempValue.InitFromString(StrValue))
+	{
+		OutColor = TempValue;
+		return true;
+	}
+	
+	// Named table from standard table
+	if (FLinearColor* NamedColor = NamedColors.Find(FName(*StrValue)))
+	{
+		OutColor = *NamedColor;
+		return true;
+	}
+	
+	// Named table for project use
+	if (USubsystemBrowserSettings::Get()->TryFindNamedColor(FName(*StrValue), TempValue))
+	{
+		OutColor = TempValue;
+		return true;
+	}
+
+	UE_LOG(LogSubsystemBrowser, Warning, TEXT("Failed to parse color property [%s]"), *StrValue);
+	return false;
+}
+
 #undef LOCTEXT_NAMESPACE

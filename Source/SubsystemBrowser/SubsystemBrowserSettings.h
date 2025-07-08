@@ -68,6 +68,19 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserConfigMeta
 	static const FName MD_ConfigAffectsSettings;
 };
 
+USTRUCT()
+struct FSubsystemBrowserNamedColorEntry
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Color)
+	FName Name;
+	UPROPERTY(EditAnywhere, Category=Color)
+	FLinearColor Color;
+
+	bool operator==(const FName& InKey) const { return Name == InKey; }
+};
+
 /**
  * Class that holds settings for subsystem browser plugin.
  *
@@ -164,6 +177,8 @@ public:
 
 	bool ShouldUseNomadMode() const { return bUseNomadMode; }
 
+	bool TryFindNamedColor(const FName& InName, FLinearColor& OutColor) const;
+
 private:
 
 	template<typename TList, typename TMap>
@@ -258,6 +273,9 @@ protected:
 	bool bEnableColoringEngineModule = false;
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableColoringEngineModule"))
 	FLinearColor EngineModuleColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
+
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableColoring", TitleProperty="Name"))
+	TArray<FSubsystemBrowserNamedColorEntry> NamedColors;
 
 	// Display additional information in subsystem tooltips
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")

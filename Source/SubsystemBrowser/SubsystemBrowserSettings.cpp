@@ -210,6 +210,16 @@ void USubsystemBrowserSettings::SetShouldHideEmptyCategories(bool bNewValue)
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bHideEmptyCategories));
 }
 
+bool USubsystemBrowserSettings::TryFindNamedColor(const FName& InName, FLinearColor& OutColor) const
+{
+	if (const FSubsystemBrowserNamedColorEntry* Entry = NamedColors.FindByKey(InName))
+	{
+		OutColor = Entry->Color;
+		return true;
+	}
+	return false;
+}
+
 void USubsystemBrowserSettings::SyncColumnSettings()
 {
 	TMap<FName, bool> CurrentSettings;
