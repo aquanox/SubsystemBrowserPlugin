@@ -47,11 +47,11 @@ void FSubsystemBrowserModule::StartupModule()
 
 		if (!bNomadModeActive)
 		{ // register as a normal panel within level editor 
-			FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-			LevelEditorModule.OnTabManagerChanged().AddLambda([Module = this]()
+			FLevelEditorModule& LevelEd = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
+			LevelEd.OnTabManagerChanged().AddLambda([Module = this]()
 			{
-				FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-				TSharedPtr<FTabManager> LevelEditorTabManager = LevelEditorModule.GetLevelEditorTabManager();
+				FLevelEditorModule& LevelEdInner = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
+				TSharedPtr<FTabManager> LevelEditorTabManager = LevelEdInner.GetLevelEditorTabManager();
 				if (LevelEditorTabManager.IsValid())
 				{
 					LevelEditorTabManager->RegisterTabSpawner(SubsystemBrowserTabName, FOnSpawnTab::CreateRaw(Module, &FSubsystemBrowserModule::HandleSpawnBrowserTab))
