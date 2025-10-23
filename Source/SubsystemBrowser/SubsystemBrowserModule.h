@@ -15,30 +15,30 @@ class IDetailsView;
 class ISettingsSection;
 struct ISubsystemTreeItem;
 
-class FSubsystemBrowserModule : public IModuleInterface
+class SUBSYSTEMBROWSER_API FSubsystemBrowserModule : public IModuleInterface
 {
 public:
 	static const FName SubsystemBrowserTabName;
 	static const FName SubsystemBrowserNomadTabName;
 	static const FName SubsystemBrowserContextMenuName;
 
-	SUBSYSTEMBROWSER_API static FSubsystemBrowserModule& Get()
+	static FSubsystemBrowserModule& Get()
 	{
 		return FModuleManager::GetModuleChecked<FSubsystemBrowserModule>(TEXT("SubsystemBrowser"));
 	}
-
+protected:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 	virtual bool SupportsDynamicReloading() override { return false; }
-
+public:
 	/**
 	 * Get list of all registered subsystem categories
 	 */
-	SUBSYSTEMBROWSER_API const TArray<SubsystemCategoryPtr>& GetCategories() const;
+	const TArray<SubsystemCategoryPtr>& GetCategories() const;
 	/**
 	 * Register default subsystem categories
 	 */
-	SUBSYSTEMBROWSER_API void RegisterDefaultCategories();
+	void RegisterDefaultCategories();
 	/**
 	 * Register a new subsystem category
 	 */
@@ -47,20 +47,20 @@ public:
 	/**
 	 * Register a new subsystem category to show
 	 */
-	SUBSYSTEMBROWSER_API void RegisterCategory(TSharedRef<FSubsystemCategory> InCategory);
+	void RegisterCategory(TSharedRef<FSubsystemCategory> InCategory);
 	/**
 	 * Remove a category by its name
 	 */
-	SUBSYSTEMBROWSER_API void RemoveCategory(FName CategoryName);
+	void RemoveCategory(FName CategoryName);
 
 	/**
 	 * Get a list of all custom dynamic columns
 	 */
-	SUBSYSTEMBROWSER_API const TArray<SubsystemColumnPtr>& GetDynamicColumns() const;
+	const TArray<SubsystemColumnPtr>& GetDynamicColumns() const;
 	/**
 	 *
 	 */
-	SUBSYSTEMBROWSER_API void RegisterDefaultDynamicColumns();
+	void RegisterDefaultDynamicColumns();
 	/**
 	 * Register a new custom dynamic column
 	 */
@@ -69,7 +69,7 @@ public:
 	/**
 	 * Register a new custom dynamic column
 	 */
-	SUBSYSTEMBROWSER_API void RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn);
+	void RegisterDynamicColumn(TSharedRef<FSubsystemDynamicColumn> InColumn);
 	/**
 	 * Populate permanent columns
 	 */
@@ -78,38 +78,38 @@ public:
 	/**
 	 * Open subsystems tab
 	 */
-	SUBSYSTEMBROWSER_API void SummonSubsystemTab();
+	void SummonSubsystemTab();
 
 	/**
 	 * Open editor settings tab with plugin settings pre-selected
 	 */
-	SUBSYSTEMBROWSER_API void SummonPluginSettingsTab();
+	void SummonPluginSettingsTab();
 
 	/**
 	 * Open subsystem settings panel
 	 */
-	SUBSYSTEMBROWSER_API void SummonSubsystemSettingsTab();
+	void SummonSubsystemSettingsTab();
 
 	/**
 	 * Callback that is called whenever a tooltip for item needs to be generated
 	 * Used to add custom data to tooltips.
 	 */
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateTooltip, TSharedRef<const ISubsystemTreeItem>, class FSubsystemTableItemTooltipBuilder&);
-	static SUBSYSTEMBROWSER_API FOnGenerateTooltip OnGenerateTooltip;
+	static FOnGenerateTooltip OnGenerateTooltip;
 
 	/**
 	 * Callback that is called whenever a menu for item needs to be generated.
 	 * Used to add custom menu actions.
 	 */
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGenerateMenu, TSharedRef<const ISubsystemTreeItem>, UToolMenu*);
-	static SUBSYSTEMBROWSER_API FOnGenerateMenu OnGenerateContextMenu;
+	static FOnGenerateMenu OnGenerateContextMenu;
 
 	/**
 	 * Apply custom  subsystem  customizations to provided details view
 	 * @param DetailsView details view instance to patch
 	 * @param Usage
 	 */
-	static SUBSYSTEMBROWSER_API void CustomizeDetailsView(TSharedRef<IDetailsView> DetailsView, FName Usage);
+	static void CustomizeDetailsView(TSharedRef<IDetailsView> DetailsView, FName Usage);
 
 protected:
 	void RegisterSettings();
