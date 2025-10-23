@@ -906,19 +906,26 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetWorldsButtonContent()
 
 	MenuBuilder.BeginSection("Worlds", LOCTEXT("WorldsHeading", "Worlds"));
 
+	auto IsAllowedWorldType = [](EWorldType::Type InType) -> bool
+	{
+		if (USubsystemBrowserSettings::Get()->ShouldDisplayAllWorlds())
+			return true;
+		return InType == EWorldType::PIE || InType == EWorldType::Editor;
+	};
+
 	for (const FWorldContext& Context : GEngine->GetWorldContexts())
 	{
 		UWorld* World = Context.World();
-		if (World && (World->WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Editor))
+		if (World && IsAllowedWorldType(World->WorldType))
 		{
 			MenuBuilder.AddMenuEntry(
 				FSubsystemBrowserUtils::GetWorldDescription(World),
 				LOCTEXT("ChooseWorldToolTip", "Display subsystems for this world."),
 				FSlateIcon(),
 				FUIAction(
-				FExecuteAction::CreateSP( this, &SSubsystemBrowserPanel::OnSelectWorld, MakeWeakObjectPtr(World) ),
-				FCanExecuteAction(),
-				FIsActionChecked::CreateSP( this, &SSubsystemBrowserPanel::IsWorldChecked, MakeWeakObjectPtr(World) )
+					FExecuteAction::CreateSP( this, &SSubsystemBrowserPanel::OnSelectWorld, MakeWeakObjectPtr(World) ),
+					FCanExecuteAction(),
+					FIsActionChecked::CreateSP( this, &SSubsystemBrowserPanel::IsWorldChecked, MakeWeakObjectPtr(World) )
 				),
 				NAME_None,
 				EUserInterfaceActionType::RadioButton

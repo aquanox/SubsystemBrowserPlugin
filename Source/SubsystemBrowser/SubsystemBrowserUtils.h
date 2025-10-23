@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Engine/EngineTypes.h"
 #include "Misc/Optional.h"
 #include "Misc/OutputDevice.h"
 #include "Widgets/Notifications/SNotificationList.h"
@@ -54,6 +55,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 		int32 NumProperties = 0;
 		// number of properties with Edit or Visible flag
 		int32 NumEditable = 0;
+		// number of properties with Visible flag
 		int32 NumVisible = 0;
 		// number of properties with Config flag
 		int32 NumConfig = 0;
@@ -177,4 +179,6 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * 
 	 */
 	static void InvokeQuickAction(const FQuickActionData& ActionData);
+
+	static FText WorldTypeToText(EWorldType::Type WorldType);
 };

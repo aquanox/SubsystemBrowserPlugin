@@ -603,54 +603,62 @@ void FSubsystemBrowserUtils::PrintPropertyDetails(const TArray<FString>& InArgs,
 
 FText FSubsystemBrowserUtils::GetWorldDescription(const UWorld* World)
 {
-	FText Description;
-	if(World)
+	if(!World)
 	{
-		FText PostFix;
-		const FWorldContext* WorldContext = nullptr;
-		for (const FWorldContext& Context : GEngine->GetWorldContexts())
-		{
-			if(Context.World() == World)
-			{
-				WorldContext = &Context;
-				break;
-			}
-		}
-
-		if (World->WorldType == EWorldType::PIE)
-		{
-			switch(World->GetNetMode())
-			{
-				case NM_Client:
-					if (WorldContext)
-					{
-						PostFix = FText::Format(LOCTEXT("ClientPostfixFormat", "(Client {0})"), FText::AsNumber(WorldContext->PIEInstance - 1));
-					}
-					else
-					{
-						PostFix = LOCTEXT("ClientPostfix", "(Client)");
-					}
-					break;
-				case NM_DedicatedServer:
-				case NM_ListenServer:
-					PostFix = LOCTEXT("ServerPostfix", "(Server)");
-					break;
-				case NM_Standalone:
-					PostFix = LOCTEXT("PlayInEditorPostfix", "(Play In Editor)");
-					break;
-				default:
-					break;
-			}
-		}
-		else if(World->WorldType == EWorldType::Editor)
-		{
-			PostFix = LOCTEXT("EditorPostfix", "(Editor)");
-		}
-
-		Description = FText::Format(LOCTEXT("WorldFormat", "{0} {1}"), FText::FromString(World->GetFName().GetPlainNameString()), PostFix);
+		return INVTEXT("None");
 	}
 
-	return Description;
+	FText PrimaryName;
+	FText Extra;
+	const FWorldContext* WorldContext = nullptr;
+	for (const FWorldContext& Context : GEngine->GetWorldContexts())
+	{
+		if(Context.World() == World)
+		{
+			WorldContext = &Context;
+			break;
+		}
+	}
+
+	if (World->WorldType == EWorldType::PIE)
+	{
+		PrimaryName =  FText::FromString(World->GetFName().GetPlainNameString());
+		
+		switch(World->GetNetMode())
+		{
+		case NM_Client:
+			if (WorldContext)
+			{
+				Extra = FText::Format(LOCTEXT("ClientPostfixFormat", "Client {0}"), FText::AsNumber(WorldContext->PIEInstance - 1));
+			}
+			else
+			{
+				Extra = LOCTEXT("ClientPostfix", "Client");
+			}
+			break;
+		case NM_DedicatedServer:
+		case NM_ListenServer:
+			Extra = LOCTEXT("ServerPostfix", "Server");
+			break;
+		case NM_Standalone:
+			Extra = LOCTEXT("PlayInEditorPostfix", "Play In Editor");
+			break;
+		default:
+			break;
+		}
+	}
+	else if(World->WorldType == EWorldType::Editor)
+	{
+		PrimaryName =  FText::FromString(World->GetFName().GetPlainNameString());
+		Extra = LOCTEXT("EditorPostfix", "Editor");
+	}
+	else
+	{
+		PrimaryName = FText::FromString(World->GetFName().ToString());
+		Extra = FSubsystemBrowserUtils::WorldTypeToText(World->WorldType);
+	}
+
+	return  FText::Format(LOCTEXT("WorldFormat", "{0} ({1})"), PrimaryName, Extra);
 }
 
 UClass* FSubsystemBrowserUtils::TryFindClassByName(const FString& ClassName)
@@ -844,6 +852,31 @@ void FSubsystemBrowserUtils::InvokeQuickAction(const FQuickActionData& ActionDat
 		{
 			ExecutionObject->ProcessEvent(Function, nullptr);
 		}
+	}
+}
+
+FText FSubsystemBrowserUtils::WorldTypeToText(EWorldType::Type WorldType)
+{
+	switch (WorldType)
+	{
+	case EWorldType::Type::Editor:
+		return INVTEXT("Editor");
+	case EWorldType::Type::EditorPreview:
+		return INVTEXT("EditorPreview");
+	case EWorldType::Type::Game:
+		return INVTEXT("Game");
+	case EWorldType::Type::GamePreview:
+		return INVTEXT("GamePreview");
+	case EWorldType::Type::GameRPC:
+		return INVTEXT("GameRPC");
+	case EWorldType::Type::Inactive:
+		return INVTEXT("Inactive");
+	case EWorldType::Type::PIE:
+		return INVTEXT("PIE");
+	case EWorldType::Type::None:
+		return INVTEXT("None");
+	default:
+		return INVTEXT("Unknown");
 	}
 }
 

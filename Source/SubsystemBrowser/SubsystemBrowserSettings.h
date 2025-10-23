@@ -184,6 +184,8 @@ public:
 
 	bool TryFindNamedColor(const FName& InName, FLinearColor& OutColor) const;
 
+	bool ShouldDisplayAllWorlds() const { return bShowAllWorlds; }
+
 private:
 
 	template<typename TList, typename TMap>
@@ -222,6 +224,16 @@ protected:
 	// List of subobjects controlled by metadata specifiers
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bShowSubobjects = true;
+
+	// Display additional information in subsystem panel tooltips
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel")
+	bool bShowDetailedTooltips = false;
+
+	// Enables selection of all known worlds (instead of only WorldType::PIE and WorldType::Editor)
+	// Useful when need to see subsystems in Editor Preview worlds (Blueprint Viewport)
+	// WARNING: May be unsafe in some use cases.
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel")
+	bool bShowAllWorlds = false;
 
 	// Enforces display of all hidden object properties in details panel. Results filtered with options below.
 	// WARNING: May be unsafe in some use cases.
@@ -281,10 +293,6 @@ protected:
 
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableColoring", TitleProperty="Name"))
 	TArray<FSubsystemBrowserNamedColorEntry> NamedColors;
-
-	// Display additional information in subsystem tooltips
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")
-	bool bShowDetailedTooltips = false;
 
 	// Control TreeView|DetailsView splitter mode
 	// Respawning panel or restarting editor is required to apply change. 

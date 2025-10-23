@@ -38,36 +38,7 @@ void FSubsystemCategory_World::GenerateTooltip(UWorld* InContext, class FSubsyst
 	FText SanityResult;
 	if (IsValid(InContext))
 	{
-		switch (InContext->WorldType)
-		{
-		case EWorldType::Type::Editor:
-			SanityResult = INVTEXT("Editor");
-			break;
-		case EWorldType::Type::EditorPreview:
-			SanityResult = INVTEXT("EditorPreview");
-			break;
-		case EWorldType::Type::Game:
-			SanityResult = INVTEXT("Game");
-			break;
-		case EWorldType::Type::GamePreview:
-			SanityResult = INVTEXT("GamePreview");
-			break;
-		case EWorldType::Type::GameRPC:
-			SanityResult = INVTEXT("GameRPC");
-			break;
-		case EWorldType::Type::Inactive:
-			SanityResult = INVTEXT("Inactive");
-			break;
-		case EWorldType::Type::PIE:
-			SanityResult = INVTEXT("PIE");
-			break;
-		case EWorldType::Type::None:
-			SanityResult = INVTEXT("None");
-			break;
-		default:
-			SanityResult = INVTEXT("Unknown");
-			break;
-		}
+		SanityResult = FSubsystemBrowserUtils::WorldTypeToText(InContext->WorldType);
 	}
 	else
 	{
