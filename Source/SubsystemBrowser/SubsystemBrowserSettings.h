@@ -173,6 +173,7 @@ public:
 
 	int32 GetMaxColumnTogglesToShow() const { return MaxColumnTogglesToShow; }
 	int32 GetMaxCategoryTogglesToShow() const { return MaxCategoryTogglesToShow; }
+	int32 GetMaxQuickActionsToShow() const { return MaxQuickActionsToShow; }
 
 	bool ShouldShowDetailsTooltips() const { return bShowDetailedTooltips; }
 
@@ -231,30 +232,29 @@ protected:
 
 	// Enables selection of all known worlds (instead of only WorldType::PIE and WorldType::Editor)
 	// Useful when need to see subsystems in Editor Preview worlds (Blueprint Viewport)
-	// WARNING: May be unsafe in some use cases.
+	// WARNING: Advanced users only
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel")
 	bool bShowAllWorlds = false;
 
-	// Enforces display of all hidden object properties in details panel. Results filtered with options below.
-	// WARNING: May be unsafe in some use cases.
+	// Enables custom visibility and editability handling in details panel. Behavior changed by options below.
+	// WARNING: Advanced users only
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
 	bool bForceHiddenPropertyVisibility = false;
 
-	// Should display hidden properties (without Edit property specifier)
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditCondition="bForceHiddenPropertyVisibility"))
+	// Enforces all object hidden properties (without Edit property specifier) to be visible
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
 	bool bShowAnyProperties = false;
 	
-	// Should display hidden properties with Config property specifier
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditCondition="bForceHiddenPropertyVisibility"))
+	// Enforces all object properties that have Config specifier to be visible
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
 	bool bShowAnyConfigProperties = false;
 
-	// Enforces editing of all object properties in details panel.
-	// WARNING: May be unsafe in some use cases.
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
+	// Enforces all object properties in details panel to be editable.
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
 	bool bEditAnyProperties = false;
 
-	// Enforces editing of all object properties that have Config specifier.
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
+	// Enforces all object properties that have Config specifier to be editable.
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
 	bool bEditAnyConfigProperties = false;
 
 	// Maximum number of column toggles to show in menu before folding into submenu
@@ -266,6 +266,11 @@ protected:
 	// Specify 0 to always fold
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")
 	int32 MaxCategoryTogglesToShow = 6;
+
+	// Maximum number of quick actions to show
+	// Specify 0 to always fold
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance")
+	int32 MaxQuickActionsToShow = 4;
 
 	// Should color some data in table?
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel Appearance", meta=(ConfigAffectsView))

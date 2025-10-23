@@ -58,46 +58,52 @@ void FSubsystemTreeObjectItem::GenerateContextMenu(class UToolMenu* MenuBuilder)
 	TWeakPtr<const FSubsystemTreeObjectItem> Self = SharedThis(this);
 	
 	// Add quick actions
-	{
-		TArray<FSubsystemBrowserUtils::FQuickActionData> QuickActions;
-		FSubsystemBrowserUtils::GatherQuickActions(GetObjectForDetails(), QuickActions);
+	TArray<FSubsystemBrowserUtils::FQuickActionData> QuickActions;
+	FSubsystemBrowserUtils::GatherQuickActions(GetObjectForDetails(), QuickActions);
 
-		if (QuickActions.Num())
+	if (QuickActions.Num())
+	{ // display all actions at main context menu area
+		FToolMenuSection& Section = MenuBuilder->AddSection(TEXT("SubsystemContextQuickActions"), LOCTEXT("SubsystemContextQuickActions", "Quick Actions"));
+		//Section.InsertPosition = FToolMenuInsert(TEXT("Common"), EToolMenuInsertType::After);
+		
+		if (QuickActions.Num() < USubsystemBrowserSettings::Get()->GetMaxQuickActionsToShow())
 		{
+			for (const FSubsystemBrowserUtils::FQuickActionData& ActionData : QuickActions)
+			{
+				Section.AddMenuEntry(NAME_None, ActionData.DisplayText, FText::GetEmpty(), FSlateIcon(),
+					FUIAction(FExecuteAction::CreateLambda([Self, ActionData]()
+					{
+						FSubsystemBrowserUtils::InvokeQuickAction(ActionData);
+					}))
+				);
+			}
+		}
+		else
+		{  // fold actions by group
 			TMap<FName, TArray<FSubsystemBrowserUtils::FQuickActionData>> GroupedData;
 			for (const FSubsystemBrowserUtils::FQuickActionData& ActionData : QuickActions)
 			{
 				GroupedData.FindOrAdd(ActionData.CategoryName).Add(ActionData);
 			}
 			
-			FToolMenuSection& Section = MenuBuilder->AddSection(TEXT("SubsystemContextQuickActions"), LOCTEXT("SubsystemContextQuickActions", "Quick Actions"));
-			Section.InsertPosition = FToolMenuInsert(TEXT("Common"), EToolMenuInsertType::After);
 			for (const auto& Pair : GroupedData)
 			{
 				check(Pair.Value.Num() > 0);
-				const FSubsystemBrowserUtils::FQuickActionData& First = Pair.Value[0];
 
-				auto CreateSubMenu = [Self, Data = Pair.Value](UToolMenu* SubMenu)
-				{
-					FToolMenuSection& SubSection = SubMenu->AddSection(NAME_None);
-					for (const FSubsystemBrowserUtils::FQuickActionData& ActionData : Data)
+				Section.AddSubMenu(NAME_None, Pair.Value[0].CategoryNameText, FText::GetEmpty(),
+					FNewToolMenuDelegate::CreateLambda( [Self, Data = Pair.Value](UToolMenu* SubMenu)
 					{
-						SubSection.AddMenuEntry(NAME_None,
-							ActionData.DisplayText,
-							FText::GetEmpty(),
-							FSlateIcon(),
-							FUIAction(FExecuteAction::CreateLambda([Self, ActionData]()
-							{
-								FSubsystemBrowserUtils::InvokeQuickAction(ActionData);
-							}))
-						);
-					}
-				};
-				
-				Section.AddSubMenu(NAME_None,
-					First.CategoryNameText,
-					FText::GetEmpty(),
-					FNewToolMenuDelegate::CreateLambda(CreateSubMenu)
+						FToolMenuSection& SubSection = SubMenu->AddSection(NAME_None);
+						for (const FSubsystemBrowserUtils::FQuickActionData& ActionData : Data)
+						{
+							SubSection.AddMenuEntry(NAME_None, ActionData.DisplayText, FText::GetEmpty(), FSlateIcon(),
+								FUIAction(FExecuteAction::CreateLambda([Self, ActionData]()
+								{
+									FSubsystemBrowserUtils::InvokeQuickAction(ActionData);
+								}))
+							);
+						}
+					})
 				);
 			}
 			
