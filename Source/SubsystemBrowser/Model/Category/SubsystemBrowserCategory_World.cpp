@@ -5,6 +5,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Engine/World.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "UObject/UObjectHash.h"
 
 FSubsystemCategory_World::FSubsystemCategory_World()
 {
@@ -12,11 +13,6 @@ FSubsystemCategory_World::FSubsystemCategory_World()
 	SettingsName = TEXT("World");
 	Label = NSLOCTEXT("SubsystemBrowser", "SubsystemBrowser_World", "World Subsystems");
 	SortOrder = 400;
-}
-
-UClass* FSubsystemCategory_World::GetSubsystemClass() const
-{
-	return UWorldSubsystem::StaticClass();
 }
 
 void FSubsystemCategory_World::Select(UWorld* InContext, TArray<UObject*>& OutData) const
@@ -29,4 +25,9 @@ void FSubsystemCategory_World::Select(UWorld* InContext, TArray<UObject*>& OutDa
 		OutData.Append(InContext->GetSubsystemArrayCopy<UWorldSubsystem>());
 #endif
 	}
+}
+
+void FSubsystemCategory_World::SelectSettings(TArray<UObject*>& OutData) const
+{
+	::GetObjectsOfClass(UWorldSubsystem::StaticClass(), OutData, true, EObjectFlags::RF_NoFlags);
 }

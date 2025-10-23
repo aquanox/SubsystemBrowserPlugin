@@ -181,11 +181,11 @@ void FSubsystemSettingsManager::RegisterDiscoveredSubsystems(ISettingsModule& Se
 	const TArray<SubsystemCategoryPtr>& RegisteredCategories = FSubsystemBrowserModule::Get().GetCategories();
 	for (const SubsystemCategoryPtr& Ptr : RegisteredCategories)
 	{
-		if (!Ptr->IsVisibleInSettings())
+		if (!Ptr->IsVisibleInSettings() || Ptr->GetSettingsName().IsNone())
 			continue;
 
 		TArray<UObject*> ObjectArray;
-		GetObjectsOfClass(Ptr->GetSubsystemClass(), ObjectArray, true, RF_NoFlags);
+		Ptr->SelectSettings(ObjectArray);
 
 		for (UObject* Subsystem : ObjectArray)
 		{
@@ -211,10 +211,13 @@ void FSubsystemSettingsManager::RegisterDiscoveredSubsystems(ISettingsModule& Se
 				if (!bUseCustom && !ClassFieldStats.NumConfigWithEdit)
 					continue;
 
-				UE_LOG(LogSubsystemSettingsEditor, Verbose, TEXT("Discovered object %s [%s] (editable=%d, total=%d, customui=%d)"),
-					*GetNameSafe(Subsystem), *GetNameSafe(SSClass), ClassFieldStats.NumConfigWithEdit, ClassFieldStats.NumConfig, (int32)bUseCustom);
+				const FName CategoryName = Ptr->GetSettingsName();
 
-				RegisterSubsystemSettings(SettingsModule, Ptr->GetSettingsName(), Subsystem, bUseCustom);
+				UE_LOG(LogSubsystemSettingsEditor, Verbose, TEXT("Discovered object %s:%s [%s] (editable=%d, total=%d, customui=%d)"),
+					*CategoryName.ToString(), *GetNameSafe(Subsystem), *GetNameSafe(SSClass),
+					ClassFieldStats.NumConfigWithEdit, ClassFieldStats.NumConfig, (int32)bUseCustom);
+
+				RegisterSubsystemSettings(SettingsModule, CategoryName, Subsystem, bUseCustom);
 
 				AllKnownSubsystems.Add(Subsystem);
 			}

@@ -4,14 +4,14 @@ using UnrealBuildTool;
 
 public class SubsystemSettingsEditor : ModuleRules
 {
+	// This is to emulate engine installation and verify includes during development
+	// Gives effect similar to BuildPlugin with -StrictIncludes
 	public bool bStrictIncludesCheck = false;
 
 	public SubsystemSettingsEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		// This is to emulate engine installation and verify includes during development
-		// Gives effect similar to BuildPlugin with -StrictIncludes
 		if (bStrictIncludesCheck)
 		{
 			bUseUnity = false;

@@ -7,6 +7,7 @@
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
+#include "UObject/UObjectHash.h"
 
 FSubsystemCategory_Player::FSubsystemCategory_Player()
 {
@@ -14,11 +15,6 @@ FSubsystemCategory_Player::FSubsystemCategory_Player()
 	SettingsName = TEXT("LocalPlayer");
 	Label = NSLOCTEXT("SubsystemBrowser", "SubsystemBrowser_Player", "Player Subsystems");
 	SortOrder = 500;
-}
-
-UClass* FSubsystemCategory_Player::GetSubsystemClass() const
-{
-	return ULocalPlayerSubsystem::StaticClass();
 }
 
 void FSubsystemCategory_Player::Select(UWorld* InContext, TArray<UObject*>& OutData) const
@@ -34,4 +30,9 @@ void FSubsystemCategory_Player::Select(UWorld* InContext, TArray<UObject*>& OutD
 #endif
 		}
 	}
+}
+
+void FSubsystemCategory_Player::SelectSettings(TArray<UObject*>& OutData) const
+{
+	::GetObjectsOfClass(ULocalPlayerSubsystem::StaticClass(), OutData, true, EObjectFlags::RF_NoFlags);
 }

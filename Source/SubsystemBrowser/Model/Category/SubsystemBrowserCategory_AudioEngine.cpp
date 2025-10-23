@@ -8,6 +8,7 @@
 #include "AudioDeviceHandle.h"
 #include "Engine/World.h"
 #include "Subsystems/AudioEngineSubsystem.h"
+#include "UObject/UObjectHash.h"
 
 FSubsystemCategory_AudioEngine::FSubsystemCategory_AudioEngine()
 {
@@ -15,11 +16,6 @@ FSubsystemCategory_AudioEngine::FSubsystemCategory_AudioEngine()
 	SettingsName = TEXT("AudioEngine");
 	Label = NSLOCTEXT("SubsystemBrowser", "SubsystemBrowser_AudioEngine", "Audio Engine Subsystems");
 	SortOrder = 150;
-}
-
-UClass* FSubsystemCategory_AudioEngine::GetSubsystemClass() const
-{
-	return UAudioEngineSubsystem::StaticClass();
 }
 
 void FSubsystemCategory_AudioEngine::Select(UWorld* InContext, TArray<UObject*>& OutData) const
@@ -36,6 +32,11 @@ void FSubsystemCategory_AudioEngine::Select(UWorld* InContext, TArray<UObject*>&
 #endif
 		}
 	}
+}
+
+void FSubsystemCategory_AudioEngine::SelectSettings(TArray<UObject*>& OutData) const
+{
+	::GetObjectsOfClass(UAudioEngineSubsystem::StaticClass(), OutData, true, EObjectFlags::RF_NoFlags);
 }
 
 #endif

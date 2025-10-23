@@ -5,6 +5,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Editor.h"
 #include "EditorSubsystem.h"
+#include "UObject/UObjectHash.h"
 
 FSubsystemCategory_Editor::FSubsystemCategory_Editor()
 {
@@ -12,11 +13,6 @@ FSubsystemCategory_Editor::FSubsystemCategory_Editor()
 	SettingsName = TEXT("Editor");
 	Label = NSLOCTEXT("SubsystemBrowser", "SubsystemBrowser_Editor", "Editor Subsystems");
 	SortOrder = 200;
-}
-
-UClass* FSubsystemCategory_Editor::GetSubsystemClass() const
-{
-	return UEditorSubsystem::StaticClass();
 }
 
 void FSubsystemCategory_Editor::Select(UWorld* InContext, TArray<UObject*>& OutData) const
@@ -29,4 +25,9 @@ void FSubsystemCategory_Editor::Select(UWorld* InContext, TArray<UObject*>& OutD
 		return OutData.Append(GEditor->GetEditorSubsystemArrayCopy<UEditorSubsystem>());
 #endif
 	}
+}
+
+void FSubsystemCategory_Editor::SelectSettings(TArray<UObject*>& OutData) const
+{
+	::GetObjectsOfClass(UEditorSubsystem::StaticClass(), OutData, true, EObjectFlags::RF_NoFlags);
 }

@@ -38,6 +38,11 @@ struct SubsystemCategorySorter
 	{
 		return A->GetSortOrder() < B->GetSortOrder();
 	}
+	
+	bool operator()(const SubsystemTreeItemConstPtr& A, const SubsystemTreeItemConstPtr& B) const
+	{
+		return A->GetSortOrder() < B->GetSortOrder();
+	}
 };
 
 /* Subsystem list data model */

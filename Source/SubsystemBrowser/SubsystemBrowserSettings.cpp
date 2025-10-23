@@ -82,7 +82,7 @@ void USubsystemBrowserSettings::SyncCategorySettings()
 	{
 		if (!CurrentSettings.Contains(Category->Name))
 		{
-			CurrentSettings.Emplace(Category->Name, Category->IsVisibleByDefault());
+			CurrentSettings.Emplace(Category->Name, Category->IsVisibleByDefaultInBrowser());
 		}
 	}
 

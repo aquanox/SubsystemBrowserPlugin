@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "UObject/UObjectHash.h"
 
 FSubsystemCategory_GameInstance::FSubsystemCategory_GameInstance()
 {
@@ -13,11 +14,6 @@ FSubsystemCategory_GameInstance::FSubsystemCategory_GameInstance()
 	SettingsName = TEXT("GameInstance");
 	Label = NSLOCTEXT("SubsystemBrowser", "SubsystemBrowser_GameInstance", "Game Instance Subsystems");
 	SortOrder = 300;
-}
-
-UClass* FSubsystemCategory_GameInstance::GetSubsystemClass() const
-{
-	return UGameInstanceSubsystem::StaticClass();
 }
 
 void FSubsystemCategory_GameInstance::Select(UWorld* InContext, TArray<UObject*>& OutData) const
@@ -30,4 +26,9 @@ void FSubsystemCategory_GameInstance::Select(UWorld* InContext, TArray<UObject*>
 		OutData.Append(InContext->GetGameInstance()->GetSubsystemArrayCopy<UGameInstanceSubsystem>());
 #endif
 	}
+}
+
+void FSubsystemCategory_GameInstance::SelectSettings(TArray<UObject*>& OutData) const
+{
+	::GetObjectsOfClass(UGameInstanceSubsystem::StaticClass(), OutData, true, EObjectFlags::RF_NoFlags);
 }

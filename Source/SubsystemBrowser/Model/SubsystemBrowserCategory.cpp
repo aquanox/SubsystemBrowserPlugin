@@ -12,20 +12,14 @@ FSubsystemCategory::FSubsystemCategory(const FName& Name, const FText& Label, in
 {
 }
 
-UClass* FSubsystemCategory::GetSubsystemClass() const
-{
-	return USubsystem::StaticClass();
-}
-
-FSimpleSubsystemCategory::FSimpleSubsystemCategory(const FName& Name, const FText& Label, const FEnumSubsystemsDelegate& Selector, int32 SortOrder)
-	: FSubsystemCategory(Name, Label, SortOrder), Selector(Selector)
-{
-	ensure(Selector.IsBound());
-}
-
 void FSimpleSubsystemCategory::Select(UWorld* InContext, TArray<UObject*>& OutData) const
 {
-	Selector.Execute(InContext, OutData);
+	Selector.ExecuteIfBound(InContext, OutData);
+}
+
+void FSimpleSubsystemCategory::SelectSettings(TArray<UObject*>& OutData) const
+{
+	ConfigSelector.ExecuteIfBound(OutData);
 }
 
 #undef LOCTEXT_NAMESPACE
