@@ -16,4 +16,6 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory_World : public FSubsystemCategory
 
 	virtual bool IsVisibleInSettings() const override { return true; }
 	virtual void SelectSettings(TArray<UObject*>& OutData) const override;
+
+	virtual void GenerateTooltip(UWorld* InContext, class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
 };

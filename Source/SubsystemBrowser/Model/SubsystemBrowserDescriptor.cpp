@@ -28,6 +28,9 @@ void FSubsystemTreeCategoryItem::GenerateTooltip(FSubsystemTableItemTooltipBuild
 	TArray<SubsystemTreeItemPtr> Subsystems;
 	Model->GetAllSubsystemsInCategory(SharedThis(this), Subsystems);
 	TooltipBuilder.AddPrimary(LOCTEXT("SubsystemTooltipItem_NumSub", "Num Subsystems"), FText::AsNumber(Subsystems.Num()));
+
+	UWorld* PinnedWorld = Model->GetCurrentWorld().Get();
+	Data->GenerateTooltip(PinnedWorld, TooltipBuilder);
 }
 
 FSubsystemTreeObjectItem::FSubsystemTreeObjectItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance)

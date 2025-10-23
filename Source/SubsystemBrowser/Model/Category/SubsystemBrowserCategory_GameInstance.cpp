@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "UObject/UObjectHash.h"
+#include "UI/SubsystemTableItemTooltip.h"
 
 FSubsystemCategory_GameInstance::FSubsystemCategory_GameInstance()
 {
@@ -31,4 +32,30 @@ void FSubsystemCategory_GameInstance::Select(UWorld* InContext, TArray<UObject*>
 void FSubsystemCategory_GameInstance::SelectSettings(TArray<UObject*>& OutData) const
 {
 	::GetObjectsOfClass(UGameInstanceSubsystem::StaticClass(), OutData, true, EObjectFlags::RF_NoFlags);
+}
+
+void FSubsystemCategory_GameInstance::GenerateTooltip(UWorld* InContext, class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const
+{
+	FText SanityResult;
+	if (IsValid(InContext) && InContext->GetGameInstance())
+	{
+		SanityResult =  NSLOCTEXT("SubsystemBrowser", "GISS_State_Running", "Active");
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
+		int32 NumSubsystems = InContext->GetGameInstance()->GetSubsystemArray<UGameInstanceSubsystem>().Num();
+#else
+		int32 NumSubsystems = InContext->GetGameInstance()->GetSubsystemArrayCopy<UGameInstanceSubsystem>().Num();
+#endif
+		if (!NumSubsystems)
+		{
+			SanityResult =  NSLOCTEXT("SubsystemBrowser", "GISS_State_Bad", "Not Initialized");
+		}
+	}
+	else
+	{
+		SanityResult =  NSLOCTEXT("SubsystemBrowser", "GISS_State_NotRunning", "Inactive");
+	}
+
+	TooltipBuilder.AddPrimary(
+		NSLOCTEXT("SubsystemBrowser", "GISS_State", "Game Instance"), SanityResult
+	);
 }

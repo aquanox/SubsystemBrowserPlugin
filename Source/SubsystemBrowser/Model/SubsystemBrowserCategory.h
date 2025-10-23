@@ -40,6 +40,9 @@ struct SUBSYSTEMBROWSER_API FSubsystemCategory : public TSharedFromThis<FSubsyst
 	
 	/* Select subsystems for settings display */
 	virtual void SelectSettings(TArray<UObject*>& OutData) const = 0;
+
+	/* generate custom tooltips for category item */
+	virtual void GenerateTooltip(UWorld* InContext, class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const {}
 };
 
 using SubsystemCategoryPtr = TSharedPtr<FSubsystemCategory>;
