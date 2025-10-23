@@ -34,6 +34,8 @@ enum class ESubsystemBrowserSplitterOrientation
 DECLARE_DELEGATE_RetVal(FString, FSubsystemBrowserGetStringProperty);
 DECLARE_DELEGATE_RetVal(FText, FSubsystemBrowserGetTextProperty);
 DECLARE_DELEGATE_RetVal(TArray<UObject*>, FSubsystemBrowserGetSubobjects);
+DECLARE_DELEGATE(FSubsystemBrowserQuickAction);
+DECLARE_DELEGATE_OneParam(FSubsystemBrowserQuickActionWorldContext, const UObject*);
 
 struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 {
@@ -53,6 +55,9 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 	// Subsystem Browser Details - Subobject display
 	// Automatically gather market subobjbects for display
 	static const FName MD_SBAutoGetSubobjects;
+
+	// Subsystem Browser Panel - Quick Actions
+	static const FName MD_SBQuickAction;
 	
 };
 

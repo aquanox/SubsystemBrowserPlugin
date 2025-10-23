@@ -8,6 +8,11 @@
 #include "Blueprint/UserWidget.h"
 #include "UObject/Package.h"
 
+void USBDemoInteractionAssistantObject::QuickActionTest()
+{
+	UE_LOG(LogTemp, Log, TEXT("Invoke QuickActionTest"));
+}
+
 USubsystemBrowserTestSubsystem::USubsystemBrowserTestSubsystem()
 {
 	IAObject = CreateDefaultSubobject<USBDemoInteractionAssistantObject>("InteractionManager");
@@ -95,4 +100,14 @@ void USubsystemBrowserTestSubsystem::FillArrayWidgets()
 void USubsystemBrowserTestSubsystem::EmptyArrayWidgets()
 {
 	ArrayWidgets.Empty();
+}
+
+void USubsystemBrowserTestSubsystem::QuickActionTest()
+{
+	UE_LOG(LogTemp, Log, TEXT("Invoke QuickActionTest"));
+}
+
+void USubsystemBrowserTestSubsystem::QuickActionTest2()
+{
+	UE_LOG(LogTemp, Log, TEXT("Invoke QuickActionTest2"));
 }

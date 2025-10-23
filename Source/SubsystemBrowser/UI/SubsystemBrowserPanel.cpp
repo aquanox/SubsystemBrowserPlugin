@@ -1202,6 +1202,7 @@ TSharedPtr<SWidget> SSubsystemBrowserPanel::ConstructSubsystemContextMenu()
 	SubsystemTreeItemPtr Selected = GetFirstSelectedItem();
 	if (Selected.IsValid())
 	{
+		// Common stuff
 		Selected->GenerateContextMenu(Menu);
 
 		// Apply customizations
@@ -1213,7 +1214,7 @@ TSharedPtr<SWidget> SSubsystemBrowserPanel::ConstructSubsystemContextMenu()
 
 bool SSubsystemBrowserPanel::HasSelectedSubsystem() const
 {
-	auto SelectedSubsystem = GetFirstSelectedItem();
+	SubsystemTreeItemPtr SelectedSubsystem = GetFirstSelectedItem();
 	return SelectedSubsystem.IsValid()  && SelectedSubsystem->GetAsSubsystemDescriptor();
 }
 

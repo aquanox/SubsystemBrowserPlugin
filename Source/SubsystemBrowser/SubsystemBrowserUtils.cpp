@@ -15,6 +15,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/PackageName.h"
 #include "Model/SubsystemBrowserDescriptor.h"
+#include "ScopedTransaction.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "UObject/Package.h"
@@ -790,6 +791,59 @@ bool FSubsystemBrowserUtils::TryParseColor(const FString& InColor, FLinearColor&
 
 	UE_LOG(LogSubsystemBrowser, Warning, TEXT("Failed to parse color property [%s]"), *StrValue);
 	return false;
+}
+
+void FSubsystemBrowserUtils::GatherQuickActions(UObject* Object, TArray<FQuickActionData>& OutFunctions)
+{
+	if (!IsValid(Object))
+		return;
+
+	static const FName NAME_DisplayPriority("DisplayPriority");
+	static const FName NAME_DisplayName("DisplayName");
+	static const FName NAME_WorldContext(TEXT("WorldContext"));
+	static const FName NAME_Category(TEXT("Category"));
+	
+#if UE_VERSION_OLDER_THAN(5,0,0)
+	for (TFieldIterator<UFunction> It(Object->GetClass(), EFieldIteratorFlags::IncludeSuper); It; ++It)
+#else
+	for (TFieldIterator<UFunction> It(Object->GetClass(), EFieldIterationFlags::IncludeSuper); It; ++It)
+#endif
+	{
+		UFunction* TestFunction = *It;
+		// require metadata switch
+		if (!TestFunction->FindMetaData(FSubsystemBrowserUserMeta::MD_SBQuickAction))
+			continue;
+
+		FQuickActionData Data;
+		Data.Object = Object;
+		Data.Function = TestFunction;
+		Data.Name = TestFunction->GetFName();
+		Data.DisplayText = TestFunction->GetDisplayNameText();
+
+		const FString CategoryStr = TestFunction->GetMetaData(NAME_Category);
+		Data.CategoryName = (CategoryStr.IsEmpty() ? TEXT("Default Category") : *CategoryStr);
+		Data.CategoryNameText = FText::FromString(FName::NameToDisplayString(Data.CategoryName.ToString(), false));
+
+		if (TestFunction->NumParms == 0)
+		{
+			OutFunctions.Emplace(MoveTemp(Data));
+		}
+	}
+}
+
+void FSubsystemBrowserUtils::InvokeQuickAction(const FQuickActionData& ActionData)
+{
+	FEditorScriptExecutionGuard ScriptGuard;
+
+	if (UFunction* Function = ActionData.Function.Get())
+	{
+		ensure(Function->ParmsSize == 0);
+								
+		if (UObject* ExecutionObject = ActionData.Object.Get())
+		{
+			ExecutionObject->ProcessEvent(Function, nullptr);
+		}
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

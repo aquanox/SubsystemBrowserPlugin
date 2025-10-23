@@ -78,6 +78,9 @@ public:
  */
 struct SUBSYSTEMBROWSER_API FSubsystemTreeCategoryItem : public ISubsystemTreeItem
 {
+private:
+	using Super = ISubsystemTreeItem;
+public:
 	FSubsystemTreeCategoryItem() = default;
 	FSubsystemTreeCategoryItem(TSharedRef<FSubsystemModel> InModel, TSharedRef<FSubsystemCategory> InCategory);
 
@@ -99,6 +102,9 @@ public:
  */
 struct SUBSYSTEMBROWSER_API FSubsystemTreeObjectItem : public ISubsystemTreeItem
 {
+private:
+	using Super = ISubsystemTreeItem;
+public:
 	FSubsystemTreeObjectItem() = default;
 	FSubsystemTreeObjectItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance);
 
@@ -111,7 +117,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemTreeObjectItem : public ISubsystemTreeItem
 
 	virtual const FSubsystemTreeObjectItem* GetAsObjectDescriptor() const override { return this; }
 
-	//virtual const FSlateBrush* GetIcon() const override;
+	virtual void GenerateContextMenu(class UToolMenu* MenuBuilder) const override;
 	virtual void GenerateTooltip(class FSubsystemTableItemTooltipBuilder& TooltipBuilder) const override;
 public:
 	// 
@@ -125,6 +131,9 @@ public:
  */
 struct SUBSYSTEMBROWSER_API FSubsystemTreeSubsystemItem : public FSubsystemTreeObjectItem
 {
+private:
+	using Super = FSubsystemTreeObjectItem;
+public:
 	FSubsystemTreeSubsystemItem() = default;
 	FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemModel> InModel, TSharedPtr<ISubsystemTreeItem> InParent, UObject* Instance);
 

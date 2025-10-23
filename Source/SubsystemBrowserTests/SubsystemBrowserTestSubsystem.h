@@ -77,6 +77,9 @@ class USBDemoInteractionAssistantObject : public UObject
 public:
 	UPROPERTY(VisibleAnywhere, Category="Manager")
 	TWeakObjectPtr<AActor> LastUsedObject;
+
+	UFUNCTION(meta=(SBQuickAction))
+	void QuickActionTest();
 };
 
 UCLASS()
@@ -215,6 +218,11 @@ public:
 	void FillArrayWidgets();
 	UFUNCTION(CallInEditor, Category=ArrayWidget)
 	void EmptyArrayWidgets();
+
+	UFUNCTION(meta=(SBQuickAction))
+	void QuickActionTest();
+	UFUNCTION(DisplayName="Quick Action Second", meta=(SBQuickAction))
+	void QuickActionTest2();
 };
 
 

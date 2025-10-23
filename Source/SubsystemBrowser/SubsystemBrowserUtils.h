@@ -46,10 +46,13 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 * Collect related source files belonging to specified class
 	 */
 	static void CollectSourceFiles(UClass* InClass, TArray<FString>& OutSourceFiles);
+	
 
 	struct FClassFieldStats
 	{
+		// total number of reflected properties
 		int32 NumProperties = 0;
+		// number of properties with Edit or Visible flag
 		int32 NumEditable = 0;
 		int32 NumVisible = 0;
 		// number of properties with Config flag
@@ -148,4 +151,30 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 *
 	 */
 	static bool TryParseColor(const FString& InColor, FLinearColor& OutColor);
+
+	struct FQuickActionData
+	{
+		TWeakObjectPtr<UObject> Object;
+		TWeakObjectPtr<UFunction> Function;
+
+		FName CategoryName;
+		FText CategoryNameText;
+
+		FName Name;
+		FText DisplayText;
+	};
+
+	/**
+	 * Gather functions for subsystem quick actions
+	 * 
+	 * @param Object Target object to gather info from
+	 * @param OutFunctions Located functions
+	 */
+	static void GatherQuickActions(UObject* Object, TArray<FQuickActionData>& OutFunctions);
+
+	/**
+	 *
+	 * 
+	 */
+	static void InvokeQuickAction(const FQuickActionData& ActionData);
 };
