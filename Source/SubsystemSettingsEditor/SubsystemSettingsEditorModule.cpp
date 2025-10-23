@@ -57,7 +57,7 @@ void FSubsystemSettingsEditorModule::RegisterMenus()
 			TEXT("SubsystemSettings"),
 			LOCTEXT("SubsystemSettingsMenuLabel", "Subsystem Settings"),
 			LOCTEXT("SubsystemSettingsMenuToolTip", "Change subsystem settings"),
-			FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
+			FStyleHelper::GetSlateIcon(FStyleHelper::PanelIconName),
 			FUIAction(FExecuteAction::CreateStatic(&Local::OpenSettings))
 		);
 	}
@@ -71,7 +71,7 @@ void FSubsystemSettingsEditorModule::RegisterMenus()
 			TEXT("SubsystemSettings"),
 			LOCTEXT("SubsystemSettingsMenuLabel", "Subsystem Settings"),
 			LOCTEXT("SubsystemSettingsMenuToolTip", "Change subsystem settings"),
-			FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
+			FStyleHelper::GetSlateIcon(FStyleHelper::PanelIconName),
 			FUIAction(FExecuteAction::CreateStatic(&Local::OpenSettings))
 		);
 	}

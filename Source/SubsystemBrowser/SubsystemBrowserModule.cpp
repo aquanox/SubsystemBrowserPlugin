@@ -30,9 +30,9 @@ DEFINE_LOG_CATEGORY(LogSubsystemBrowser);
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
-const FName FSubsystemBrowserModule::SubsystemBrowserTabName = TEXT("SubsystemBrowserTab");
-const FName FSubsystemBrowserModule::SubsystemBrowserNomadTabName = TEXT("SubsystemBrowserNomadTab");
-const FName FSubsystemBrowserModule::SubsystemBrowserContextMenuName = TEXT("SubsystemBrowser.ContextMenu");
+const FName FSubsystemBrowserModule::SubsystemBrowserTabName(TEXT("SubsystemBrowserTab"));
+const FName FSubsystemBrowserModule::SubsystemBrowserNomadTabName(TEXT("SubsystemBrowserNomadTab"));
+const FName FSubsystemBrowserModule::SubsystemBrowserContextMenuName(TEXT("SubsystemBrowser.ContextMenu"));
 
 FSubsystemBrowserModule::FOnGenerateTooltip FSubsystemBrowserModule::OnGenerateTooltip;
 FSubsystemBrowserModule::FOnGenerateMenu FSubsystemBrowserModule::OnGenerateContextMenu;
@@ -58,7 +58,7 @@ void FSubsystemBrowserModule::StartupModule()
 						.SetDisplayName(LOCTEXT("SubsystemBrowserTabTitle", "Subsystems"))
 						.SetTooltipText(LOCTEXT("SubsystemBrowserTabTooltip", "Open the Subsystem Browser tab."))
 						.SetGroup(WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory())
-						.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
+						.SetIcon(FStyleHelper::GetSlateIcon(FStyleHelper::PanelIconName));
 				}
 			});
 		}
@@ -72,7 +72,7 @@ void FSubsystemBrowserModule::StartupModule()
 	#else
 					.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory())
 	#endif
-					.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
+					.SetIcon(FStyleHelper::GetSlateIcon(FStyleHelper::PanelIconName));
 		}
 
 		// Register default columns and categories on startup
@@ -89,7 +89,7 @@ void FSubsystemBrowserModule::StartupModule()
 
 void FSubsystemBrowserModule::RegisterSettings()
 {
-	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
+	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>(TEXT("Settings"));
 
 	// Setup plugin settings panel in Editor Settings
 	USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
@@ -106,8 +106,10 @@ void FSubsystemBrowserModule::RegisterSettings()
 void FSubsystemBrowserModule::RegisterMenus()
 {
 	UToolMenus* const ToolMenus = UToolMenus::Get();
-
-	ToolMenus->RegisterMenu(SubsystemBrowserContextMenuName);
+	if (ToolMenus)
+	{
+		ToolMenus->RegisterMenu(SubsystemBrowserContextMenuName);
+	}
 }
 
 void FSubsystemBrowserModule::ShutdownModule()

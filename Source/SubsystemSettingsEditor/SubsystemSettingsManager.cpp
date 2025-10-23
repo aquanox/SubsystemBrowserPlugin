@@ -73,7 +73,7 @@ void FSubsystemSettingsManager::Register()
 #else
 		.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory())
 #endif
-		.SetIcon(FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName));
+		.SetIcon(FStyleHelper::GetSlateIcon(FStyleHelper::PanelIconName));
 
 	//
 	FModuleManager::Get().OnModulesChanged().AddRaw(this, &FSubsystemSettingsManager::HandleModulesChanges);

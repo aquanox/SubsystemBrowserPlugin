@@ -616,7 +616,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			MenuBuilder.AddMenuEntry(
         		LOCTEXT("OpenSubsystemSettingsPanel", "Subsystem Settings"),
         		LOCTEXT("OpenSubsystemSettingsPanel_Tooltip", "Open subsystem settings panel."),
-        		FStyleHelper::GetSlateIcon(FSubsystemBrowserStyle::PanelIconName),
+        		FStyleHelper::GetSlateIcon(FStyleHelper::PanelIconName),
         		FUIAction(
         			FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowSubsystemSettingsTab)
         		),

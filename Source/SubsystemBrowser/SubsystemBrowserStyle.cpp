@@ -15,13 +15,13 @@ const FName FSubsystemBrowserStyle::StyleName("SubsystemBrowserStyle");
 TSharedPtr<FSubsystemBrowserStyle> FSubsystemBrowserStyle::StyleInstance;
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-const FName FSubsystemBrowserStyle::PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
-const FName FSubsystemBrowserStyle::FolderOpenName(TEXT("SceneOutliner.FolderOpen"));
-const FName FSubsystemBrowserStyle::FolderClosedName(TEXT("SceneOutliner.FolderClosed"));
+const FName FStyleHelper::PanelIconName(TEXT("LevelEditor.GameSettings.Small"));
+const FName FStyleHelper::FolderOpenName(TEXT("SceneOutliner.FolderOpen"));
+const FName FStyleHelper::FolderClosedName(TEXT("SceneOutliner.FolderClosed"));
 #else
-const FName FSubsystemBrowserStyle::PanelIconName(TEXT("Icons.Settings"));
-const FName FSubsystemBrowserStyle::FolderOpenName(TEXT("Icons.FolderOpen"));
-const FName FSubsystemBrowserStyle::FolderClosedName(TEXT("Icons.FolderClosed"));
+const FName FStyleHelper::PanelIconName(TEXT("Icons.Settings"));
+const FName FStyleHelper::FolderOpenName(TEXT("Icons.FolderOpen"));
+const FName FStyleHelper::FolderClosedName(TEXT("Icons.FolderClosed"));
 #endif
 
 void FSubsystemBrowserStyle::Register()
@@ -59,51 +59,6 @@ FSubsystemBrowserStyle::FSubsystemBrowserStyle() : FSlateStyleSet(StyleName)
 
 	// register styles here
 	// Set("SubsystemBrowser.TabIcon", new IMAGE_BRUSH("Icons/SubsystemBrowser_16x", Icon16x16));
-}
-
-const ISlateStyle& FStyleHelper::Get()
-{
-#if UE_VERSION_OLDER_THAN(5,1,0)
-	return FEditorStyle::Get();
-#else
-	return FAppStyle::Get();
-#endif
-}
-
-const FSlateBrush* FStyleHelper::GetBrush(const FName& InName)
-{
-#if UE_VERSION_OLDER_THAN(5,1,0)
-	return FEditorStyle::GetBrush(InName);
-#else
-	return FAppStyle::GetBrush(InName);
-#endif
-}
-
-FSlateFontInfo FStyleHelper::GetFontStyle(const FName& InName)
-{
-#if UE_VERSION_OLDER_THAN(5,1,0)
-	return FEditorStyle::GetFontStyle(InName);
-#else
-	return FAppStyle::GetFontStyle(InName);
-#endif
-}
-
-FSlateIcon FStyleHelper::GetSlateIcon(const FName& InIcon)
-{
-#if UE_VERSION_OLDER_THAN(5,1,0)
-	return FSlateIcon( FEditorStyle::GetStyleSetName(), InIcon );
-#else
-	return FSlateIcon(  FAppStyle::GetAppStyleSetName(), InIcon);
-#endif
-}
-
-FSlateColor FStyleHelper::GetSlateColor(const FName& InName)
-{
-#if UE_VERSION_OLDER_THAN(5,1,0)
-	return FEditorStyle::GetSlateColor(InName);
-#else
-	return FAppStyle::GetSlateColor(InName);
-#endif
 }
 
 #undef IMAGE_BRUSH

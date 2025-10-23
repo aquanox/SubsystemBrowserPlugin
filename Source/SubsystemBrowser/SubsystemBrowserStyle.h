@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreFwd.h"
-#include "SubsystemBrowserFlags.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Styling/SlateStyle.h"
 #include "Styling/SlateColor.h"
 #include "Styling/SlateBrush.h"
@@ -19,11 +19,7 @@ class SUBSYSTEMBROWSER_API FSubsystemBrowserStyle final : public FSlateStyleSet
 {
 public:
 	static const FName StyleName;
-
-	static const FName PanelIconName;
-	static const FName FolderOpenName;
-	static const FName FolderClosedName;
-
+	
 	/** Register style set */
 	static void Register();
 	/** Unregister style set */
@@ -45,25 +41,59 @@ private:
  */
 struct SUBSYSTEMBROWSER_API FStyleHelper
 {
-	static const ISlateStyle& Get();
-	static const FSlateBrush* GetBrush(const FName& InName);
-	static FSlateFontInfo GetFontStyle(const FName& InName);
-	static FSlateIcon GetSlateIcon(const FName& InIcon);
-	static FSlateColor GetSlateColor(const FName& Name);
+	static const FName PanelIconName;
+	static const FName FolderOpenName;
+	static const FName FolderClosedName;
+
+#if UE_VERSION_OLDER_THAN(5,1,0)
+	using StyleSource = FEditorStyle;
+#else
+	using StyleSource = FAppStyle;
+#endif
+
+	static const ISlateStyle& Get()
+	{
+		return StyleSource::Get();
+	}
+	
+	static FName GetStyleSetName()
+	{
+#if UE_VERSION_OLDER_THAN(5,1,0)
+		return FEditorStyle::GetStyleSetName();
+#else
+		return FAppStyle::GetAppStyleSetName();
+#endif
+	}
+
+	static const FSlateBrush* GetBrush(const FName& InName)
+	{
+		return StyleSource::GetBrush(InName);
+	}
+
+	static FSlateFontInfo GetFontStyle(const FName& InName)
+	{
+		return StyleSource::GetFontStyle(InName);
+	}
+
+	static FSlateIcon GetSlateIcon(const FName& InIcon)
+	{
+		return FSlateIcon( GetStyleSetName(), InIcon);
+	}
+	
+	static FSlateColor GetSlateColor(const FName& Name)
+	{
+		return StyleSource::GetSlateColor(Name);
+	}
 
 	template<typename T>
 	static const T& GetWidgetStyle(const FName& InName)
 	{
-#if UE_VERSION_OLDER_THAN(5,1,0)
-		return FEditorStyle::GetWidgetStyle<T>(InName);
-#else
-		return FAppStyle::GetWidgetStyle<T>(InName);
-#endif
+		return StyleSource::GetWidgetStyle<T>(InName);
 	}
 
 	template<typename T>
 	static const T* GetWidgetStylePtr(const FName& InName)
 	{
-		return &GetWidgetStyle<T>(InName);
+		return &StyleSource::GetWidgetStyle<T>(InName);
 	}
 };

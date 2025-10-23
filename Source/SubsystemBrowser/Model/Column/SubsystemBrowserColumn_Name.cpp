@@ -67,16 +67,16 @@ const FSlateBrush* FSubsystemDynamicColumn_Name::ExtractIcon(TSharedRef<const IS
 	case ISubsystemTreeItem::EItemType::Category:
 		{
 			return FStyleHelper::GetBrush(Item->bExpanded
-					? FSubsystemBrowserStyle::FolderOpenName
-					: FSubsystemBrowserStyle::FolderClosedName);
+					? FStyleHelper::FolderOpenName
+					: FStyleHelper::FolderClosedName);
 		}
 	case ISubsystemTreeItem::EItemType::Subsystem:
 		{
 			//if (Item->CanHaveChildren() && Item->GetNumChildren() > 0)
 			//{
 			//	return FStyleHelper::GetBrush(Item->bExpanded
-			//		? FSubsystemBrowserStyle::FolderOpenName
-			//		: FSubsystemBrowserStyle::FolderClosedName);
+			//		? FStyleHelper::FolderOpenName
+			//		: FStyleHelper::FolderClosedName);
 			//}
 			return Item->GetIcon();
 		}
