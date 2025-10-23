@@ -256,7 +256,7 @@ FSubsystemBrowserUtils::FClassFieldStats FSubsystemBrowserUtils::GetClassFieldSt
 #endif
 	{
 		const UFunction* TestFunction = *It;
-		if (TestFunction->GetBoolMetaData(MD_CallInEditor) && (TestFunction->ParmsSize == 0))
+		if (TestFunction->FindMetaData(MD_CallInEditor) != nullptr && (TestFunction->ParmsSize == 0))
 		{
 			Stats.NumCallable ++;
 		}
