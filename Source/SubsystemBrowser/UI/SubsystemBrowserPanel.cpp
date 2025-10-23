@@ -625,7 +625,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 	        );
 		}
 		MenuBuilder.AddMenuEntry(
-			LOCTEXT("OpenSettingsPanel", "Browser Settings"),
+			LOCTEXT("OpenSettingsPanel", "Plugin Settings"),
 			LOCTEXT("OpenSettingsPanel_Tooltip", "Open plugin settings panel."),
 			FStyleHelper::GetSlateIcon("EditorPreferences.TabIcon"),
 			FUIAction(
