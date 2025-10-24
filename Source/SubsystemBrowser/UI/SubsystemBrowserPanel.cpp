@@ -20,6 +20,7 @@
 #include "Engine/MemberReference.h"
 #include "IDetailsView.h"
 #include "PropertyEditorModule.h"
+#include "UI/SubsystemDetailsCustomizations.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "ProfilingDebugging/CpuProfilerTrace.h"
 
@@ -986,8 +987,8 @@ void SSubsystemBrowserPanel::HandleWorldChange(UWorld* InWorld)
 
 TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
 {
-	bool bHiddenPropertyVisibility = USubsystemBrowserSettings::Get()->ShouldForceHiddenPropertyVisibility();
-
+	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+	
 	FDetailsViewArgs DetailsViewArgs;
 	DetailsViewArgs.ViewIdentifier = TEXT("SubsystemBrowserDetailsPanel");
 	DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
@@ -1000,18 +1001,22 @@ TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
 	DetailsViewArgs.bUpdatesFromSelection = false;
 	DetailsViewArgs.bLockable = false;
 	DetailsViewArgs.bShowOptions = true;
+	
 	// show All properties. possibly apply custom property filter or custom checkbox.
 	// but there is no way to change its value via IDetailsView interface
 	// so show all and filter visibility by IsPropertyVisible
-	DetailsViewArgs.bForceHiddenPropertyVisibility = bHiddenPropertyVisibility;
+	DetailsViewArgs.bForceHiddenPropertyVisibility = Settings->ShouldForceHiddenPropertyVisibility();
 
 	FPropertyEditorModule& EditModule = FModuleManager::Get().GetModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor"));
 	TSharedRef<IDetailsView> DetailViewWidget = EditModule.CreateDetailView(DetailsViewArgs);
 
-	DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemBrowserPanel::IsDetailsPropertyVisible));
-	DetailViewWidget->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateStatic(&SSubsystemBrowserPanel::IsDetailsPropertyReadOnly));
+	if (Settings->UseCustomPropertyFiltering())
+	{
+		DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyVisible));
+		DetailViewWidget->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyReadOnly));
+	}
 
-	FSubsystemBrowserModule::CustomizeDetailsView(DetailViewWidget, TEXT("SubsystemBrowserPanel"));
+	FSubsystemBrowserModule::OnCustomizeDetailsView.Broadcast(DetailViewWidget, TEXT("SubsystemBrowserPanel"));
 
 	return DetailViewWidget;
 }
@@ -1064,8 +1069,10 @@ void SSubsystemBrowserPanel::ResetSelectedObject()
 	}
 }
 
-bool SSubsystemBrowserPanel::IsDetailsPropertyVisible(const FPropertyAndParent& InProperty)
+bool SSubsystemBrowserPanel::IsDetailsPropertyVisible(const FPropertyAndParent& InProperty) const
 {
+	static const FName NAME_Hidden(TEXT("Hidden"));
+	
 	const FProperty* Property = InProperty.ParentProperties.Num() > 0 ? InProperty.ParentProperties.Last() : &InProperty.Property;
 
 	// always hide blueprint delegate properties
@@ -1074,48 +1081,30 @@ bool SSubsystemBrowserPanel::IsDetailsPropertyVisible(const FPropertyAndParent& 
 		return false;
 	}
 
-	if (Property->FindMetaData(FSubsystemBrowserUserMeta::MD_SBHidden) != nullptr)
+	if (Property->FindMetaData(FSubsystemBrowserUserMeta::MD_SBHidden) != nullptr || Property->FindMetaData(NAME_Hidden) != nullptr)
 	{
 		return false;
 	}
 
 	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	if (Settings->ShouldForceHiddenPropertyVisibility())
+
+	if (Settings->ShouldShowAnyProperties())
 	{
-		// hidden properties filter
-		if (Settings->ShouldShowAnyProperties())
-		{
-			return true;
-		}
-
-		// hidden config properties filter
-		if (Property->HasAnyPropertyFlags(CPF_Config) && Settings->ShouldShowAnyConfigProperties())
-		{
-			return true;
-		}
+		return true;
 	}
-
+	
 	// by default any property with EDIT can be edited
 	return Property->HasAnyPropertyFlags(CPF_Edit);
 }
 
-bool SSubsystemBrowserPanel::IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty)
+bool SSubsystemBrowserPanel::IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty) const
 {
 	const FProperty* Property = InProperty.ParentProperties.Num() > 0 ? InProperty.ParentProperties.Last() : &InProperty.Property;
 
 	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
-	if (Settings->ShouldForceHiddenPropertyVisibility())
+	if (Settings->ShouldEditAnyProperties())
 	{
-		if (Settings->ShouldEditAnyProperties())
-		{
-			return false;
-		}
-
-		// allow editing hidden config properties
-		if (Property->HasAnyPropertyFlags(CPF_Config) && Settings->ShouldEditAnyConfigProperties())
-		{
-			return false;
-		}
+		return false;
 	}
 
 	// by default any property with EditConst or DisableEditOnInstance is readonly (as SS is an instance)

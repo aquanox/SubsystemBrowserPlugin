@@ -36,6 +36,7 @@ const FName FSubsystemBrowserModule::SubsystemBrowserContextMenuName(TEXT("Subsy
 
 FSubsystemBrowserModule::FOnGenerateTooltip FSubsystemBrowserModule::OnGenerateTooltip;
 FSubsystemBrowserModule::FOnGenerateMenu FSubsystemBrowserModule::OnGenerateContextMenu;
+FSubsystemBrowserModule::FOnCustomizeDetails FSubsystemBrowserModule::OnCustomizeDetailsView;
 
 void FSubsystemBrowserModule::StartupModule()
 {
@@ -187,7 +188,6 @@ void FSubsystemBrowserModule::RegisterDefaultCategories()
 	RegisterCategory<FSubsystemCategory_Editor>();
 	RegisterCategory<FSubsystemCategory_GameInstance>();
 	RegisterCategory<FSubsystemCategory_World>();
-	// RegisterCategory<FSubsystemCategory_Game>();
 	RegisterCategory<FSubsystemCategory_Player>();
 
 #if UE_VERSION_NEWER_THAN(5, 1, 0)

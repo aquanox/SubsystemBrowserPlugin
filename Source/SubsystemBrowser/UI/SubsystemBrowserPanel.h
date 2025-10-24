@@ -122,8 +122,8 @@ protected:
 	void SetSelectedObject(SubsystemTreeItemPtr Item);
 	void ResetSelectedObject();
 
-	static bool IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty);
-	static bool IsDetailsPropertyVisible(const FPropertyAndParent& InProperty);
+	bool IsDetailsPropertyReadOnly(const FPropertyAndParent& InProperty) const;
+	bool IsDetailsPropertyVisible(const FPropertyAndParent& InProperty) const;
 
 	// Item context menu
 

@@ -107,9 +107,10 @@ public:
 	/**
 	 * Apply custom  subsystem  customizations to provided details view
 	 * @param DetailsView details view instance to patch
-	 * @param Usage
+	 * @param Usage which details view being customized
 	 */
-	static void CustomizeDetailsView(TSharedRef<IDetailsView> DetailsView, FName Usage);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCustomizeDetails, TSharedRef<IDetailsView>, FName);
+	static FOnCustomizeDetails OnCustomizeDetailsView;
 
 protected:
 	void RegisterSettings();

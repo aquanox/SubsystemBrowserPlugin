@@ -57,7 +57,7 @@ void SSubsystemSettingsWidget::Construct(const FArguments& InArgs, UObject* InOb
 		}
 		View->SetObject(InObject);
 
-		FSubsystemBrowserModule::CustomizeDetailsView(View, TEXT("SubsystemSettingsPanel"));
+		FSubsystemBrowserModule::OnCustomizeDetailsView.Broadcast(View, TEXT("SubsystemSettingsPanel"));
 
 		SettingsView = View;
 	}

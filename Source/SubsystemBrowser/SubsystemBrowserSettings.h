@@ -160,16 +160,15 @@ public:
 	bool ShouldShowSubobjbects() const { return bShowSubobjects; }
 	void SetShowSubobjects(bool bNewValue);
 	void ToggleShowSubobjbects() { SetShowSubobjects(!bShowSubobjects); }
+
+	bool UseCustomPropertyFiltering() const { return bUseCustomPropertyFiltering; }
 	
 	bool ShouldForceHiddenPropertyVisibility() const { return bForceHiddenPropertyVisibility; }
 	void SetForceHiddenPropertyVisibility(bool bNewValue);
 	void ToggleForceHiddenPropertyVisibility() { SetForceHiddenPropertyVisibility(!bForceHiddenPropertyVisibility); }
 
 	bool ShouldShowAnyProperties() const { return bShowAnyProperties; }
-	bool ShouldShowAnyConfigProperties() const { return bShowAnyConfigProperties; }
-
 	bool ShouldEditAnyProperties() const { return bEditAnyProperties; }
-	bool ShouldEditAnyConfigProperties() const { return bEditAnyConfigProperties; }
 
 	bool ShouldShowOnlyGame() const { return bShowOnlyGameModules; }
 	void SetShouldShowOnlyGame(bool bNewValue);
@@ -256,30 +255,26 @@ protected:
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel")
 	bool bShowAllWorlds = false;
 
-	// Enables custom visibility and editability handling in details panel. Behavior changed by options below.
-	// WARNING: Advanced users only
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails))
-	bool bForceHiddenPropertyVisibility = false;
-
-	// Enforces all object hidden properties (without Edit property specifier) to be visible
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
-	bool bShowAnyProperties = false;
-	
-	// Enforces all object properties that have Config specifier to be visible
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
-	bool bShowAnyConfigProperties = false;
-
-	// Enforces all object properties in details panel to be editable.
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
-	bool bEditAnyProperties = false;
-
-	// Enforces all object properties that have Config specifier to be editable.
-	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
-	bool bEditAnyConfigProperties = false;
-
-	// List of subsystems that will be automatically filtered out
+	// Matching objects will be automatically filtered out
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView, TitleProperty="FilterString"))
 	TArray<FSubsystemIgnoreListEntry> IgnoredSubsystems;
+	
+	// Enables hidden property display (Without Edit flag) on details view
+	// WARNING: Advanced users only
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails))
+	bool bForceHiddenPropertyVisibility = false;
+
+	// Enables custom property filtering. Enabled by default. 
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails))
+	bool bUseCustomPropertyFiltering = false;
+
+	// Enforces all object hidden properties (without Edit property specifier) to be visible
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bUseCustomPropertyFiltering"))
+	bool bShowAnyProperties = false;
+	
+	// Enforces all object properties in details panel to be editable.
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bUseCustomPropertyFiltering"))
+	bool bEditAnyProperties = false;
 
 	// Maximum number of column toggles to show in menu before folding into submenu
 	// Specify 0 to always fold
