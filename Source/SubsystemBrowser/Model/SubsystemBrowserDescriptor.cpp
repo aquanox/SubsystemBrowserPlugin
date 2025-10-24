@@ -281,111 +281,94 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 	
 	{
 		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemContextFiltering", LOCTEXT("SubsystemContextFiltering", "Filtering"));
-		if (!Package.IsEmpty())
-		{
-			Section.AddMenuEntry("IgnorePackage",
-				LOCTEXT("IgnorePackageLabel", "Ignore Module"),
-				LOCTEXT("IgnorePackageTooltip", "Hide all subsystems from same module (Can be reverted in Settings)"),
-				FSlateIcon(),
-				FUIAction(
-					FExecuteAction::CreateLambda([Key = Package]()
-					{
-						USubsystemBrowserSettings::Get()->AddToIgnoreList(Key + TEXT("."), true);
-					})
-				)
-			);
-		}
+		Section.AddMenuEntry("IgnorePackage",
+			LOCTEXT("IgnorePackageLabel", "Ignore Module"),
+			LOCTEXT("IgnorePackageTooltip", "Hide all subsystems from same module (Can be reverted in Settings)"),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Key = Package]()
+				{
+					USubsystemBrowserSettings::Get()->AddToIgnoreList(Key + TEXT("."), true);
+				})
+			)
+		);
 
-		if (!ScriptName.IsEmpty())
-		{
-			Section.AddMenuEntry("IgnoreSubsystem",
-				LOCTEXT("IgnoreSubsystemLabel", "Ignore Subsystem"),
-				LOCTEXT("IgnoreSubsystemTooltip", "Hide subsystem from list (Can be reverted in Settings)"),
-				FSlateIcon(),
-				FUIAction(
-					FExecuteAction::CreateLambda([Key = ScriptName]()
-					{
-						USubsystemBrowserSettings::Get()->AddToIgnoreList(Key, false);
-					})
-				)
-			);
-		}
+		Section.AddMenuEntry("IgnoreSubsystem",
+			LOCTEXT("IgnoreSubsystemLabel", "Ignore Subsystem"),
+			LOCTEXT("IgnoreSubsystemTooltip", "Hide subsystem from list (Can be reverted in Settings)"),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateLambda([Key = ScriptName]()
+				{
+					USubsystemBrowserSettings::Get()->AddToIgnoreList(Key, false);
+				})
+			)
+		);
 	}
 
 	{
+		const FString Prefix = ObjectClass.IsValid() ? ObjectClass.Get()->GetPrefixCPP() : FString(TEXT("U"));
+		const FString UClassName = Prefix + ClassName.ToString();
+		
 		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemReferenceActions", LOCTEXT("SubsystemReferenceActions", "References"));
 		Section.AddMenuEntry("CopyClassName",
 			LOCTEXT("CopyClassName", "Copy Class Name"),
-			FText::GetEmpty(),
+			FText::FromString(UClassName),
 			FSlateIcon(),
 			FUIAction(
-				FExecuteAction::CreateLambda([Self]()
+				FExecuteAction::CreateLambda([Value = UClassName]()
 				{
-					if (Self.IsValid())
-					{
-						FSubsystemBrowserUtils::SetClipboardText(FString::Printf(TEXT("U%s"), *Self.Pin()->ClassName.ToString()));
-					}
+					FSubsystemBrowserUtils::SetClipboardText(Value);
 				})
 			)
 		);
 		Section.AddMenuEntry("CopyPackageName",
 			LOCTEXT("CopyPackageName", "Copy Module Name"),
-			FText::GetEmpty(),
+			FText::FromString(ModuleName),
 			FSlateIcon(),
 			FUIAction(
-				FExecuteAction::CreateLambda([Self]()
+				FExecuteAction::CreateLambda([Value = ModuleName]()
 				{
-					if (Self.IsValid())
-					{
-						FSubsystemBrowserUtils::SetClipboardText(Self.Pin()->ModuleName);
-					}
+					FSubsystemBrowserUtils::SetClipboardText(Value);
 				})
 			)
 		);
 		Section.AddMenuEntry("CopyScriptName",
 			LOCTEXT("CopyScriptName", "Copy Script Name"),
-			FText::GetEmpty(),
+			FText::FromString(ScriptName),
 			FSlateIcon(),
 			FUIAction(
-				FExecuteAction::CreateLambda([Self]()
+				FExecuteAction::CreateLambda([Value = ScriptName]()
 				{
-					if (Self.IsValid())
-					{
-						FSubsystemBrowserUtils::SetClipboardText(Self.Pin()->ScriptName);
-					}
+					FSubsystemBrowserUtils::SetClipboardText(Value);
 				})
 			)
 		);
-		Section.AddMenuEntry("CopyFilePath",
-			LOCTEXT("CopyFilePath", "Copy File Path"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(
-				FExecuteAction::CreateLambda([Self]()
-				{
-					if (Self.IsValid())
+		
+		if (SourceFilePaths.Num())
+		{
+			Section.AddMenuEntry("CopyFilePath",
+				LOCTEXT("CopyFilePath", "Copy File Path"),
+				FText::GetEmpty(),
+				FSlateIcon(),
+				FUIAction(
+					FExecuteAction::CreateLambda([FilePaths = SourceFilePaths]()
 					{
-						const TArray<FString>& FilePaths = Self.Pin()->SourceFilePaths;
-
-						FString ClipboardText;
-						if (FilePaths.Num() > 0)
+						const FString* FoundHeader = FilePaths.FindByPredicate([](const FString& S)
 						{
-							const FString* FoundHeader = FilePaths.FindByPredicate([](const FString& S)
-							{
-								FString Extension = FPaths::GetExtension(S);
-								return Extension == TEXT("h") || Extension == TEXT("hpp");
-							});
+							FString Extension = FPaths::GetExtension(S);
+							return Extension == TEXT("h") || Extension == TEXT("hpp");
+						});
 
-							if (!FoundHeader) FoundHeader = &FilePaths[0];
+						if (!FoundHeader) FoundHeader = &FilePaths[0];
 
-							ClipboardText = FPaths::ConvertRelativePathToFull(*FoundHeader);
-						}
+						FString ClipboardText = FPaths::ConvertRelativePathToFull(*FoundHeader);
 
 						FSubsystemBrowserUtils::SetClipboardText(ClipboardText);
-					}
-				})
-			)
-		);
+					})
+				)
+			);
+		}
 	}
 
 	if (IsConfigExportable())
