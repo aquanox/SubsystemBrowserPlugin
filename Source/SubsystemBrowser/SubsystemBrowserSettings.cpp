@@ -1,6 +1,8 @@
 // Copyright 2022, Aquanox.
 
 #include "SubsystemBrowserSettings.h"
+
+#include "Misc/PackageName.h"
 #include "SubsystemBrowserModule.h"
 #include "Model/SubsystemBrowserModel.h"
 
@@ -187,6 +189,7 @@ void USubsystemBrowserSettings::SetForceHiddenPropertyVisibility(bool bNewValue)
 	bForceHiddenPropertyVisibility = bNewValue;
 	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, bForceHiddenPropertyVisibility));
 }
+
 void USubsystemBrowserSettings::SetShouldShowOnlyGame(bool bNewValue)
 {
 	bShowOnlyGameModules = bNewValue;
@@ -219,6 +222,32 @@ bool USubsystemBrowserSettings::TryFindNamedColor(const FName& InName, FLinearCo
 		return true;
 	}
 	return false;
+}
+
+bool USubsystemBrowserSettings::IsSubsystemIgnored(FString ClassStr) const
+{
+	for (const FSubsystemIgnoreListEntry& Entry : IgnoredSubsystems)
+	{
+		if (Entry.FilterString.IsEmpty())
+			continue;
+		
+		if (Entry.bMatchSubstring && ClassStr.StartsWith(Entry.FilterString, ESearchCase::IgnoreCase))
+		{
+			return true;
+		}
+		if (!Entry.bMatchSubstring && ClassStr.Equals(Entry.FilterString, ESearchCase::IgnoreCase))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void USubsystemBrowserSettings::AddToIgnoreList(FString InID, bool bMatchSubstring)
+{
+	IgnoredSubsystems.AddUnique(FSubsystemIgnoreListEntry { InID, bMatchSubstring });
+	NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, IgnoredSubsystems));
 }
 
 void USubsystemBrowserSettings::SyncColumnSettings()

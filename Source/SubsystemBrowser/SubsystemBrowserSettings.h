@@ -86,6 +86,22 @@ struct FSubsystemBrowserNamedColorEntry
 	bool operator==(const FName& InKey) const { return Name == InKey; }
 };
 
+USTRUCT()
+struct FSubsystemIgnoreListEntry
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Entry)
+	FString FilterString;
+	UPROPERTY(EditAnywhere, Category=Entry)
+	bool bMatchSubstring = false;
+
+	bool operator==(const FSubsystemIgnoreListEntry& Other) const
+	{
+		return FilterString == Other.FilterString;
+	}
+};
+
 /**
  * Class that holds settings for subsystem browser plugin.
  *
@@ -187,6 +203,10 @@ public:
 
 	bool ShouldDisplayAllWorlds() const { return bShowAllWorlds; }
 
+	bool HasIgnoredSubsystems() const { return IgnoredSubsystems.Num() > 0; }
+	bool IsSubsystemIgnored(FString InClass) const;
+	void AddToIgnoreList(FString InClass, bool bMatchSubstring);
+
 private:
 
 	template<typename TList, typename TMap>
@@ -256,6 +276,10 @@ protected:
 	// Enforces all object properties that have Config specifier to be editable.
 	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bForceHiddenPropertyVisibility"))
 	bool bEditAnyConfigProperties = false;
+
+	// List of subsystems that will be automatically filtered out
+	UPROPERTY(config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView, TitleProperty="FilterString"))
+	TArray<FSubsystemIgnoreListEntry> IgnoredSubsystems;
 
 	// Maximum number of column toggles to show in menu before folding into submenu
 	// Specify 0 to always fold

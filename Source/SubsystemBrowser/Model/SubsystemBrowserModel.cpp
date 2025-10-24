@@ -61,7 +61,20 @@ void FSubsystemModel::SetCurrentWorld(TWeakObjectPtr<UWorld> InWorld)
 
 bool FSubsystemModel::IsSubsystemFilterActive() const
 {
-	return SubsystemTextFilter.IsValid() && SubsystemTextFilter->HasText();
+	if (SubsystemTextFilter.IsValid() && SubsystemTextFilter->HasText())
+		return true;
+
+	const USubsystemBrowserSettings* Settings = USubsystemBrowserSettings::Get();
+	if (Settings->ShouldShowOnlyGame())
+		return true;
+	if (Settings->ShouldShowOnlyPlugins())
+		return true;
+	if (Settings->ShouldShowOnlyViewable())
+		return true;
+	if (Settings->HasIgnoredSubsystems())
+		return true;
+		
+	return false;
 }
 
 int32 FSubsystemModel::GetNumCategories() const
@@ -134,6 +147,12 @@ void FSubsystemModel::GetFilteredSubsystems(SubsystemTreeItemConstPtr Category, 
 				continue;
 			if (Settings->ShouldShowOnlyViewable() && !Item->HasViewableElements())
 				continue;
+			
+			if (const FSubsystemTreeSubsystemItem* AsSubsystem = Item->GetAsSubsystemDescriptor())
+			{
+				if (Settings->IsSubsystemIgnored(AsSubsystem->ScriptName))
+					continue;
+			}
 
 			if (!SubsystemTextFilter.IsValid() || SubsystemTextFilter->PassesFilter(*Item))
 			{

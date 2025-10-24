@@ -279,6 +279,39 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 			)
 		);
 	}
+	
+	{
+		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemContextFiltering", LOCTEXT("SubsystemContextFiltering", "Filtering"));
+		if (!Package.IsEmpty())
+		{
+			Section.AddMenuEntry("IgnorePackage",
+				LOCTEXT("IgnorePackageLabel", "Ignore Module"),
+				LOCTEXT("IgnorePackageTooltip", "Hide all subsystems from same module (Can be reverted in Settings)"),
+				FSlateIcon(),
+				FUIAction(
+					FExecuteAction::CreateLambda([Key = Package]()
+					{
+						USubsystemBrowserSettings::Get()->AddToIgnoreList(Key + TEXT("."), true);
+					})
+				)
+			);
+		}
+
+		if (!ScriptName.IsEmpty())
+		{
+			Section.AddMenuEntry("IgnoreSubsystem",
+				LOCTEXT("IgnoreSubsystemLabel", "Ignore Subsystem"),
+				LOCTEXT("IgnoreSubsystemTooltip", "Hide subsystem from list (Can be reverted in Settings)"),
+				FSlateIcon(),
+				FUIAction(
+					FExecuteAction::CreateLambda([Key = ScriptName]()
+					{
+						USubsystemBrowserSettings::Get()->AddToIgnoreList(Key, false);
+					})
+				)
+			);
+		}
+	}
 
 	{
 		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemReferenceActions", LOCTEXT("SubsystemReferenceActions", "References"));
