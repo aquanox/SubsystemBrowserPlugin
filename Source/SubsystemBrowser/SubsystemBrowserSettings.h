@@ -51,10 +51,11 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 	// Subsystem Browser Details - Subobject collection function
 	// Specifies a function name that will provide list of subobjects to display
 	// TArray<UObject*> MyGetSubobjectsFunction() const;
+	// 
+	// If Parameter is empty or "auto" - Automatically gather marked subobjbects for display
 	static const FName MD_SBGetSubobjects;
-	// Subsystem Browser Details - Subobject display
-	// Automatically gather market subobjbects for display
-	static const FName MD_SBAutoGetSubobjects;
+	// Important subobject display marker meta
+	static const FName MD_SBSubobject;
 
 	// Subsystem Browser Panel - Quick Actions
 	static const FName MD_SBQuickAction;

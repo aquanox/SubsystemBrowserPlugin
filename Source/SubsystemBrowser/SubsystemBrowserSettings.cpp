@@ -18,7 +18,7 @@ const FName FSubsystemBrowserUserMeta::MD_SBTooltip(TEXT("SBTooltip"));
 const FName FSubsystemBrowserUserMeta::MD_SBOwnerName(TEXT("SBOwnerName"));
 const FName FSubsystemBrowserUserMeta::MD_SBHidden(TEXT("SBHidden"));
 const FName FSubsystemBrowserUserMeta::MD_SBGetSubobjects(TEXT("SBGetSubobjects"));
-const FName FSubsystemBrowserUserMeta::MD_SBAutoGetSubobjects(TEXT("SBAutoGetSubobjects"));
+const FName FSubsystemBrowserUserMeta::MD_SBSubobject(TEXT("SBSubobject"));
 const FName FSubsystemBrowserUserMeta::MD_SBQuickAction(TEXT("SBQuickAction"));
 
 USubsystemBrowserSettings::USubsystemBrowserSettings()

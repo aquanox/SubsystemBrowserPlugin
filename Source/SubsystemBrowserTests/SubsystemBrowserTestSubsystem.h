@@ -97,10 +97,14 @@ DECLARE_DYNAMIC_DELEGATE(FSBTestDynamicDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSBTestDynamicMCDelegate);
 
 /**
+ * Metas for testing
  *
+ * SBOwnerName="GetSBOwnerName"
+ * SBGetSubobjects="auto"
+ * SBGetSubobjects="GetImportantSubobjectsToDisplay"
  */
 UCLASS(Abstract, Config=Test, DefaultConfig,
-	meta=(SBTooltip="SB Tooltip Text", SBColor="(R=255,G=128,B=0)", SBOwnerName="GetSBOwnerName", SBGetSubobjects="GetImportantSubobjectsToDisplay"))
+	meta=(SBTooltip="SB Tooltip Text", SBColor="(R=255,G=128,B=0)", SBOwnerName="GetSBOwnerName", SBGetSubobjects="auto"))
 class SUBSYSTEMBROWSERTESTS_API USubsystemBrowserTestSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
@@ -117,9 +121,9 @@ public:
 	UFUNCTION()
 	TArray<UObject*> GetImportantSubobjectsToDisplay() const;
 
-	UPROPERTY()
+	UPROPERTY(meta=(SBSubobject))
 	USBDemoInteractionAssistantObject* IAObject = nullptr;
-	UPROPERTY()
+	UPROPERTY(meta=(SBSubobject))
 	USBDemoChunkAssistantManager* CAObject = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category="SubsystemBrowserTest")

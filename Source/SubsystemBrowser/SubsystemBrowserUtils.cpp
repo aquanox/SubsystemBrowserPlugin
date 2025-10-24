@@ -15,7 +15,6 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/PackageName.h"
 #include "Model/SubsystemBrowserDescriptor.h"
-#include "ScopedTransaction.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "UObject/Package.h"
@@ -221,11 +220,7 @@ FSubsystemBrowserUtils::FClassFieldStats FSubsystemBrowserUtils::GetClassFieldSt
 {
 	FClassFieldStats Stats;
 
-#if UE_VERSION_OLDER_THAN(5,0,0)
-	for (TFieldIterator<FProperty> It(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::IncludeDeprecated); It; ++It)
-#else
-	for (TFieldIterator<FProperty> It(InClass, EFieldIterationFlags::IncludeSuper|EFieldIterationFlags::IncludeDeprecated); It; ++It)
-#endif
+	for (TFieldIterator<FProperty> It(InClass); It; ++It)
 	{
 		const FProperty* Property = CastField<FProperty>(*It);
 		Stats.NumProperties++;
@@ -250,11 +245,7 @@ FSubsystemBrowserUtils::FClassFieldStats FSubsystemBrowserUtils::GetClassFieldSt
 
 	const FName MD_CallInEditor(TEXT("CallInEditor"));
 
-#if UE_VERSION_OLDER_THAN(5,0,0)
-	for (TFieldIterator<UFunction> It(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::IncludeDeprecated); It; ++It)
-#else
-	for (TFieldIterator<UFunction> It(InClass, EFieldIterationFlags::IncludeSuper|EFieldIterationFlags::IncludeDeprecated); It; ++It)
-#endif
+	for (TFieldIterator<UFunction> It(InClass); It; ++It)
 	{
 		const UFunction* TestFunction = *It;
 		if (TestFunction->FindMetaData(MD_CallInEditor) != nullptr
@@ -692,10 +683,38 @@ void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsyst
 		return;
 	}
 
-	// Option 1: reference to collector function
-	
 	TOptional<FString> UserFunc = GetMetadataHierarchical(InSubsystem->GetClass(), FSubsystemBrowserUserMeta::MD_SBGetSubobjects);
-	if (UserFunc.IsSet() && FName::IsValidXName(UserFunc.GetValue(), INVALID_OBJECTNAME_CHARACTERS))
+	if (!UserFunc.IsSet() || !FName::IsValidXName(UserFunc.GetValue(), INVALID_OBJECTNAME_CHARACTERS))
+	{
+		return;
+	}
+	
+	const FString UserFuncStr = UserFunc.GetValue();
+	if (UserFuncStr.IsEmpty() || UserFuncStr.Equals(TEXT("auto"), ESearchCase::IgnoreCase))
+	{
+		constexpr bool bIncludeNested = false;
+		constexpr EObjectFlags Excluded = RF_ClassDefaultObject|RF_ArchetypeObject;
+		ForEachObjectWithOuter(InSubsystem, [&](UObject* SubObject)
+		{
+			if (SubObject->GetClass()->FindMetaData(FSubsystemBrowserUserMeta::MD_SBSubobject))
+			{
+				OutData.AddUnique(SubObject);
+			}
+		}, bIncludeNested, Excluded);
+
+		for (TFieldIterator<FObjectPropertyBase> It(InSubsystem->GetClass()); It; ++It)
+		{
+			const FObjectPropertyBase* Property = *It;
+			if (Property->FindMetaData(FSubsystemBrowserUserMeta::MD_SBSubobject))
+			{
+				if (UObject* SubObject = Property->GetObjectPropertyValue_InContainer(InSubsystem))
+				{
+					OutData.AddUnique(SubObject);
+				}
+			}
+		}
+	}
+	else // not empty
 	{
 		const FName FuncName (UserFunc.GetValue());
 		
@@ -703,6 +722,8 @@ void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsyst
 		
 		if (Func && Func->HasAllFunctionFlags(FUNC_Native) && !Func->HasAnyFunctionFlags(FUNC_Static))
 		{
+			FEditorScriptExecutionGuard Guard;
+			
 			FSubsystemBrowserGetSubobjects Delegate;
 			Delegate.BindUFunction(InSubsystem, FuncName);
 			OutData = Delegate.Execute();
@@ -715,24 +736,6 @@ void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsyst
 		return;
 	}
 
-	TOptional<FString> UserFlag = GetMetadataHierarchical(InSubsystem->GetClass(), FSubsystemBrowserUserMeta::MD_SBAutoGetSubobjects);
-	if (UserFlag.IsSet())
-	{
-		// Option 2: collecting direct subobjects with display flag
-		constexpr bool bIncludeNested = false;
-		constexpr EObjectFlags Excluded = RF_ClassDefaultObject|RF_ArchetypeObject;
-		ForEachObjectWithOuter(InSubsystem, [&](UObject* SubObject)
-		{
-			if (SubObject->GetClass()->FindMetaData(FSubsystemBrowserUserMeta::MD_SBHidden))
-			{
-				return;
-			}
-
-			OutData.Add(SubObject);
-			
-		}, bIncludeNested, Excluded);
-
-	}
 }
 
 bool FSubsystemBrowserUtils::TryParseColor(const FString& InColor, FLinearColor& OutColor)
@@ -807,16 +810,9 @@ void FSubsystemBrowserUtils::GatherQuickActions(UObject* Object, TArray<FQuickAc
 	if (!IsValid(Object))
 		return;
 
-	static const FName NAME_DisplayPriority("DisplayPriority");
-	static const FName NAME_DisplayName("DisplayName");
-	static const FName NAME_WorldContext(TEXT("WorldContext"));
 	static const FName NAME_Category(TEXT("Category"));
 	
-#if UE_VERSION_OLDER_THAN(5,0,0)
-	for (TFieldIterator<UFunction> It(Object->GetClass(), EFieldIteratorFlags::IncludeSuper); It; ++It)
-#else
-	for (TFieldIterator<UFunction> It(Object->GetClass(), EFieldIterationFlags::IncludeSuper); It; ++It)
-#endif
+	for (TFieldIterator<UFunction> It(Object->GetClass()); It; ++It)
 	{
 		UFunction* TestFunction = *It;
 		// require metadata switch

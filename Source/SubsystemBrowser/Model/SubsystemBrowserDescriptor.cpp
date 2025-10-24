@@ -190,8 +190,7 @@ FSubsystemTreeSubsystemItem::FSubsystemTreeSubsystemItem(TSharedRef<FSubsystemMo
 		UserTooltip = UserTooltipValue;
 	}
 	
-	bHasSubobjectPicker = FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBGetSubobjects).IsSet()
-						|| FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBAutoGetSubobjects).IsSet();
+	bHasSubobjectPicker = FSubsystemBrowserUtils::GetMetadataHierarchical(InClass, FSubsystemBrowserUserMeta::MD_SBGetSubobjects).IsSet();
 }
 
 FText FSubsystemTreeSubsystemItem::GetDisplayName() const
