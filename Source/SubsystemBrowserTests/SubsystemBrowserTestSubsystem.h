@@ -181,7 +181,7 @@ public:
 	void EditorFunction();
 	UFUNCTION(CallInEditor, Category=Tools)
 	void EditorFunctionReset();
-	UPROPERTY(VisibleAnywhere, Category=Tools)
+	UPROPERTY(Config, VisibleAnywhere, Category=Tools)
 	int32 EditorFunctionCallCounter = 0;
 
 	UPROPERTY(VisibleAnywhere, Category=Delegates)

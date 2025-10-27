@@ -54,6 +54,7 @@ void SSubsystemSettingsWidget::Construct(const FArguments& InArgs, UObject* InOb
 		if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilterInSettings())
 		{
 			View->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));
+			View->SetIsCustomRowVisibleDelegate(FIsCustomRowVisible::CreateStatic(&SSubsystemSettingsWidget::CallInEditorRowFilter, MakeWeakObjectPtr(InObject)));
 		}
 		View->SetObject(InObject);
 
@@ -151,6 +152,7 @@ void SSubsystemSettingsWidget::Construct(const FArguments& InArgs, UObject* InOb
 				.Text(this, &SSubsystemSettingsWidget::GetSettingsStorageLocationText)
 			]
 		]
+#if 0
 		+ SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(0, 8, 0, 16)
@@ -180,6 +182,7 @@ void SSubsystemSettingsWidget::Construct(const FArguments& InArgs, UObject* InOb
 				.Text(LOCTEXT("SubsystemMissingEditableConfigs", "This class has no publicly editable config properties, functionality is limited."))
 			]
 		]
+#endif
 		+ SVerticalBox::Slot()
 		.FillHeight(1.0f)
 		[
@@ -217,6 +220,17 @@ bool SSubsystemSettingsWidget::IsDetailsPropertyVisible(const FPropertyAndParent
 	}
 
 	return false;
+}
+
+bool SSubsystemSettingsWidget::CallInEditorRowFilter(FName InRowName, FName InParentName, TWeakObjectPtr<UObject> SourceObj)
+{
+	if (SourceObj.IsValid())
+	{
+		const UFunction* Function = SourceObj->GetClass()->FindFunctionByName(InRowName);
+		if (Function && Function->FindMetaData(TEXT("CallInEditor")))
+			return false;
+	}
+	return true;
 }
 
 void SSubsystemSettingsWidget::NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent, FEditPropertyChain* PropertyThatChanged)

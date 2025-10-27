@@ -137,6 +137,22 @@ TSharedRef<SDockTab> FSubsystemSettingsManager::HandleSpawnSettingsTab(const FSp
 			if (InnerDetailsView.IsValid())
 			{
 				InnerDetailsView->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));
+				
+				TWeakPtr<IDetailsView> WeakDetails(InnerDetailsView);
+				InnerDetailsView->SetIsCustomRowVisibleDelegate(FIsCustomRowVisible::CreateLambda([WeakDetails](FName InRowName, FName InParentName)
+				{
+					if (WeakDetails.IsValid())
+					{
+						const TArray<TWeakObjectPtr<UObject>>& EditedObjects = WeakDetails.Pin()->GetSelectedObjects();
+						for (const TWeakObjectPtr<UObject>& Ptr : EditedObjects)
+						{
+							if (!SSubsystemSettingsWidget::CallInEditorRowFilter(InRowName, InParentName, Ptr))
+								return false;
+						}
+					}
+					return true;
+				}));
+				
 				InnerDetailsView->ForceRefresh();
 			}
 		}

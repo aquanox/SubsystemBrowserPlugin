@@ -101,7 +101,7 @@ void USubsystemBrowserSettings::SetDefaults()
 	IgnoredSubsystems.Empty();
 
 	bForceHiddenPropertyVisibility = false;
-	bUseCustomPropertyFilterInBrowser = false;
+	bUseCustomPropertyFilterInBrowser = true;
 	bShowAnyProperties = false;
 	bEditAnyProperties = false;
 

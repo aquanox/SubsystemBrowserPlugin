@@ -261,9 +261,10 @@ protected:
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails))
 	bool bForceHiddenPropertyVisibility = false;
 
-	// Enables custom property filtering. 
+	// Enables custom property filtering.
+	// Hides Delegates and explicitly hidden properties from Details. Additional options below.
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails))
-	bool bUseCustomPropertyFilterInBrowser = false;
+	bool bUseCustomPropertyFilterInBrowser = true;
 
 	// Enforces all object hidden properties (without Edit property specifier) to be visible
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bUseCustomPropertyFilterInBrowser"))
@@ -345,9 +346,8 @@ protected:
 	UPROPERTY(Config, EditAnywhere, Category="Settings Panel", meta=(ConfigAffectsSettings))
 	bool bUseCustomSettingsWidget = false;
 	// Enables use of custom property filter in Settings panel.
-	// Will display only properties that have Config flag instead of normal "anything editable" behavior
-	UPROPERTY(Config, EditAnywhere, Category="Settings Panel")
-	bool bUseCustomPropertyFilterInSettings = false;
+	UPROPERTY(Config, EditAnywhere, Category="Settings Panel", meta=(ConfigRestartRequired=true))
+	bool bUseCustomPropertyFilterInSettings = true;
 
 private:
 	bool bReloadingConfig = false;

@@ -33,6 +33,8 @@ public:
 
 	/* details view handlers */
 	static bool IsDetailsPropertyVisible(const FPropertyAndParent& InProperty);
+	static bool CallInEditorRowFilter(FName InRowName, FName InParentName, TWeakObjectPtr<UObject> SourceObj);
+	
 	virtual void NotifyPostChange( const FPropertyChangedEvent& PropertyChangedEvent, class FEditPropertyChain* PropertyThatChanged ) override;
 
 	/* set as default button handlers */
