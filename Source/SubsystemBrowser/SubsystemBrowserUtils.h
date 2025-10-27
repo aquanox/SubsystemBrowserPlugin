@@ -86,46 +86,24 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	static void SetClipboardText(const FString& ClipboardText);
 
 	/**
-	 * @brief
-	 * @param InText
-	 * @param InType
+	 * Show editor notification icon with specified text
 	 */
 	static void ShowBrowserInfoMessage(FText InText, SNotificationItem::ECompletionState InType);
 
 	/**
-	 * @brief Generate config export string for specified item
-	 * @param Item
-	 * @param bModifiedOnly
-	 * @return
+	 * Legacy. Generate config export string for specified tree
 	 */
 	static FString GenerateConfigExport(const struct FSubsystemTreeSubsystemItem* Item, bool bModifiedOnly);
 
 	/**
-	 *
-	 * @param Item
-	 * @param bModifiedOnly
-	 * @return
+	 * Legacy. Generate config export string.
 	 */
 	static FString GenerateConfigExport(const UObject* Item, bool bModifiedOnly);
 
 	/**
-	 *
+	 * Legacy. Wrapper over UObject::UpdateDefaultConfigFile
 	 */
 	static bool TryUpdateDefaultConfigFile(UObject* Object);
-
-	/**
-	 * Dump class flags to output
-	 *
-	 * Example: `SB.PrintClass /Script/SubsystemBrowser.SubsystemBrowserTestSubsystem`
-	 */
-	static void PrintClassDetails(const TArray<FString>& InArgs, UWorld* InWorld, FOutputDevice& InLog);
-
-	/**
-	 * Dump property flags to output
-	 *
-	 * Example: `SB.PrintProperty /Script/SubsystemBrowser.SubsystemBrowserTestSubsystem SingleDelegate`
-	 */
-	static void PrintPropertyDetails(const TArray<FString>& InArgs, UWorld* InWorld, FOutputDevice& InLog);
 
 	/**
 	 * Build a text description for a world
@@ -150,7 +128,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	static void DefaultSelectSubsystemSubobjects(UObject* InSubsystem, TArray<UObject*>& OutData);
 
 	/**
-	 *
+	 * Color code parsing helper
 	 */
 	static bool TryParseColor(const FString& InColor, FLinearColor& OutColor);
 
@@ -176,7 +154,6 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 
 	/**
 	 *
-	 * 
 	 */
 	static void InvokeQuickAction(const FQuickActionData& ActionData);
 
