@@ -185,4 +185,6 @@ private:
 	EColumnSortMode::Type SortMode = EColumnSortMode::None;
 	//
 	bool bSortDirty = false;
+	//
+	TWeakObjectPtr<UWorld> PrePieSelectedWorld;
 };

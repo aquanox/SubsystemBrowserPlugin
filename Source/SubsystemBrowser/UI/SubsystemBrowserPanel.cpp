@@ -933,6 +933,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetWorldsButtonContent()
 
 	auto IsAllowedWorldType = [](EWorldType::Type InType) -> bool
 	{
+		// TBD: make a setting to pick world instead?
 		if (USubsystemBrowserSettings::Get()->ShouldDisplayAllWorlds())
 			return true;
 		return InType == EWorldType::PIE || InType == EWorldType::Editor;
@@ -965,7 +966,12 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetWorldsButtonContent()
 
 void SSubsystemBrowserPanel::HandlePIEStart(const bool bIsSimulating)
 {
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("On PIE Start"));
+	UE_LOG(LogSubsystemBrowser, Verbose, TEXT("On PIE Start"));
+
+	if (USubsystemBrowserSettings::Get()->ShouldDisplayAllWorlds())
+	{
+		PrePieSelectedWorld = SubsystemModel->GetCurrentWorld();
+	}
 
 	UWorld* PIEWorld = nullptr;
 	for (const FWorldContext& Context : GEngine->GetWorldContexts())
@@ -982,7 +988,14 @@ void SSubsystemBrowserPanel::HandlePIEStart(const bool bIsSimulating)
 
 void SSubsystemBrowserPanel::HandlePIEEnd(const bool bIsSimulating)
 {
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("On PIE End"));
+	UE_LOG(LogSubsystemBrowser, Verbose, TEXT("On PIE End"));
+
+	if (USubsystemBrowserSettings::Get()->ShouldDisplayAllWorlds() && PrePieSelectedWorld.IsValid())
+	{
+		OnSelectWorld(PrePieSelectedWorld.Get());
+		PrePieSelectedWorld.Reset();
+		return;
+	}
 
 	UWorld* EditorWorld = nullptr;
 	for (const FWorldContext& Context : GEngine->GetWorldContexts())
@@ -1000,7 +1013,7 @@ void SSubsystemBrowserPanel::HandlePIEEnd(const bool bIsSimulating)
 
 void SSubsystemBrowserPanel::HandleWorldChange(UWorld* InWorld)
 {
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("On World Changed"));
+	UE_LOG(LogSubsystemBrowser, Verbose, TEXT("On World Changed"));
 
 	// Automatically switch to the newest editor world after opening level
 	if (InWorld && InWorld->WorldType == EWorldType::Editor)
