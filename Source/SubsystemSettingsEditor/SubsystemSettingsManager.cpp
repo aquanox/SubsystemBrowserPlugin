@@ -131,7 +131,7 @@ TSharedRef<SDockTab> FSubsystemSettingsManager::HandleSpawnSettingsTab(const FSp
 		SettingsEditorPtr = SettingsEditor;
 		SettingsEditorModelPtr = SettingsEditorModel;
 
-		if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilter())
+		if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilterInSettings())
 		{
 			TSharedPtr<IDetailsView> InnerDetailsView = RecursiveFindWidget<IDetailsView>(SettingsEditor, TEXT("SDetailsView"));
 			if (InnerDetailsView.IsValid())

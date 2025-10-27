@@ -5,6 +5,12 @@
 #include "Misc/PackageName.h"
 #include "SubsystemBrowserModule.h"
 #include "Model/SubsystemBrowserModel.h"
+#include "Misc/Paths.h"
+#include "Misc/ConfigCacheIni.h"
+#include "Misc/ConfigContext.h"
+#include "UObject/Package.h"
+#include "Modules/ModuleManager.h"
+#include "ISettingsEditorModule.h"
 
 USubsystemBrowserSettings::FSettingChangedEvent USubsystemBrowserSettings::SettingChangedEvent;
 
@@ -21,13 +27,51 @@ const FName FSubsystemBrowserUserMeta::MD_SBGetSubobjects(TEXT("SBGetSubobjects"
 const FName FSubsystemBrowserUserMeta::MD_SBSubobject(TEXT("SBSubobject"));
 const FName FSubsystemBrowserUserMeta::MD_SBQuickAction(TEXT("SBQuickAction"));
 
+template <typename TList, typename TMap>
+void LoadDataFromConfig(const TList& InConfigList, TMap& OutMap)
+{
+	for (const auto& Option : InConfigList)
+	{
+		OutMap.Add(Option.Name, Option.bValue);
+	}
+}
+
+template <typename TList, typename TMap>
+void StoreDataToConfig(const TMap& InMap, TList& OutConfigList)
+{
+	for (const auto& Option : InMap)
+	{
+		if (auto Existing = OutConfigList.FindByKey(Option.Key))
+		{
+			Existing->bValue = Option.Value;
+		}
+		else
+		{
+			OutConfigList.Emplace(Option.Key, Option.Value);
+		}
+	}
+}
+
+template <typename TMap>
+void SetConfigFlag(TMap& InMap, FName Category, bool State)
+{
+	if (auto* Existing = InMap.FindByKey(Category))
+	{
+		Existing->bValue = State;
+	}
+	else
+	{
+		InMap.Emplace(FSubsystemBrowserConfigItem{ Category, State });
+	}
+}
+
 USubsystemBrowserSettings::USubsystemBrowserSettings()
 {
 }
 
 void USubsystemBrowserSettings::OnSettingsSelected()
 {
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being selected"));
+	UE_LOG(LogSubsystemBrowser, Verbose, TEXT("Browser settings being selected"));
 
 	SyncCategorySettings();
 	SyncColumnSettings();
@@ -35,26 +79,31 @@ void USubsystemBrowserSettings::OnSettingsSelected()
 
 bool USubsystemBrowserSettings::OnSettingsModified()
 {
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being modified"));
+	UE_LOG(LogSubsystemBrowser, Verbose, TEXT("Browser settings being modified"));
 	return true;
 }
 
-bool USubsystemBrowserSettings::OnSettingsReset()
+void USubsystemBrowserSettings::SetDefaults()
 {
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being reset"));
-
-	CategoryVisibilityState.Empty();
-	TreeExpansionState.Empty();
-	TableColumnVisibilityState.Empty();
-
+	bUseNomadMode = false;
+	
 	bShowOnlyGameModules = false;
 	bShowOnlyPluginModules = false;
+	bHideEmptyCategories = false;
+	bShowOnlyWithViewableElements = false;
+	bShowSubobjects = true;
+	bShowDetailedTooltips = false;
+	bShowAllWorlds = false;
+	IgnoredSubsystems.Empty();
+
+	bForceHiddenPropertyVisibility = false;
+	bUseCustomPropertyFilterInBrowser = false;
 	bShowAnyProperties = false;
 	bEditAnyProperties = false;
-	bShowOnlyWithViewableElements = false;
 
 	MaxColumnTogglesToShow = 4;
 	MaxCategoryTogglesToShow = 6;
+	MaxQuickActionsToShow = 4;
 
 	bEnableColoring = false;
 
@@ -67,8 +116,39 @@ bool USubsystemBrowserSettings::OnSettingsReset()
 	bEnableColoringEngineModule = false;
 	EngineModuleColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
 
+	CategoryVisibilityState.Empty();
+	TreeExpansionState.Empty();
+	TableColumnVisibilityState.Empty();
 
 	NotifyPropertyChange(NAME_All);
+}
+
+bool USubsystemBrowserSettings::OnSettingsReset()
+{
+	UE_LOG(LogSubsystemBrowser, Verbose, TEXT("Browser settings being reset"));
+
+	// Same logic as standard settings reset + request restart popup as it can't be checked what would be reset
+
+	TGuardValue<bool> Guard(bReloadingConfig, true);
+
+	bool bResettable = GetClass()->HasAnyClassFlags(CLASS_Config)
+		&& !GetClass()->HasAnyClassFlags(CLASS_DefaultConfig | CLASS_GlobalUserConfig | CLASS_ProjectUserConfig);
+	if (ensureAlways(bResettable))
+	{
+		FString ConfigName = GetClass()->GetConfigName();
+		FString SectionName = GetClass()->GetPathName();
+		
+		GConfig->EmptySection(*SectionName, ConfigName);
+		GConfig->Flush(false);
+		
+		FConfigContext::ForceReloadIntoGConfig().Load(*FPaths::GetBaseFilename(ConfigName));
+		ReloadConfig(nullptr, nullptr, UE::LCPF_PropagateToInstances|UE::LCPF_PropagateToChildDefaultObjects);
+	}
+
+	{
+		ISettingsEditorModule& SettingsEditor = FModuleManager::Get().GetModuleChecked<ISettingsEditorModule>(TEXT("SettingsEditor"));
+		SettingsEditor.OnApplicationRestartRequired();
+	}
 
 	return true;
 }
@@ -124,6 +204,7 @@ void USubsystemBrowserSettings::LoadTreeExpansionStates(TMap<FName, bool>& State
 void USubsystemBrowserSettings::SetTreeExpansionStates(TMap<FName, bool> const& States)
 {
 	StoreDataToConfig(States, TreeExpansionState);
+	// Do not notify
 	//NotifyPropertyChange(GET_MEMBER_NAME_CHECKED(ThisClass, TreeExpansionState));
 }
 
@@ -282,17 +363,14 @@ void USubsystemBrowserSettings::SetTableColumnState(FName Column, bool State)
 
 void USubsystemBrowserSettings::NotifyPropertyChange(FName PropertyName)
 {
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("Property %s changed and called save"), *PropertyName.ToString());
-	SaveConfig();
+	UE_LOG(LogSubsystemBrowser, Verbose, TEXT("Property %s changed"), *PropertyName.ToString());
+	
+	if (!bReloadingConfig)
+	{
+		SaveConfig();
+	}
 
 	SettingChangedEvent.Broadcast(PropertyName);
-}
-
-void USubsystemBrowserSettings::PostLoad()
-{
-	UE_LOG(LogSubsystemBrowser, Log, TEXT("Browser settings being loaded"));
-
-	Super::PostLoad();
 }
 
 void USubsystemBrowserSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -302,5 +380,8 @@ void USubsystemBrowserSettings::PostEditChangeProperty(FPropertyChangedEvent& Pr
 	// Take the class member property name instead of struct member
 	FName PropertyName = (PropertyChangedEvent.MemberProperty ? PropertyChangedEvent.MemberProperty->GetFName() : PropertyChangedEvent.GetPropertyName());
 
-	NotifyPropertyChange(PropertyName);
+	if (!bReloadingConfig && !PropertyName.IsNone())
+	{
+		NotifyPropertyChange(PropertyName);
+	}
 }

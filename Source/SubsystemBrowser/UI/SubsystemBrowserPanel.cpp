@@ -574,7 +574,7 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 	}
 	MenuBuilder.EndSection();
 
-	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewOptionsGroup", "Options"));
+	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewFilteringGroup", "Display"));
 	{
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("ToggleGameOnly", "Only Game Modules"),
@@ -601,6 +601,18 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			EUserInterfaceActionType::ToggleButton
 		);
 		MenuBuilder.AddMenuEntry(
+			LOCTEXT("ToggleSubobjects", "Show Subobjects"),
+			LOCTEXT("ToggleSubobjects_Tooltip", "Enable display of notable subobjects in subsystem display as nested elements."),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ToggleShowSubobjects),
+				FCanExecuteAction(),
+				FIsActionChecked::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldShowSubobjbects)
+			),
+			NAME_None,
+			EUserInterfaceActionType::ToggleButton
+		);
+		MenuBuilder.AddMenuEntry(
 			LOCTEXT("ToggleHiddenProps", "Show Hidden Properties"),
 			LOCTEXT("ToggleHiddenProps_Tooltip", "Enforces display of all hidden object properties in details panel."),
 			FSlateIcon(),
@@ -612,19 +624,24 @@ TSharedRef<SWidget> SSubsystemBrowserPanel::GetViewOptionsButtonContent()
 			NAME_None,
 			EUserInterfaceActionType::ToggleButton
 		);
-		if (USubsystemBrowserSettings::Get()->ShouldUseSubsystemSettings())
-		{
-			MenuBuilder.AddMenuEntry(
-        		LOCTEXT("OpenSubsystemSettingsPanel", "Subsystem Settings"),
-        		LOCTEXT("OpenSubsystemSettingsPanel_Tooltip", "Open subsystem settings panel."),
-        		FStyleHelper::GetSlateIcon(FStyleHelper::PanelIconName),
-        		FUIAction(
-        			FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowSubsystemSettingsTab)
-        		),
-        		NAME_None,
-        		EUserInterfaceActionType::Button
-	        );
-		}
+	}
+	MenuBuilder.EndSection();
+
+	MenuBuilder.BeginSection(NAME_None, LOCTEXT("ViewOptionsGroup", "Options"));
+	{
+		MenuBuilder.AddMenuEntry(
+			LOCTEXT("OpenSubsystemSettingsPanel", "Subsystem Settings"),
+			LOCTEXT("OpenSubsystemSettingsPanel_Tooltip", "Open subsystem settings panel."),
+			FStyleHelper::GetSlateIcon(FStyleHelper::PanelIconName),
+			FUIAction(
+				FExecuteAction::CreateSP(this, &SSubsystemBrowserPanel::ShowSubsystemSettingsTab),
+				FCanExecuteAction(),
+				FIsActionChecked(),
+				FIsActionButtonVisible::CreateUObject(Settings, &USubsystemBrowserSettings::ShouldUseSubsystemSettings)
+			),
+			NAME_None,
+			EUserInterfaceActionType::Button
+		);
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("OpenSettingsPanel", "Plugin Settings"),
 			LOCTEXT("OpenSettingsPanel_Tooltip", "Open plugin settings panel."),
@@ -813,6 +830,13 @@ void SSubsystemBrowserPanel::ToggleForceHiddenPropertyVisibility()
 
 	RefreshView();
 	RecreateDetails();
+}
+
+void SSubsystemBrowserPanel::ToggleShowSubobjects()
+{
+	USubsystemBrowserSettings::Get()->ToggleShowSubobjbects();
+
+	RefreshView();
 }
 
 void SSubsystemBrowserPanel::ToggleShouldShowOnlyGame()
@@ -1010,7 +1034,7 @@ TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
 	FPropertyEditorModule& EditModule = FModuleManager::Get().GetModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor"));
 	TSharedRef<IDetailsView> DetailViewWidget = EditModule.CreateDetailView(DetailsViewArgs);
 
-	if (Settings->UseCustomPropertyFiltering())
+	if (Settings->ShouldUseCustomPropertyFilteringInBrowser())
 	{
 		DetailViewWidget->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyVisible));
 		DetailViewWidget->SetIsPropertyReadOnlyDelegate(FIsPropertyReadOnly::CreateSP(this, &SSubsystemBrowserPanel::IsDetailsPropertyReadOnly));

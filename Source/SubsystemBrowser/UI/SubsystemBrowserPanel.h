@@ -84,6 +84,7 @@ protected:
 	void ToggleDisplayColumn(FName ColumnName);
 	void ToggleTableColoring();
 	void ToggleForceHiddenPropertyVisibility();
+	void ToggleShowSubobjects();
 	void ToggleShouldShowOnlyGame();
 	void ToggleShouldShowOnlyPlugins();
 	void ToggleShouldShowOnlyViewable();

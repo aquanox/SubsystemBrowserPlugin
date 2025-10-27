@@ -51,7 +51,7 @@ void SSubsystemSettingsWidget::Construct(const FArguments& InArgs, UObject* InOb
 
 	{
 		TSharedRef<IDetailsView> View = FModuleManager::GetModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor")).CreateDetailView(DetailsViewArgs);
-		if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilter())
+		if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilterInSettings())
 		{
 			View->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));
 		}
