@@ -371,7 +371,7 @@ void FSubsystemTreeSubsystemItem::GenerateContextMenu(UToolMenu* MenuBuilder) co
 		}
 	}
 
-	if (IsConfigExportable())
+	if (IsConfigExportable() && USubsystemBrowserSettings::Get()->ShouldDisplayConfigExportActions())
 	{
 		FToolMenuSection& Section = MenuBuilder->AddSection("SubsystemConfigActions", LOCTEXT("SubsystemConfigActions", "Config"));
 

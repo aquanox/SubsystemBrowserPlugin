@@ -204,6 +204,7 @@ public:
 	bool TryFindNamedColor(const FName& InName, FLinearColor& OutColor) const;
 
 	bool ShouldDisplayAllWorlds() const { return bShowAllWorlds; }
+	bool ShouldDisplayConfigExportActions() const { return bConfigExportActions; }
 
 	bool HasIgnoredSubsystems() const { return IgnoredSubsystems.Num() > 0; }
 	bool IsSubsystemIgnored(FString InClass) const;
@@ -246,6 +247,10 @@ protected:
 	// WARNING: Advanced users only
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel")
 	bool bShowAllWorlds = false;
+
+	// Enables legacy config export actions that were used before Settings panel was introduced
+	UPROPERTY(Config, EditAnywhere, Category="Browser Panel")
+	bool bConfigExportActions = false;
 
 	// Matching objects will be automatically filtered out
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView, TitleProperty="FilterString"))
