@@ -3,6 +3,7 @@
 set PLUGIN_PATH="%cd%\SubsystemBrowserPlugin.uplugin"
 set RUNUAT_PATH="%EPIC_LIBRARY%\UE_%VERSION%\Engine\Build\BatchFiles\RunUAT.bat"
 set PACKAGE_PATH="%WORK_TEMP%\SBP_%VERSION%"
+set ENGINE_SELECTION=(4.25 4.26 4.27 5.0 5.1 5.2 5.3 5.4 5.5 5.6 5.7)
 
 set EXTRA_PARAMS= -StrictIncludes
 
