@@ -220,10 +220,6 @@ FSubsystemBrowserUtils::FClassFieldStats FSubsystemBrowserUtils::GetClassFieldSt
 		{
 			Stats.NumEditable ++;
 		}
-		if (Property->HasAnyPropertyFlags(CPF_BlueprintVisible))
-		{
-			Stats.NumVisible ++;
-		}
 		if (Property->HasAnyPropertyFlags(CPF_Config|CPF_GlobalConfig))
 		{
 			Stats.NumConfig ++;

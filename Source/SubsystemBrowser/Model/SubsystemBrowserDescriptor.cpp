@@ -200,7 +200,7 @@ FText FSubsystemTreeSubsystemItem::GetDisplayName() const
 
 bool FSubsystemTreeSubsystemItem::HasViewableElements() const
 {
-	if (PropertyStats.NumProperties && (PropertyStats.NumEditable || PropertyStats.NumVisible))
+	if (PropertyStats.NumProperties && PropertyStats.NumEditable)
 		return true;
 	if (PropertyStats.NumCallable)
 		return true;

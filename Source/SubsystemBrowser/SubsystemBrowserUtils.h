@@ -48,20 +48,17 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUtils
 	 */
 	static void CollectSourceFiles(UClass* InClass, TArray<FString>& OutSourceFiles);
 	
-
 	struct FClassFieldStats
 	{
 		// total number of reflected properties
 		int32 NumProperties = 0;
-		// number of properties with Edit or Visible flag
+		// number of properties with CPF_Edit flag
 		int32 NumEditable = 0;
-		// number of properties with Visible flag
-		int32 NumVisible = 0;
-		// number of properties with Config flag
+		// number of properties with CPF_Config flag
 		int32 NumConfig = 0;
-		// number of properties with Config flag that are Editable
+		// number of properties with CPF_Config and CPF_Edit flag
 		int32 NumConfigWithEdit = 0;
-		// number of CallInEditor functions
+		// number of CallInEditor or QuickAction functions
 		int32 NumCallable = 0;
 	};
 
