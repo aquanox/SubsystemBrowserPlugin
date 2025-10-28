@@ -1046,6 +1046,11 @@ TSharedRef<IDetailsView> SSubsystemBrowserPanel::CreateDetails()
 
 	FPropertyEditorModule& EditModule = FModuleManager::Get().GetModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor"));
 	TSharedRef<IDetailsView> DetailViewWidget = EditModule.CreateDetailView(DetailsViewArgs);
+	if (FSBDetailsCustomization::IsEnabled())
+	{
+		DetailViewWidget->RegisterInstancedCustomPropertyLayout(UObject::StaticClass(),
+			FOnGetDetailCustomizationInstance::CreateStatic(&FSBDetailsCustomization::MakeForSettings));
+	}
 
 	if (Settings->ShouldUseCustomPropertyFilteringInBrowser())
 	{

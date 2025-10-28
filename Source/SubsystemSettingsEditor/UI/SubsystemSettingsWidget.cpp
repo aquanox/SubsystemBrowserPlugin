@@ -13,6 +13,7 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
+#include "UI/SubsystemDetailsCustomizations.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
 
@@ -51,6 +52,11 @@ void SSubsystemSettingsWidget::Construct(const FArguments& InArgs, UObject* InOb
 
 	{
 		TSharedRef<IDetailsView> View = FModuleManager::GetModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor")).CreateDetailView(DetailsViewArgs);
+		if (FSBDetailsCustomization::IsEnabled())
+		{
+			View->RegisterInstancedCustomPropertyLayout(UObject::StaticClass(),
+				FOnGetDetailCustomizationInstance::CreateStatic(&FSBDetailsCustomization::MakeForSettings));
+		}
 		if (USubsystemBrowserSettings::Get()->ShouldUseCustomPropertyFilterInSettings())
 		{
 			View->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));

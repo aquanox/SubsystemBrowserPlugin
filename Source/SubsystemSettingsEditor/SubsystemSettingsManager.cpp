@@ -20,6 +20,7 @@
 #include "UObject/UObjectIterator.h"
 #include "UI/SubsystemBrowserPanel.h"
 #include "UI/SubsystemSettingsWidget.h"
+#include "UI/SubsystemDetailsCustomizations.h"
 #include "SubsystemSettingsEditorModule.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
@@ -136,6 +137,11 @@ TSharedRef<SDockTab> FSubsystemSettingsManager::HandleSpawnSettingsTab(const FSp
 			TSharedPtr<IDetailsView> InnerDetailsView = RecursiveFindWidget<IDetailsView>(SettingsEditor, TEXT("SDetailsView"));
 			if (InnerDetailsView.IsValid())
 			{
+				if (FSBDetailsCustomization::IsEnabled())
+				{
+					InnerDetailsView->RegisterInstancedCustomPropertyLayout(UObject::StaticClass(),
+						FOnGetDetailCustomizationInstance::CreateStatic(&FSBDetailsCustomization::MakeForSettings));
+				}
 				InnerDetailsView->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));
 				
 				TWeakPtr<IDetailsView> WeakDetails(InnerDetailsView);

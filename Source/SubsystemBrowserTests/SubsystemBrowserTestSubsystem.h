@@ -218,9 +218,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=ArrayWidget)
 	TArray<USBDemoWidget*> ArrayWidgets;
 
-	UFUNCTION(CallInEditor, Category=ArrayWidget)
+	UFUNCTION(CallInEditor, DisplayName="Arr Fill", Category=ArrayWidget)
 	void FillArrayWidgets();
-	UFUNCTION(CallInEditor, Category=ArrayWidget)
+	UFUNCTION(CallInEditor, DisplayName="Arr Clear", Category=ArrayWidget)
 	void EmptyArrayWidgets();
 
 	UFUNCTION(meta=(SBQuickAction))
@@ -228,5 +228,3 @@ public:
 	UFUNCTION(DisplayName="Quick Action Second", meta=(SBQuickAction))
 	void QuickActionTest2();
 };
-
-
