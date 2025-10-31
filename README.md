@@ -24,6 +24,7 @@ New Subsystem Settings panel provides an easy way to interact with config proper
    * Game Instance Subsystems
    * World Subsystems
    * Local Player Subsystems  
+   * Audio Engine Subsystems  (UE 5.2+)
  * Display active subsystems in selected worlds
  * Display which module or plugin subsystems originate from
  * View and modify subsystem properties with Details View (including hidden properties)
