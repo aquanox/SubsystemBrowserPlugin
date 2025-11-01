@@ -12,7 +12,7 @@
 #include "Modules/ModuleManager.h"
 #include "ISettingsEditorModule.h"
 
-#if !UE_VERSION_OLDER_THAN(5, 0, 0)
+#if !UE_VERSION_OLDER_THAN(5, 1, 0)
 #include "Misc/ConfigContext.h"
 #endif
 
@@ -145,11 +145,15 @@ bool USubsystemBrowserSettings::OnSettingsReset()
 		GConfig->EmptySection(*SectionName, ConfigName);
 		GConfig->Flush(false);
 
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 		FConfigCacheIni::LoadGlobalIniFile(ConfigName, *FPaths::GetBaseFilename(ConfigName), nullptr, true);
-		ReloadConfig(nullptr, nullptr, UE4::LCPF_PropagateToInstances|UE4::LCPF_PropagateToChildDefaultObjects);
 #else
 		FConfigContext::ForceReloadIntoGConfig().Load(*FPaths::GetBaseFilename(ConfigName));
+#endif
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+		ReloadConfig(nullptr, nullptr, UE4::LCPF_PropagateToInstances|UE4::LCPF_PropagateToChildDefaultObjects);
+#else
 		ReloadConfig(nullptr, nullptr, UE::LCPF_PropagateToInstances|UE::LCPF_PropagateToChildDefaultObjects);
 #endif
 	}
