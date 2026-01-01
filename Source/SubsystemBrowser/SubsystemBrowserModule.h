@@ -147,5 +147,5 @@ void FSubsystemBrowserModule::RegisterDynamicColumn(TArgs&&... InArgs)
 #if UE_BUILD_DEBUG || defined(WITH_SB_HOST_PROJECT)
 DECLARE_LOG_CATEGORY_EXTERN(LogSubsystemBrowser, Log, All);
 #else
-DECLARE_LOG_CATEGORY_EXTERN(LogSubsystemBrowser, Log, Warning);
+DECLARE_LOG_CATEGORY_EXTERN(LogSubsystemBrowser, Warning, Warning);
 #endif
