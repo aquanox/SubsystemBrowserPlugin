@@ -146,7 +146,10 @@ void FSubsystemBrowserModule::ShutdownModule()
 		{
 			if (FLevelEditorModule* LevelEditorModule = FModuleManager::GetModulePtr<FLevelEditorModule>(TEXT("LevelEditor")))
 			{
-				LevelEditorModule->GetLevelEditorTabManager()->UnregisterTabSpawner(SubsystemBrowserTabName);
+				if (TSharedPtr<FTabManager> TabManager = LevelEditorModule->GetLevelEditorTabManager())
+				{
+					TabManager->UnregisterTabSpawner(SubsystemBrowserTabName);
+				}
 			}
 		}
 		else

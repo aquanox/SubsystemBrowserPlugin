@@ -94,10 +94,11 @@ void FSubsystemSettingsManager::Unregister()
 
 void FSubsystemSettingsManager::ShowSettings(const FName& CategoryName, const FName& SectionName)
 {
+	TSharedRef<FTabManager> TabManager = FGlobalTabmanager::Get();
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
-	FGlobalTabmanager::Get()->InvokeTab(FSubsystemBrowserModule::SubsystemSettingsTabName);
+	TabManager->InvokeTab(FSubsystemBrowserModule::SubsystemSettingsTabName);
 #else
-	FGlobalTabmanager::Get()->TryInvokeTab(SubsystemSettingsTabName);
+	TabManager->TryInvokeTab(SubsystemSettingsTabName);
 #endif
 
 	ISettingsEditorModelPtr SettingsEditorModel = SettingsEditorModelPtr.Pin();
@@ -143,7 +144,7 @@ TSharedRef<SDockTab> FSubsystemSettingsManager::HandleSpawnSettingsTab(const FSp
 						FOnGetDetailCustomizationInstance::CreateStatic(&FSBDetailsCustomization::MakeForSettings));
 				}
 				InnerDetailsView->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SSubsystemSettingsWidget::IsDetailsPropertyVisible));
-				
+
 				TWeakPtr<IDetailsView> WeakDetails(InnerDetailsView);
 				InnerDetailsView->SetIsCustomRowVisibleDelegate(FIsCustomRowVisible::CreateLambda([WeakDetails](FName InRowName, FName InParentName)
 				{
@@ -158,7 +159,7 @@ TSharedRef<SDockTab> FSubsystemSettingsManager::HandleSpawnSettingsTab(const FSp
 					}
 					return true;
 				}));
-				
+
 				InnerDetailsView->ForceRefresh();
 			}
 		}
