@@ -47,6 +47,7 @@ public class SubsystemBrowser : ModuleRules
 			"ToolMenus",
 			"SettingsEditor",
 			"AssetTools",
+			"MainFrame",
 			"Projects"
 		});
 	}

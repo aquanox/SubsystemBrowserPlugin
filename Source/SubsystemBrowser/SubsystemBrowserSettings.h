@@ -51,7 +51,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 	// Subsystem Browser Details - Subobject collection function
 	// Specifies a function name that will provide list of subobjects to display
 	// TArray<UObject*> MyGetSubobjectsFunction() const;
-	// 
+	//
 	// If Parameter is empty or "auto" - Automatically gather marked subobjbects for display
 	static const FName MD_SBGetSubobjects;
 	// Important subobject display marker meta
@@ -59,7 +59,7 @@ struct SUBSYSTEMBROWSER_API FSubsystemBrowserUserMeta
 
 	// Subsystem Browser Panel - Quick Actions
 	static const FName MD_SBQuickAction;
-	
+
 };
 
 struct SUBSYSTEMBROWSER_API FSubsystemBrowserConfigMeta
@@ -165,7 +165,7 @@ public:
 	void ToggleShowSubobjbects() { SetShowSubobjects(!bShowSubobjects); }
 
 	bool ShouldUseCustomPropertyFilteringInBrowser() const { return bUseCustomPropertyFilterInBrowser; }
-	
+
 	bool ShouldForceHiddenPropertyVisibility() const { return bForceHiddenPropertyVisibility; }
 	void SetForceHiddenPropertyVisibility(bool bNewValue);
 	void ToggleForceHiddenPropertyVisibility() { SetForceHiddenPropertyVisibility(!bForceHiddenPropertyVisibility); }
@@ -209,11 +209,10 @@ public:
 	bool HasIgnoredSubsystems() const { return IgnoredSubsystems.Num() > 0; }
 	bool IsSubsystemIgnored(FString InClass) const;
 	void AddToIgnoreList(FString InClass, bool bMatchSubstring);
-
 protected:
-	
+
 	// Should spawn Subsystem Browser Panel as a standalone (nomad) tab insteaf of Level Editor Panel tab?
-	// Editor Restart is required to apply value change. Default is False. 
+	// Editor Restart is required to apply value change. Default is False.
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel", meta=(ConfigRestartRequired=true))
 	bool bUseNomadMode = false;
 
@@ -232,7 +231,7 @@ protected:
 	// Should show subsystems that have at least one viewable property or callable function?
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
 	bool bShowOnlyWithViewableElements = false;
-	
+
 	// Should display subsystem important subobjects?
 	// List of subobjects controlled by metadata specifiers
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView))
@@ -255,7 +254,7 @@ protected:
 	// Matching objects will be automatically filtered out
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel", meta=(ConfigAffectsView, TitleProperty="FilterString"))
 	TArray<FSubsystemIgnoreListEntry> IgnoredSubsystems;
-	
+
 	// Enables hidden property display (Without Edit flag) on details view
 	// WARNING: Advanced users only
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails))
@@ -269,7 +268,7 @@ protected:
 	// Enforces all object hidden properties (without Edit property specifier) to be visible
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bUseCustomPropertyFilterInBrowser"))
 	bool bShowAnyProperties = false;
-	
+
 	// Enforces all object properties in details panel to be editable.
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Details", meta=(ConfigAffectsDetails, EditConditionHides, EditCondition="bUseCustomPropertyFilterInBrowser"))
 	bool bEditAnyProperties = false;
@@ -317,14 +316,14 @@ protected:
 	TArray<FSubsystemBrowserNamedColorEntry> NamedColors;
 
 	// Control TreeView|DetailsView splitter mode
-	// Respawning panel or restarting editor is required to apply change. 
+	// Respawning panel or restarting editor is required to apply change.
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(ConfigRestartRequired=true))
 	ESubsystemBrowserSplitterOrientation SeparatorOrientation = ESubsystemBrowserSplitterOrientation::Auto;
-	
+
 	// Location of separator between subsystem tree and details
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance")
 	float SeparatorLocation = 0.33f;
-	
+
 	// Category visibility state.
 	UPROPERTY(Config)
 	TArray<FSubsystemBrowserConfigItem> CategoryVisibilityState;

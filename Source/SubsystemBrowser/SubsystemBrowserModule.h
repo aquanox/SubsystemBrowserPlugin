@@ -115,6 +115,8 @@ public:
 protected:
 	void RegisterSettings();
 	void RegisterMenus();
+	void RegisterActions();
+	void UnregisterActions();
 
 	/** Handles creating the subsystem browser tab. */
 	TSharedRef<SDockTab> HandleSpawnBrowserTab(const FSpawnTabArgs& Args);
@@ -126,7 +128,6 @@ private:
 	TArray<SubsystemCategoryPtr> Categories;
 	// Instances of dynamic subsystem columns
 	TArray<SubsystemColumnPtr> DynamicColumns;
-
 
 	// Saved instance of Settings section
 	TSharedPtr<ISettingsSection> PluginSettingsSection;
