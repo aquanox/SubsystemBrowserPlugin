@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"Version": 150,
+	"Version": 154,
 	"VersionName": "1.5.4",
 	"FriendlyName": "Subsystem Browser",
 	"Description": "Plugin that adds Subsystem Browser panel to Editor",

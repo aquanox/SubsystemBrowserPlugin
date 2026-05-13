@@ -14,7 +14,7 @@ With Subsystems being a great tool, Unreal Engine Editor does not have a default
 
 Plugin provides a dedicated Subsystem Browser panel to display active subsystems with property editor.
 
-New Subsystem Settings panel provides an easy way to interact with config properties within Subsystem-derived classes without need to create a standalone UDeveloperSettings class.
+Subsystem Settings panel provides an easy way to interact with Config properties within Subsystem-derived classes in a similar way to UDeveloperSettings.
 
 ## Key Features
 
@@ -29,13 +29,12 @@ New Subsystem Settings panel provides an easy way to interact with config proper
  * Display which module or plugin subsystems originate from
  * View and modify subsystem properties with Details View (including hidden properties)
  * Quick navigation to source file via "Open Source File" context menu action
- * Quick actions to work with ini config settings via "Export Config", "Export to Defaults" context menu actions
  * Browser panel state (chosen filters, category folders state) is saved to local editor settings
  * Support for custom categories: ![Customizing Categories](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Categories)
  * Support for custom table colums: ![Customizing Columns](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Columns)
  * Support for custom tooltips: ![Customizing Tooltips](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Customizing-Tooltips)
  * Various ![Metadata Specifiers](https://github.com/aquanox/SubsystemBrowserPlugin/wiki/Plugin-Metadata-Specifiers-Reference) for Subsystem classes
- * Subsystem Settings Panel to interact with config properties.
+ * Subsystem Settings Panel to interact with config properties within subsystem classes.
  
 ## Unreal Engine Versions
 
