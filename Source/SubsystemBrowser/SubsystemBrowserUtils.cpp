@@ -422,7 +422,7 @@ FText FSubsystemBrowserUtils::GetWorldDescription(const UWorld* World)
 	if (World->WorldType == EWorldType::PIE)
 	{
 		PrimaryName =  FText::FromString(World->GetFName().GetPlainNameString());
-		
+
 		switch(World->GetNetMode())
 		{
 		case NM_Client:
@@ -485,7 +485,7 @@ UClass* FSubsystemBrowserUtils::TryFindClassByName(const FString& ClassName)
 void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsystem, TArray<UObject*>& OutData)
 {
 	OutData.Empty();
-	
+
 	if (!IsValid(InSubsystem) || !IsValid(InSubsystem->GetClass()))
 	{
 		return;
@@ -496,19 +496,24 @@ void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsyst
 	{
 		return;
 	}
-	
+
 	const FString UserFuncStr = UserFunc.GetValue();
 	if (UserFuncStr.IsEmpty() || UserFuncStr.Equals(TEXT("auto"), ESearchCase::IgnoreCase))
 	{
-		constexpr bool bIncludeNested = false;
-		constexpr EObjectFlags Excluded = RF_ClassDefaultObject|RF_ArchetypeObject;
-		ForEachObjectWithOuter(InSubsystem, [&](UObject* SubObject)
-		{
-			if (SubObject->GetClass()->FindMetaData(FSubsystemBrowserUserMeta::MD_SBSubobject))
-			{
-				OutData.AddUnique(SubObject);
-			}
-		}, bIncludeNested, Excluded);
+	    auto AddObjectFn = [&OutData](UObject* SubObject)
+        {
+            if (SubObject->GetClass()->FindMetaData(FSubsystemBrowserUserMeta::MD_SBSubobject))
+            {
+                OutData.AddUnique(SubObject);
+            }
+        };
+
+		constexpr EObjectFlags ExcludedObjFlags = RF_ClassDefaultObject|RF_ArchetypeObject;
+#if UE_VERSION_OLDER_THAN(5, 8, 0)
+		ForEachObjectWithOuter(InSubsystem, AddObjectFn, /*bIncludeNested=*/ false, ExcludedObjFlags);
+#else
+        ForEachObjectWithOuter(InSubsystem, AddObjectFn, EGetObjectsFlags::None, ExcludedObjFlags);
+#endif
 
 		for (TFieldIterator<FObjectPropertyBase> It(InSubsystem->GetClass()); It; ++It)
 		{
@@ -525,13 +530,13 @@ void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsyst
 	else // not empty
 	{
 		const FName FuncName (UserFunc.GetValue());
-		
+
 		UFunction* Func = InSubsystem->GetClass()->FindFunctionByName(FuncName);
-		
+
 		if (Func && Func->HasAllFunctionFlags(FUNC_Native) && !Func->HasAnyFunctionFlags(FUNC_Static))
 		{
 			FEditorScriptExecutionGuard Guard;
-			
+
 			FSubsystemBrowserGetSubobjects Delegate;
 			Delegate.BindUFunction(InSubsystem, FuncName);
 			OutData = Delegate.Execute();
@@ -540,7 +545,7 @@ void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsyst
 		{
 			UE_LOG(LogSubsystemBrowser, Warning, TEXT("Invalid SBGetSubobjects value (%s) for type %s"), *FuncName.ToString(), *InSubsystem->GetClass()->GetName() );
 		}
-		
+
 		return;
 	}
 
@@ -566,13 +571,13 @@ bool FSubsystemBrowserUtils::TryParseColor(const FString& InColor, FLinearColor&
 		NamedColors.Add(TEXT("turquoise"), FColor::Turquoise);
 		NamedColors.Add(TEXT("silver"), FColor::Silver);
 		NamedColors.Add(TEXT("emerald"), FColor::Emerald);
-		
+
 		//NamedColors.Add(TEXT("category_game"), FColor(200, 20, 61));
 		//NamedColors.Add(TEXT("category_ui"), FColor(9, 96, 200));
 		//NamedColors.Add(TEXT("category_editor"), FColor(164, 4, 200));
 		//NamedColors.Add(TEXT("category_misc"), FColor(120, 200, 3));
 	}
-	
+
 	FString StrValue = InColor.TrimStartAndEnd();
 	if (!StrValue.Len())
 	{
@@ -587,21 +592,21 @@ bool FSubsystemBrowserUtils::TryParseColor(const FString& InColor, FLinearColor&
 		OutColor = FLinearColor::FromSRGBColor(FColor::FromHex(*StrValue));
 		return true;
 	}
-	
-	// "(R=0,G=0,B=0)" "(R=255,G=255,B=255)" 
+
+	// "(R=0,G=0,B=0)" "(R=255,G=255,B=255)"
 	if ((StrValue[0] == TEXT('(') || StrValue.Len() > 4) && TempValue.InitFromString(StrValue))
 	{
 		OutColor = TempValue;
 		return true;
 	}
-	
+
 	// Named table from standard table
 	if (FLinearColor* NamedColor = NamedColors.Find(FName(*StrValue)))
 	{
 		OutColor = *NamedColor;
 		return true;
 	}
-	
+
 	// Named table for project use
 	if (USubsystemBrowserSettings::Get()->TryFindNamedColor(FName(*StrValue), TempValue))
 	{
@@ -619,7 +624,7 @@ void FSubsystemBrowserUtils::GatherQuickActions(UObject* Object, TArray<FQuickAc
 		return;
 
 	static const FName NAME_Category(TEXT("Category"));
-	
+
 	for (TFieldIterator<UFunction> It(Object->GetClass()); It; ++It)
 	{
 		UFunction* TestFunction = *It;
@@ -651,7 +656,7 @@ void FSubsystemBrowserUtils::InvokeQuickAction(const FQuickActionData& ActionDat
 	if (UFunction* Function = ActionData.Function.Get())
 	{
 		ensure(Function->ParmsSize == 0);
-								
+
 		if (UObject* ExecutionObject = ActionData.Object.Get())
 		{
 			ExecutionObject->ProcessEvent(Function, nullptr);

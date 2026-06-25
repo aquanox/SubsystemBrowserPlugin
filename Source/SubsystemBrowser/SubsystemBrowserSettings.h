@@ -295,22 +295,22 @@ protected:
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(InlineEditConditionToggle))
 	bool bEnableStaleColor = false;
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableStaleColor"))
-	FLinearColor StaleStateColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
+	FLinearColor StaleStateColor = FLinearColor(0.75f, 0.75f, 0.75f, 1.0f);
 
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(InlineEditConditionToggle))
 	bool bEnableSelectedColor = false;
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableSelectedColor"))
-	FLinearColor SelectedStateColor = FLinearColor(0.828, 0.364, 0.003, 1.0);
+	FLinearColor SelectedStateColor = FLinearColor(0.828f, 0.364f, 0.003f, 1.0f);
 
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(InlineEditConditionToggle))
 	bool bEnableColoringGameModule = false;
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableColoringGameModule"))
-	FLinearColor GameModuleColor = FLinearColor(0.4, 0.4, 1.0, 1.0);
+	FLinearColor GameModuleColor = FLinearColor(0.4f, 0.4f, 1.0f, 1.0f);
 
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(InlineEditConditionToggle))
 	bool bEnableColoringEngineModule = false;
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(EditCondition="bEnableColoringEngineModule"))
-	FLinearColor EngineModuleColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
+	FLinearColor EngineModuleColor = FLinearColor(0.75f, 0.75f, 0.75f, 1.0f);
 
 	UPROPERTY(Config, EditAnywhere, Category="Browser Panel Appearance", meta=(TitleProperty="Name"))
 	TArray<FSubsystemBrowserNamedColorEntry> NamedColors;
