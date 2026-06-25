@@ -112,13 +112,13 @@ void USubsystemBrowserSettings::SetDefaults()
 	bEnableColoring = false;
 
 	bEnableStaleColor = false;
-	StaleStateColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
+	StaleStateColor = FLinearColor(0.75f, 0.75f, 0.75f, 1.0f);
 	bEnableSelectedColor = false;
-	SelectedStateColor = FLinearColor(0.828, 0.364, 0.003, 1.0);
+	SelectedStateColor = FLinearColor(0.828f, 0.364f, 0.003f, 1.0f);
 	bEnableColoringGameModule = false;
-	GameModuleColor = FLinearColor(0.4, 0.4, 1.0, 1.0);
+	GameModuleColor = FLinearColor(0.4f, 0.4f, 1.0f, 1.0f);
 	bEnableColoringEngineModule = false;
-	EngineModuleColor = FLinearColor(0.75, 0.75, 0.75, 1.0);
+	EngineModuleColor = FLinearColor(0.75f, 0.75f, 0.75f, 1.0f);
 
 	CategoryVisibilityState.Empty();
 	TreeExpansionState.Empty();

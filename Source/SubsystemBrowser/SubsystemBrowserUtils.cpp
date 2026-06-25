@@ -508,7 +508,11 @@ void FSubsystemBrowserUtils::DefaultSelectSubsystemSubobjects(UObject* InSubsyst
 			{
 				OutData.AddUnique(SubObject);
 			}
+#if ENGINE_MAJOR_VERSION < 5 || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 8)
 		}, bIncludeNested, Excluded);
+#else
+		}, EGetObjectsFlags::None, Excluded);
+#endif
 
 		for (TFieldIterator<FObjectPropertyBase> It(InSubsystem->GetClass()); It; ++It)
 		{
