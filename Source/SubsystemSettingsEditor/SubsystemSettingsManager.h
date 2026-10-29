@@ -4,8 +4,7 @@
 
 #include "ISettingsModule.h"
 #include "ISettingsViewer.h"
-#include "Layout/Visibility.h"
-#include "Modules/ModuleManager.h"
+#include "Templates/SharedPointer.h"
 
 class SWidget;
 class SDockTab;

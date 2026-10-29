@@ -12,6 +12,7 @@
 #include "ISettingsEditorModule.h"
 #include "ISettingsEditorModel.h"
 #include "IDetailsView.h"
+#include "Layout/Visibility.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -58,9 +59,6 @@ TSharedPtr<T> RecursiveFindWidget(const TSharedRef<SWidget>& InWidget, const FNa
 
 void FSubsystemSettingsManager::Register()
 {
-	USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
-	SettingsObject->OnSettingChanged().AddRaw(this, &FSubsystemSettingsManager::HandleSettingsChanged);
-
 	// Create Subsystem Settings viewer and viewer tab spawner
 	ISettingsModule& SettingsModule = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
 	SettingsModule.RegisterViewer(TEXT("Subsystem"), *this);

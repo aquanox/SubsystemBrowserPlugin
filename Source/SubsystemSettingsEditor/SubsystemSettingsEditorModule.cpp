@@ -4,6 +4,7 @@
 #include "SubsystemBrowserFlags.h"
 #include "SubsystemBrowserSettings.h"
 #include "SubsystemBrowserStyle.h"
+#include "SubsystemSettingsManager.h"
 #include "ToolMenus.h"
 
 #define LOCTEXT_NAMESPACE "SubsystemBrowser"
@@ -18,9 +19,11 @@ void FSubsystemSettingsEditorModule::StartupModule()
 		&& !IsRunningCommandlet()
 		&& USubsystemBrowserSettings::Get()->ShouldUseSubsystemSettings())
 	{
-		bEnabled = true;
+		SettingsManager = MakeShared<FSubsystemSettingsManager>();
+		SettingsManager->Register();
 
-		SettingsManager.Register();
+		USubsystemBrowserSettings* SettingsObject = USubsystemBrowserSettings::Get();
+		SettingsObject->OnSettingChanged().AddSP(SettingsManager.ToSharedRef(), &FSubsystemSettingsManager::HandleSettingsChanged);
 
 		UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FSubsystemSettingsEditorModule::RegisterMenus));
 	}
@@ -28,11 +31,10 @@ void FSubsystemSettingsEditorModule::StartupModule()
 
 void FSubsystemSettingsEditorModule::ShutdownModule()
 {
-	if (GIsEditor && bEnabled)
+	if (GIsEditor && SettingsManager)
 	{
-		SettingsManager.Unregister();
-
-		bEnabled = false;
+		SettingsManager->Unregister();
+		SettingsManager.Reset();
 	}
 }
 
@@ -78,5 +80,12 @@ void FSubsystemSettingsEditorModule::RegisterMenus()
 #endif
 }
 
+void FSubsystemSettingsEditorModule::RequestDiscoverSubsystems() const
+{
+	if (SettingsManager)
+	{
+		SettingsManager->HandleCategoriesChanged();
+	}
+}
 
 #undef LOCTEXT_NAMESPACE
